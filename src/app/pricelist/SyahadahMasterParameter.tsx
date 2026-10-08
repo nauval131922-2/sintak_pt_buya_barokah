@@ -4,15 +4,13 @@ import React, { useState } from 'react';
 import {
   Database,
   RotateCcw,
-  BookOpen,
   X,
   Printer,
-  Layers,
-  Sparkles,
   PackageCheck,
-  Scissors,
   DollarSign,
   Stamp,
+  Search,
+  HelpCircle,
 } from 'lucide-react';
 import {
   DEFAULT_SYAHADAH_PARAMS,
@@ -26,10 +24,109 @@ interface SyahadahMasterParameterProps {
   setCustomParams: React.Dispatch<React.SetStateAction<SyahadahMasterParams>>;
 }
 
+interface FieldDef {
+  key: keyof SyahadahMasterParams;
+  label: string;
+  opts?: {
+    rupiah?: boolean;
+    decimal?: boolean;
+    suffix?: string;
+  };
+  helpText?: string;
+}
+
+interface GroupDef {
+  title: string;
+  border: string;
+  labelCls: string;
+  fields: FieldDef[];
+}
+
+const CARD1_GROUPS: GroupDef[] = [
+  {
+    title: 'Bahan Kertas & Desain',
+    border: 'border-emerald-300',
+    labelCls: 'text-emerald-800',
+    fields: [
+      { key: 'tarifKertasLinenKg', label: 'Harga Kertas Linen/Hammer /Kg', helpText: 'Hammer Crem / Linen Tebal 300 gsm' },
+      { key: 'upKertasPct', label: 'Markup Kertas (%)', opts: { rupiah: false, suffix: '%' }, helpText: 'Kenaikan harga kertas (default 0%)' },
+      { key: 'tarifDesign', label: 'Desain / Order', helpText: 'Biaya setting layout syahadah (Rp 20.000)' },
+      { key: 'tarifSisirPer500', label: 'Potong Sisir / 500 Pcs', helpText: 'Ongkos potong sisir (Rp 5.000 per 500 pcs)' },
+    ],
+  },
+];
+
+const CARD2_GROUPS: GroupDef[] = [
+  {
+    title: 'Cetak Digital Print Inter',
+    border: 'border-blue-300',
+    labelCls: 'text-blue-800',
+    fields: [
+      { key: 'tarifPrintA3', label: 'Tarif Print A3+ Digital', helpText: 'Biaya cetak per lbr A3+ (muat 2 syahadah)' },
+      { key: 'insheetPod', label: 'Insheet Cetak Digital (Lembar A3+)', opts: { rupiah: false, suffix: 'Lbr' }, helpText: 'Cadangan cetak digital Print Inter (default 5 lbr)' },
+    ],
+  },
+];
+
+const CARD3_GROUPS: GroupDef[] = [
+  {
+    title: 'Cetak Offset Ryobi',
+    border: 'border-indigo-300',
+    labelCls: 'text-indigo-800',
+    fields: [
+      { key: 'tarifPlatRyobi', label: 'Tarif Plat Ryobi / Warna', helpText: 'Biaya plat cetak offset toko (Rp 10.000/plat)' },
+      { key: 'minOrderRyobi', label: 'Min. Order Cetak / Plat', helpText: 'Ongkos dasar cetak per plat s.d. 500 drek' },
+      { key: 'tarifDrekOverRyobi', label: 'Tarif Drek Over / Warna', helpText: 'Drek over di atas 500 (Rp 30/drek/warna)' },
+      { key: 'insheetRyobi', label: 'Insheet Cetak Ryobi (Lembar)', opts: { rupiah: false, suffix: 'Lbr' }, helpText: 'Cadangan cetak offset Ryobi (default 50 lbr)' },
+      { key: 'syahadahPerPlanoRyobi', label: 'Kapasitas Plano (Pcs / Plano)', opts: { rupiah: false, suffix: 'Pcs' }, helpText: '1 plano 79×109 cm dipotong jadi 11 lembar folio' },
+    ],
+  },
+];
+
+const CARD4_GROUPS: GroupDef[] = [
+  {
+    title: 'Cetak Offset Oliver',
+    border: 'border-purple-300',
+    labelCls: 'text-purple-800',
+    fields: [
+      { key: 'tarifPlatOliver', label: 'Tarif Plat Oliver / Warna', helpText: 'Biaya plat cetak offset Oliver (Rp 43.000/plat)' },
+      { key: 'minOrderOliver', label: 'Min. Order Cetak / Plat', helpText: 'Ongkos dasar cetak per plat s.d. 1.000 drek' },
+      { key: 'tarifDrekOverOliver', label: 'Tarif Drek Over / Warna', helpText: 'Drek over di atas 1.000 (Rp 40/drek/warna)' },
+    ],
+  },
+];
+
+const CARD5_GROUPS: GroupDef[] = [
+  {
+    title: 'Finishing Foil Emas',
+    border: 'border-amber-300',
+    labelCls: 'text-amber-800',
+    fields: [
+      { key: 'tarifKliseMasterFoil', label: 'Biaya Klise Master Foil', helpText: 'Biaya pembuatan plat/matris foil per muka' },
+      { key: 'tarifFoilPerPcs', label: 'Tarif Hotprint Foil / Pcs', helpText: 'Ongkos hotprint per pcs (Rp 450/pcs)' },
+      { key: 'minOrderFoil', label: 'Min. Order Hotprint Foil', helpText: 'Minimum ongkos foil (Rp 100.000)' },
+    ],
+  },
+];
+
+const CARD6_GROUPS: GroupDef[] = [
+  {
+    title: 'Packing & Margin',
+    border: 'border-rose-300',
+    labelCls: 'text-rose-800',
+    fields: [
+      { key: 'tarifKardusBox', label: 'Harga Kardus / Box', helpText: 'Kardus per box (kapasitas 1.000 pcs)' },
+      { key: 'tarifLakbanRoll', label: 'Harga Lakban / Roll', helpText: 'Lakban 90 yard per roll' },
+      { key: 'marginDefaultPct', label: 'Margin Laba Default (%)', opts: { rupiah: false, suffix: '%' }, helpText: 'Standar margin profit 30%' },
+      { key: 'negoDefaultPct', label: 'Nego Diskon Default (%)', opts: { rupiah: false, suffix: '%' }, helpText: 'Batas diskon sales 5%' },
+    ],
+  },
+];
 export default function SyahadahMasterParameter({
   customParams,
   setCustomParams,
 }: SyahadahMasterParameterProps) {
+  const [q, setQ] = useState('');
   const [showManualModal, setShowManualModal] = useState(false);
 
   const handleChange = (key: keyof SyahadahMasterParams, val: number) => {
@@ -55,40 +152,50 @@ export default function SyahadahMasterParameter({
     toast.success('Semua parameter Syahadah dikembalikan ke standar master.');
   };
 
-  // Controlled input guard: fallback ke DEFAULT_SYAHADAH_PARAMS[key] jika undefined
-  const fieldRow = (
-    key: keyof SyahadahMasterParams,
-    label: string,
-    isRupiah = true,
-    isDecimal = false,
-    suffix?: string,
-    helpText?: string
-  ) => {
+  const fmtStd = (f: FieldDef) => {
+    const def = DEFAULT_SYAHADAH_PARAMS[f.key];
+    if (f.opts?.suffix === '%') return `${def}%`;
+    if (f.opts?.decimal) return `${def} ${f.opts?.suffix || ''}`.trim();
+    if (f.opts?.rupiah === false) return `${Number(def).toLocaleString('id-ID')} ${f.opts?.suffix || ''}`.trim();
+    return `Rp ${Number(def).toLocaleString('id-ID')}`;
+  };
+
+  const matchQ = (label: string) =>
+    q.trim() === '' || label.toLowerCase().includes(q.trim().toLowerCase());
+
+  const fieldRow = (f: FieldDef) => {
+    const key = f.key;
+    const isRupiah = f.opts?.rupiah ?? true;
+    const isDecimal = f.opts?.decimal ?? false;
+    const modified = isFieldModified(key);
     const rawVal = customParams[key];
     const val = rawVal ?? DEFAULT_SYAHADAH_PARAMS[key];
 
     return (
       <div
+        key={key}
         className={`p-2.5 rounded-lg border transition-all ${
-          isFieldModified(key)
+          modified
             ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
             : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
         }`}
       >
         <div className="flex items-center justify-between gap-1 mb-1.5">
-          <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-            {label}
+          <label className="text-xs font-semibold text-slate-700 truncate" title={f.label}>
+            {f.label}
           </label>
-          {isFieldModified(key) && (
-            <button
-              type="button"
-              onClick={() => handleResetField(key)}
-              className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-              title="Reset ke default"
-            >
-              <RotateCcw className="w-2.5 h-2.5" /> Def
-            </button>
-          )}
+          <div className="flex items-center gap-1 shrink-0">
+            {modified && (
+              <button
+                type="button"
+                onClick={() => handleResetField(key)}
+                className="text-amber-700 hover:text-amber-900 flex items-center bg-amber-100/80 p-1 rounded cursor-pointer shrink-0"
+                title="Reset ke standar master"
+              >
+                <RotateCcw className="w-3 h-3" />
+              </button>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-1.5">
           {isRupiah && !isDecimal ? (
@@ -108,141 +215,134 @@ export default function SyahadahMasterParameter({
                 onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
                 className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
               />
-              {suffix && (
+              {f.opts?.suffix && (
                 <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-slate-400 pointer-events-none">
-                  {suffix}
+                  {f.opts.suffix}
                 </span>
               )}
             </div>
           )}
         </div>
-        {helpText && (
-          <p className="text-[10px] text-slate-400 mt-1 leading-tight">{helpText}</p>
+        {f.helpText && (
+          <p className="text-[10px] text-slate-400 mt-1 leading-tight">{f.helpText}</p>
+        )}
+        {modified && (
+          <p className="text-[10px] text-slate-500 mt-1">Master: {fmtStd(f)}</p>
         )}
       </div>
     );
   };
 
+  const subGroup = (g: GroupDef) => {
+    const visible = g.fields.filter((f) => matchQ(f.label));
+    if (visible.length === 0) return null;
+    return (
+      <div key={g.title} className={`rounded-lg border ${g.border} bg-white/70 p-2.5 space-y-2`}>
+        <span className={`block text-[10px] font-black uppercase tracking-wider ${g.labelCls}`}>{g.title}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{visible.map(fieldRow)}</div>
+      </div>
+    );
+  };
+
+  const cardShell = (cls: string, header: React.ReactNode, groups: GroupDef[]) => {
+    const hasVisible = groups.some((g) => g.fields.some((f) => matchQ(f.label)));
+    if (!hasVisible) return null;
+    return (
+      <div className={`${cls} rounded-xl border p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4`}>
+        {header}
+        <div className="flex flex-col gap-2.5">{groups.map(subGroup)}</div>
+      </div>
+    );
+  };
+
+  const cardHeader = (badgeCls: string, badge: string, Icon: any, iconCls: string, title: string) => (
+    <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${badgeCls}`}>{badge}</span>
+      <Icon className={`w-4 h-4 ${iconCls}`} />
+      <h3 className="text-xs font-bold text-slate-800">{title}</h3>
+    </div>
+  );
+
   return (
-    <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
-      {/* Sticky Action Bar */}
-      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 flex items-center justify-between gap-3 border-b border-slate-200/80 -mt-1 mb-1">
-        <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-emerald-700" />
-          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-            Master Parameter Syahadah
-          </h2>
-          {isModified && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
-              Dimodifikasi
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
-          >
-            <BookOpen size={13} />
-            <span>Panduan</span>
-          </button>
-          {isModified && (
+    <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
+      {/* Sticky Search Bar & Actions */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Cari nama parameter tarif, kertas, plat, jilid..."
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs font-medium"
+          />
+          {q && (
             <button
               type="button"
-              onClick={handleResetAll}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs cursor-pointer"
+              onClick={() => setQ('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
             >
-              <RotateCcw size={13} />
-              <span>Reset Standar</span>
+              <X size={13} />
             </button>
           )}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer shrink-0"
+        >
+          <HelpCircle size={14} className="text-slate-500" />
+          <span>Panduan & Rumus</span>
+        </button>
+        {isModified && (
+          <button
+            type="button"
+            onClick={handleResetAll}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs transition cursor-pointer shrink-0"
+          >
+            <RotateCcw size={14} />
+            <span>Reset Semua</span>
+          </button>
+        )}
       </div>
 
-      {/* Grid Kartu Master Parameter */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Card 1: Bahan Kertas & Desain */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <DollarSign className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Bahan Kertas &amp; Desain</h3>
-          </div>
-          <div className="space-y-2.5">
-            {fieldRow('tarifKertasLinenKg', 'Harga Kertas Linen/Hammer /Kg', true, false, undefined, 'Hammer Crem / Linen Tebal 300 gsm')}
-            {fieldRow('upKertasPct', 'Markup Kertas (%)', false, false, '%', 'Kenaikan harga kertas (default 0%)')}
-            {fieldRow('tarifDesign', 'Desain / Order', true, false, undefined, 'Biaya setting layout syahadah (Rp 20.000)')}
-            {fieldRow('tarifSisirPer500', 'Potong Sisir / 500 Pcs', true, false, undefined, 'Ongkos potong sisir (Rp 5.000 per 500 pcs)')}
-          </div>
-        </div>
+      {/* Grid 2 Kolom Seimbang */}
+      <div className="columns-1 md:columns-2 gap-4">
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-emerald-900 bg-emerald-100', 'Bahan', DollarSign, 'text-emerald-600', '1. Bahan Kertas & Desain'),
+          CARD1_GROUPS
+        )}
 
-        {/* Card 2: Cetak Digital Print Inter */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Cetak Digital Print Inter</h3>
-          </div>
-          <div className="space-y-2.5">
-            {fieldRow('tarifPrintA3', 'Tarif Print A3+ Digital', true, false, undefined, 'Biaya cetak per lbr A3+ (muat 2 syahadah)')}
-            {fieldRow('insheetPod', 'Insheet Cetak Digital (Lembar A3+)', false, false, 'Lbr', 'Cadangan cetak digital Print Inter (default 5 lbr)')}
-          </div>
-        </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-blue-900 bg-blue-100', 'Print', Printer, 'text-blue-600', '2. Cetak Digital Print Inter'),
+          CARD2_GROUPS
+        )}
 
-        {/* Card 3: Cetak Offset Ryobi (1W / 2W) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer className="w-4 h-4 text-indigo-600" />
-            <h3 className="text-xs font-bold text-slate-800">3. Cetak Offset Ryobi</h3>
-          </div>
-          <div className="space-y-2.5">
-            {fieldRow('tarifPlatRyobi', 'Tarif Plat Ryobi / Warna', true, false, undefined, 'Biaya plat cetak offset toko (Rp 10.000/plat)')}
-            {fieldRow('minOrderRyobi', 'Min. Order Cetak / Plat', true, false, undefined, 'Ongkos dasar cetak per plat s.d. 500 drek')}
-            {fieldRow('tarifDrekOverRyobi', 'Tarif Drek Over / Warna', true, false, undefined, 'Drek over di atas 500 (Rp 30/drek/warna)')}
-            {fieldRow('insheetRyobi', 'Insheet Cetak Ryobi (Lembar)', false, false, 'Lbr', 'Cadangan cetak offset Ryobi (default 50 lbr)')}
-            {fieldRow('syahadahPerPlanoRyobi', 'Kapasitas Plano (Pcs / Plano)', false, false, 'Pcs', '1 plano 79×109 cm dipotong jadi 11 lembar folio')}
-          </div>
-        </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-indigo-900 bg-indigo-100', 'Ryobi', Printer, 'text-indigo-600', '3. Cetak Offset Ryobi'),
+          CARD3_GROUPS
+        )}
 
-        {/* Card 4: Cetak Offset Oliver */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer className="w-4 h-4 text-purple-600" />
-            <h3 className="text-xs font-bold text-slate-800">4. Cetak Offset Oliver</h3>
-          </div>
-          <div className="space-y-2.5">
-            {fieldRow('tarifPlatOliver', 'Tarif Plat Oliver / Warna', true, false, undefined, 'Biaya plat cetak offset Oliver (Rp 43.000/plat)')}
-            {fieldRow('minOrderOliver', 'Min. Order Cetak / Plat', true, false, undefined, 'Ongkos dasar cetak per plat s.d. 1.000 drek')}
-            {fieldRow('tarifDrekOverOliver', 'Tarif Drek Over / Warna', true, false, undefined, 'Drek over di atas 1.000 (Rp 40/drek/warna)')}
-          </div>
-        </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-purple-900 bg-purple-100', 'Oliver', Printer, 'text-purple-600', '4. Cetak Offset Oliver'),
+          CARD4_GROUPS
+        )}
 
-        {/* Card 5: Finishing Foil Emas (Hotprint) */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Stamp className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">5. Finishing Foil Emas</h3>
-          </div>
-          <div className="space-y-2.5">
-            {fieldRow('tarifKliseMasterFoil', 'Biaya Klise Master Foil', true, false, undefined, 'Biaya pembuatan plat/matris foil per muka')}
-            {fieldRow('tarifFoilPerPcs', 'Tarif Hotprint Foil / Pcs', true, false, undefined, 'Ongkos hotprint per pcs (Rp 450/pcs)')}
-            {fieldRow('minOrderFoil', 'Min. Order Hotprint Foil', true, false, undefined, 'Minimum ongkos foil (Rp 100.000)')}
-          </div>
-        </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-amber-900 bg-amber-100', 'Foil', Stamp, 'text-amber-600', '5. Finishing Foil Emas'),
+          CARD5_GROUPS
+        )}
 
-        {/* Card 6: Packing & Margin */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <PackageCheck className="w-4 h-4 text-rose-600" />
-            <h3 className="text-xs font-bold text-slate-800">6. Packing &amp; Margin</h3>
-          </div>
-          <div className="space-y-2.5">
-            {fieldRow('tarifKardusBox', 'Harga Kardus / Box', true, false, undefined, 'Kardus per box (kapasitas 1.000 pcs)')}
-            {fieldRow('tarifLakbanRoll', 'Harga Lakban / Roll', true, false, undefined, 'Lakban 90 yard per roll')}
-            {fieldRow('marginDefaultPct', 'Margin Laba Default (%)', false, false, '%', 'Standar margin profit 30%')}
-            {fieldRow('negoDefaultPct', 'Nego Diskon Default (%)', false, false, '%', 'Batas diskon sales 5%')}
-          </div>
-        </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-rose-900 bg-rose-100', 'Packing', PackageCheck, 'text-rose-600', '6. Packing & Margin'),
+          CARD6_GROUPS
+        )}
       </div>
 
       {/* Modal Manual Pengguna & Pemetaan Sumber Excel */}

@@ -4,12 +4,13 @@ import React, { useState } from 'react';
 import {
   Database,
   RotateCcw,
-  BookOpen,
   X,
   Printer,
   Layers,
   Package,
   Info,
+  Search,
+  HelpCircle,
 } from 'lucide-react';
 import {
   DEFAULT_KOP_SURAT_PARAMS,
@@ -26,34 +27,87 @@ interface KopSuratMasterParameterProps {
   setCustomParams: React.Dispatch<React.SetStateAction<KopSuratMasterParams>>;
 }
 
-type NumKey = {
-  [K in keyof KopSuratMasterParams]: KopSuratMasterParams[K] extends number ? K : never;
-}[keyof KopSuratMasterParams];
+interface FieldDef {
+  key: keyof KopSuratMasterParams;
+  label: string;
+  opts?: {
+    rupiah?: boolean;
+    decimal?: boolean;
+    suffix?: string;
+  };
+}
 
-const KOP_SURAT_VISIBLE_KEYS: NumKey[] = [
-  'gramatur',
-  'hargaPerKg',
-  'upPct',
-  'insheet1Warna',
-  'insheet2Warna',
-  'insheet3Warna',
-  'insheet4Warna',
-  'desain',
-  'platOverride',
-  'royaltyPerRim',
-  'transportPerOrder',
-  'labaPct',
+interface GroupDef {
+  title: string;
+  border: string;
+  labelCls: string;
+  fields: FieldDef[];
+}
+
+const CARD1_GROUPS: GroupDef[] = [
+  {
+    title: 'Bahan & Harga Kertas',
+    border: 'border-emerald-300',
+    labelCls: 'text-emerald-800',
+    fields: [
+      { key: 'gramatur', label: 'Gramatur (gsm) [55–160]', opts: { rupiah: false } },
+      { key: 'hargaPerKg', label: 'Harga / kg (Rp)' },
+      { key: 'upPct', label: 'Up Harga (%)', opts: { rupiah: false, suffix: '%' } },
+      { key: 'umr', label: 'UMR Acuan (Rp, info)' },
+    ],
+  },
+];
+
+const CARD2_GROUPS: GroupDef[] = [
+  {
+    title: 'Insheet Lembar Cetak',
+    border: 'border-sky-300',
+    labelCls: 'text-sky-800',
+    fields: [
+      { key: 'insheet1Warna', label: 'File 1 Warna (lbr)', opts: { rupiah: false } },
+      { key: 'insheet2Warna', label: 'File 2 Warna (lbr)', opts: { rupiah: false } },
+      { key: 'insheet3Warna', label: 'File 3 Warna (lbr)', opts: { rupiah: false } },
+      { key: 'insheet4Warna', label: 'File 4 Warna (lbr)', opts: { rupiah: false } },
+    ],
+  },
+];
+
+const CARD3_GROUPS: GroupDef[] = [
+  {
+    title: 'Desain, Film & Plate',
+    border: 'border-blue-300',
+    labelCls: 'text-blue-800',
+    fields: [
+      { key: 'desain', label: 'Desain / Order (Rp)' },
+      { key: 'platOverride', label: 'Override Jml Plat X6 (0=auto)', opts: { rupiah: false } },
+      { key: 'royaltyPerRim', label: 'Royalty / rim (Rp)' },
+      { key: 'transportPerOrder', label: 'Transport / order (Rp)' },
+    ],
+  },
+];
+
+const CARD4_GROUPS: GroupDef[] = [
+  {
+    title: 'Laba & Referensi',
+    border: 'border-amber-300',
+    labelCls: 'text-amber-800',
+    fields: [
+      { key: 'labaPct', label: 'Laba Default (%)', opts: { rupiah: false, suffix: '%' } },
+      { key: 'hargaPembandingPerRim', label: 'Pembanding / rim (Rp, info)' },
+    ],
+  },
 ];
 
 export default function KopSuratMasterParameter({
   customParams,
   setCustomParams,
 }: KopSuratMasterParameterProps) {
+  const [q, setQ] = useState('');
   const [showManualModal, setShowManualModal] = useState(false);
 
   const safe: KopSuratMasterParams = { ...DEFAULT_KOP_SURAT_PARAMS, ...(customParams || {}) };
 
-  const handleChange = (key: NumKey, val: number) => {
+  const handleChange = (key: keyof KopSuratMasterParams, val: number) => {
     setCustomParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
   };
 
@@ -80,195 +134,233 @@ export default function KopSuratMasterParameter({
     toast.success('Semua parameter Kop Surat dikembalikan ke standar master.');
   };
 
-  const fieldRow = (key: NumKey, label: string, isRupiah = true) => (
-    <div
-      className={`p-2.5 rounded-lg border transition-all ${
-        isFieldModified(key)
-          ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-          : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-      }`}
-    >
-      <div className="flex items-center justify-between gap-1 mb-1.5">
-        <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-          {label}
-        </label>
-        {isFieldModified(key) && (
-          <button
-            type="button"
-            onClick={() => handleResetField(key)}
-            className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-            title="Reset ke default"
-          >
-            <RotateCcw className="w-2.5 h-2.5" /> Def
-          </button>
-        )}
-      </div>
-      <div className="flex items-center gap-1.5">
-        {isRupiah ? (
+  const fmtStd = (f: FieldDef) => {
+    const def = DEFAULT_KOP_SURAT_PARAMS[f.key];
+    if (f.opts?.suffix === '%') return `${def}%`;
+    if (f.opts?.rupiah === false && !f.opts?.decimal) return Number(def).toLocaleString('id-ID');
+    if (f.opts?.rupiah === false) return String(def);
+    return `Rp ${Number(def).toLocaleString('id-ID')}`;
+  };
+
+  const matchQ = (label: string) =>
+    q.trim() === '' || label.toLowerCase().includes(q.trim().toLowerCase());
+
+  const fieldRow = (f: FieldDef) => {
+    const key = f.key;
+    const isRupiah = f.opts?.rupiah ?? true;
+    const isDecimal = f.opts?.decimal ?? false;
+    const modified = isFieldModified(key);
+    const val = (safe[key] ?? DEFAULT_KOP_SURAT_PARAMS[key]) as number;
+
+    return (
+      <div
+        key={key}
+        className={`p-2.5 rounded-lg border transition-all ${
+          modified
+            ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+            : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-1 mb-1.5">
+          <label className="text-xs font-semibold text-slate-700 truncate" title={f.label}>
+            {f.label}
+          </label>
+          <div className="flex items-center gap-1 shrink-0">
+            {modified && (
+              <button
+                type="button"
+                onClick={() => handleResetField(key)}
+                className="text-amber-700 hover:text-amber-900 flex items-center bg-amber-100/80 p-1 rounded cursor-pointer shrink-0"
+                title="Reset ke standar master"
+              >
+                <RotateCcw className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5">
           <ThousandInput
-            value={safe[key] as number}
+            value={val}
             onValueChange={(v) => handleChange(key, v || 0)}
             className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-            prefix="Rp"
+            prefix={isRupiah ? 'Rp' : undefined}
+            suffix={f.opts?.suffix}
+            allowDecimals={isDecimal}
           />
-        ) : (
-          <input
-            type="number"
-            min={0}
-            value={safe[key] as number}
-            onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
-            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-          />
+        </div>
+        {modified && (
+          <p className="text-[10px] text-slate-500 mt-1">Master: {fmtStd(f)}</p>
         )}
       </div>
+    );
+  };
+
+  const selectRow = (key: 'bahanKop' | 'jenisKertasTambahan', label: string, options: string[], note: string) => {
+    if (!matchQ(label)) return null;
+    const modified = isFieldModified(key);
+    return (
+      <div
+        key={key}
+        className={`p-2.5 rounded-lg border transition-all ${
+          modified
+            ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+            : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-1 mb-1.5">
+          <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
+            {label}
+          </label>
+          <div className="flex items-center gap-1 shrink-0">
+            {modified && (
+              <button
+                type="button"
+                onClick={() => handleResetField(key)}
+                className="text-amber-700 hover:text-amber-900 flex items-center bg-amber-100/80 p-1 rounded cursor-pointer shrink-0"
+                title="Reset ke standar master"
+              >
+                <RotateCcw className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        </div>
+        <select
+          value={safe[key]}
+          onChange={(e) => handleChangeStr(key, e.target.value)}
+          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs cursor-pointer"
+        >
+          {key === 'jenisKertasTambahan' && <option value="">(kosong — sesuai file)</option>}
+          {options.map((o) => (
+            <option key={o} value={o}>{o}</option>
+          ))}
+        </select>
+        <p className="text-[10px] text-slate-400 mt-1 italic">{note}</p>
+      </div>
+    );
+  };
+
+  const subGroup = (g: GroupDef) => {
+    const visible = g.fields.filter((f) => matchQ(f.label));
+    if (visible.length === 0) return null;
+    return (
+      <div key={g.title} className={`rounded-lg border ${g.border} bg-white/70 p-2.5 space-y-2`}>
+        <span className={`block text-[10px] font-black uppercase tracking-wider ${g.labelCls}`}>{g.title}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{visible.map(fieldRow)}</div>
+      </div>
+    );
+  };
+
+  const cardShell = (cls: string, header: React.ReactNode, groups: GroupDef[], extraNode?: React.ReactNode, note?: React.ReactNode) => {
+    const hasVisibleFields = groups.some((g) => g.fields.some((f) => matchQ(f.label)));
+    const hasVisibleExtra = extraNode != null;
+    if (!hasVisibleFields && !hasVisibleExtra) return null;
+    return (
+      <div className={`${cls} rounded-xl border p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4`}>
+        {header}
+        {hasVisibleFields && <div className="flex flex-col gap-2.5">{groups.map(subGroup)}</div>}
+        {extraNode}
+        {note}
+      </div>
+    );
+  };
+
+  const cardHeader = (badgeCls: string, badge: string, Icon: any, iconCls: string, title: string) => (
+    <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${badgeCls}`}>{badge}</span>
+      <Icon className={`w-4 h-4 ${iconCls}`} />
+      <h3 className="text-xs font-bold text-slate-800">{title}</h3>
     </div>
   );
 
-  const selectRow = (key: 'bahanKop' | 'jenisKertasTambahan', label: string, options: string[], note: string) => (
-    <div
-      className={`p-2.5 rounded-lg border transition-all ${
-        isFieldModified(key)
-          ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-          : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-      }`}
-    >
-      <div className="flex items-center justify-between gap-1 mb-1.5">
-        <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-          {label}
-        </label>
-        {isFieldModified(key) && (
-          <button
-            type="button"
-            onClick={() => handleResetField(key)}
-            className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-            title="Reset ke default"
-          >
-            <RotateCcw className="w-2.5 h-2.5" /> Def
-          </button>
-        )}
-      </div>
-      <select
-        value={safe[key]}
-        onChange={(e) => handleChangeStr(key, e.target.value)}
-        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs cursor-pointer"
-      >
-        {key === 'jenisKertasTambahan' && <option value="">(kosong — sesuai file)</option>}
-        {options.map((o) => (
-          <option key={o} value={o}>{o}</option>
-        ))}
-      </select>
-      <p className="text-[10px] text-slate-400 mt-1 italic">{note}</p>
-    </div>
-  );
+  const bahanSelects = [
+    selectRow('bahanKop', 'Bahan Kop', KOP_SURAT_BAHAN_OPTIONS, 'Informatif — pilihan opsi bahan kop surat.'),
+    selectRow('jenisKertasTambahan', 'Jenis Kertas Tambahan', KOP_SURAT_D9_OPTIONS, 'Tersimpan opsional.'),
+  ].filter(Boolean);
 
   return (
-    <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
-      {/* Sticky Action Bar */}
-      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 flex items-center justify-between gap-3 border-b border-slate-200/80 -mt-1 mb-1">
-        <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-emerald-700" />
-          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-            Master Parameter Kop Surat
-          </h2>
-          {isModified && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
-              Dimodifikasi
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
-          >
-            <BookOpen size={13} />
-            <span>Panduan</span>
-          </button>
-          {isModified && (
+    <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
+      {/* Sticky Search Bar & Actions */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Cari nama parameter tarif, kertas, plat, jilid..."
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs font-medium"
+          />
+          {q && (
             <button
               type="button"
-              onClick={handleResetAll}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs cursor-pointer"
+              onClick={() => setQ('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
             >
-              <RotateCcw size={13} />
-              <span>Reset Standar</span>
+              <X size={13} />
             </button>
           )}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer shrink-0"
+        >
+          <HelpCircle size={14} className="text-slate-500" />
+          <span>Panduan & Rumus</span>
+        </button>
+        {isModified && (
+          <button
+            type="button"
+            onClick={handleResetAll}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs transition cursor-pointer shrink-0"
+          >
+            <RotateCcw size={14} />
+            <span>Reset Semua</span>
+          </button>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Bahan & Kertas */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Package className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Bahan &amp; Harga Kertas</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('gramatur', 'Gramatur (gsm) [55–160]', false)}
-            {fieldRow('hargaPerKg', 'Harga / kg (Rp)')}
-            {fieldRow('upPct', 'Up Harga (%)', false)}
-            {fieldRow('umr', 'UMR Acuan (Rp, info)', true)}
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {selectRow('bahanKop', 'Bahan Kop', KOP_SURAT_BAHAN_OPTIONS, 'Informatif — pilihan opsi bahan kop surat.')}
-            {selectRow('jenisKertasTambahan', 'Jenis Kertas Tambahan', KOP_SURAT_D9_OPTIONS, 'Tersimpan opsional.')}
-          </div>
+      {/* Grid 2 Kolom Seimbang */}
+      <div className="columns-1 md:columns-2 gap-4">
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-emerald-900 bg-emerald-100', 'Bahan', Package, 'text-emerald-600', '1. Bahan & Harga Kertas'),
+          CARD1_GROUPS,
+          bahanSelects.length > 0 ? <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{bahanSelects}</div> : null,
           <p className="text-[10px] text-slate-500">
             Harga per rim dihitung dari dimensi, gramatur, harga per kg, dan persentase up. Gramatur: {KOP_SURAT_GRAMATUR_OPTIONS.join(', ')}.
           </p>
-        </div>
+        )}
 
-        {/* Card 2: Insheet per file warna */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Layers className="w-4 h-4 text-sky-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Insheet Lembar Cetak</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('insheet1Warna', 'File 1 Warna (lbr)', false)}
-            {fieldRow('insheet2Warna', 'File 2 Warna (lbr)', false)}
-            {fieldRow('insheet3Warna', 'File 3 Warna (lbr)', false)}
-            {fieldRow('insheet4Warna', 'File 4 Warna (lbr)', false)}
-          </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-sky-900 bg-sky-100', 'Insheet', Layers, 'text-sky-600', '2. Insheet Lembar Cetak'),
+          CARD2_GROUPS,
+          null,
           <p className="text-[10px] text-slate-500">
             Nilai bawaan file: 30 / 30 / 40 / 50. Simulator otomatis memakai default file sesuai jumlah warna, masih bisa dioverride per simulasi.
           </p>
-        </div>
+        )}
 
-        {/* Card 3: Cetak */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">3. Desain, Film &amp; Plate</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('desain', 'Desain / Order (Rp)')}
-            {fieldRow('platOverride', 'Override Jml Plat X6 (0=auto)', false)}
-            {fieldRow('royaltyPerRim', 'Royalty / rim (Rp)')}
-            {fieldRow('transportPerOrder', 'Transport / order (Rp)')}
-          </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-blue-900 bg-blue-100', 'Plat', Printer, 'text-blue-600', '3. Desain, Film & Plate'),
+          CARD3_GROUPS,
+          null,
           <p className="text-[10px] text-slate-500">
             Plate: CETAK = Rp 10.000/plat, ONGKOS CETAK = Rp 0. Min order Rp 15.000/plat, drek over Rp 30 (tetap di kedua mode). Jml plat auto = warna × muka.
           </p>
-        </div>
+        )}
 
-        {/* Card 4: Margin + referensi */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Info className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">4. Laba &amp; Referensi</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('labaPct', 'Laba Default (%)', false)}
-            {fieldRow('hargaPembandingPerRim', 'Pembanding / rim (Rp, info)')}
-          </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-amber-900 bg-amber-100', 'Margin', Info, 'text-amber-600', '4. Laba & Referensi'),
+          CARD4_GROUPS,
+          null,
           <p className="text-[10px] text-slate-500">
             Laba dihitung dari HPP per rim × margin %. Harga final dibulatkan ke puluhan.
           </p>
-        </div>
+        )}
       </div>
 
       {showManualModal && (

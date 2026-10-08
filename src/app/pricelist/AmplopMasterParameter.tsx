@@ -4,12 +4,13 @@ import React, { useState } from 'react';
 import {
   Database,
   RotateCcw,
-  BookOpen,
   X,
   Printer,
   Layers,
   Package,
   Info,
+  Search,
+  HelpCircle,
 } from 'lucide-react';
 import {
   DEFAULT_AMPLOP_PARAMS,
@@ -23,36 +24,87 @@ interface AmplopMasterParameterProps {
   setCustomParams: React.Dispatch<React.SetStateAction<AmplopMasterParams>>;
 }
 
-type NumKey = {
-  [K in keyof AmplopMasterParams]: AmplopMasterParams[K] extends number ? K : never;
-}[keyof AmplopMasterParams];
+interface FieldDef {
+  key: keyof AmplopMasterParams;
+  label: string;
+  opts?: {
+    rupiah?: boolean;
+    decimal?: boolean;
+    suffix?: string;
+  };
+}
 
-const AMPLOP_VISIBLE_KEYS: NumKey[] = [
-  'hargaPackBesar',
-  'hargaPackTgg',
-  'insheetLembar',
-  'desainStandar',
-  'desainBesarPrint',
-  'btklPct',
-  'bopPct',
-  'labaPct',
-  'tarifPrintUnguBesar',
-  'tarifPrintBuyaBesar',
-  'tarifPrintUnguTgg',
-  'tarifPrintBuyaTgg',
-  'platOverride',
-  'transportPerOrder',
+interface GroupDef {
+  title: string;
+  border: string;
+  labelCls: string;
+  fields: FieldDef[];
+}
+
+const CARD1_GROUPS: GroupDef[] = [
+  {
+    title: 'Bahan Amplop Jadi & Insheet',
+    border: 'border-emerald-300',
+    labelCls: 'text-emerald-800',
+    fields: [
+      { key: 'hargaPackBesar', label: 'Harga /pack Besar 11×23 (Rp)' },
+      { key: 'hargaPackTgg', label: 'Harga /pack Tgg 9,5×15,5 (Rp)' },
+      { key: 'insheetLembar', label: 'Insheet Tanggung (lbr)', opts: { rupiah: false } },
+      { key: 'umr', label: 'UMR Acuan (Rp, info)' },
+    ],
+  },
 ];
 
+const CARD2_GROUPS: GroupDef[] = [
+  {
+    title: 'Tarif Print per Pack',
+    border: 'border-blue-300',
+    labelCls: 'text-blue-800',
+    fields: [
+      { key: 'tarifPrintUnguBesar', label: 'Print Ungu Besar (Rp)' },
+      { key: 'tarifPrintBuyaBesar', label: 'Print Buya Besar (Rp)' },
+      { key: 'tarifPrintUnguTgg', label: 'Print Ungu Tgg (Rp)' },
+      { key: 'tarifPrintBuyaTgg', label: 'Print Buya Tgg (Rp)' },
+    ],
+  },
+];
+
+const CARD3_GROUPS: GroupDef[] = [
+  {
+    title: 'Desain, Plate & Jasa',
+    border: 'border-sky-300',
+    labelCls: 'text-sky-800',
+    fields: [
+      { key: 'desainStandar', label: 'Desain Standar (Rp)' },
+      { key: 'desainBesarPrint', label: 'Desain Besar+Print (Rp)' },
+      { key: 'platOverride', label: 'Override Jml Plat V6 (0=auto)', opts: { rupiah: false } },
+      { key: 'transportPerOrder', label: 'Transport / order (Rp)' },
+    ],
+  },
+];
+
+const CARD4_GROUPS: GroupDef[] = [
+  {
+    title: 'BTKL, BOP & Laba',
+    border: 'border-amber-300',
+    labelCls: 'text-amber-800',
+    fields: [
+      { key: 'btklPct', label: 'BTKL (%)', opts: { rupiah: false, suffix: '%' } },
+      { key: 'bopPct', label: 'BOP (%)', opts: { rupiah: false, suffix: '%' } },
+      { key: 'labaPct', label: 'Laba Default (%)', opts: { rupiah: false, suffix: '%' } },
+    ],
+  },
+];
 export default function AmplopMasterParameter({
   customParams,
   setCustomParams,
 }: AmplopMasterParameterProps) {
+  const [q, setQ] = useState('');
   const [showManualModal, setShowManualModal] = useState(false);
 
   const safe: AmplopMasterParams = { ...DEFAULT_AMPLOP_PARAMS, ...(customParams || {}) };
 
-  const handleChange = (key: NumKey, val: number) => {
+  const handleChange = (key: keyof AmplopMasterParams, val: number) => {
     setCustomParams((prev) => ({ ...prev, [key]: Math.max(0, val) }));
   };
 
@@ -75,155 +127,178 @@ export default function AmplopMasterParameter({
     toast.success('Semua parameter Amplop dikembalikan ke standar master.');
   };
 
-  const fieldRow = (key: NumKey, label: string, isRupiah = true) => (
-    <div
-      className={`p-2.5 rounded-lg border transition-all ${
-        isFieldModified(key)
-          ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
-          : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
-      }`}
-    >
-      <div className="flex items-center justify-between gap-1 mb-1.5">
-        <label className="text-xs font-semibold text-slate-700 truncate" title={label}>
-          {label}
-        </label>
-        {isFieldModified(key) && (
-          <button
-            type="button"
-            onClick={() => handleResetField(key)}
-            className="text-[9.5px] font-bold text-amber-700 hover:text-amber-900 flex items-center gap-0.5 bg-amber-100/80 px-1.5 py-0.5 rounded cursor-pointer shrink-0"
-            title="Reset ke default"
-          >
-            <RotateCcw className="w-2.5 h-2.5" /> Def
-          </button>
-        )}
-      </div>
-      <div className="flex items-center gap-1.5">
-        {isRupiah ? (
+  const fmtStd = (f: FieldDef) => {
+    const def = DEFAULT_AMPLOP_PARAMS[f.key];
+    if (f.opts?.suffix === '%') return `${def}%`;
+    if (f.opts?.rupiah === false && !f.opts?.decimal) return Number(def).toLocaleString('id-ID');
+    if (f.opts?.rupiah === false) return String(def);
+    return `Rp ${Number(def).toLocaleString('id-ID')}`;
+  };
+
+  const matchQ = (label: string) =>
+    q.trim() === '' || label.toLowerCase().includes(q.trim().toLowerCase());
+
+  const fieldRow = (f: FieldDef) => {
+    const key = f.key;
+    const isRupiah = f.opts?.rupiah ?? true;
+    const isDecimal = f.opts?.decimal ?? false;
+    const modified = isFieldModified(key);
+    const val = (safe[key] ?? DEFAULT_AMPLOP_PARAMS[key]) as number;
+
+    return (
+      <div
+        key={key}
+        className={`p-2.5 rounded-lg border transition-all ${
+          modified
+            ? 'bg-amber-50/70 border-amber-300 ring-1 ring-amber-400/40'
+            : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-50'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-1 mb-1.5">
+          <label className="text-xs font-semibold text-slate-700 truncate" title={f.label}>
+            {f.label}
+          </label>
+          <div className="flex items-center gap-1 shrink-0">
+            {modified && (
+              <button
+                type="button"
+                onClick={() => handleResetField(key)}
+                className="text-amber-700 hover:text-amber-900 flex items-center bg-amber-100/80 p-1 rounded cursor-pointer shrink-0"
+                title="Reset ke standar master"
+              >
+                <RotateCcw className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5">
           <ThousandInput
-            value={safe[key] as number}
+            value={val}
             onValueChange={(v) => handleChange(key, v || 0)}
             className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-            prefix="Rp"
+            prefix={isRupiah ? 'Rp' : undefined}
+            suffix={f.opts?.suffix}
+            allowDecimals={isDecimal}
           />
-        ) : (
-          <input
-            type="number"
-            min={0}
-            value={safe[key] as number}
-            onChange={(e) => handleChange(key, Number(e.target.value) || 0)}
-            className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-          />
+        </div>
+        {modified && (
+          <p className="text-[10px] text-slate-500 mt-1">Master: {fmtStd(f)}</p>
         )}
       </div>
+    );
+  };
+
+  const subGroup = (g: GroupDef) => {
+    const visible = g.fields.filter((f) => matchQ(f.label));
+    if (visible.length === 0) return null;
+    return (
+      <div key={g.title} className={`rounded-lg border ${g.border} bg-white/70 p-2.5 space-y-2`}>
+        <span className={`block text-[10px] font-black uppercase tracking-wider ${g.labelCls}`}>{g.title}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{visible.map(fieldRow)}</div>
+      </div>
+    );
+  };
+
+  const cardShell = (cls: string, header: React.ReactNode, groups: GroupDef[], note?: React.ReactNode) => {
+    const hasVisible = groups.some((g) => g.fields.some((f) => matchQ(f.label)));
+    if (!hasVisible) return null;
+    return (
+      <div className={`${cls} rounded-xl border p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4`}>
+        {header}
+        <div className="flex flex-col gap-2.5">{groups.map(subGroup)}</div>
+        {note}
+      </div>
+    );
+  };
+
+  const cardHeader = (badgeCls: string, badge: string, Icon: any, iconCls: string, title: string) => (
+    <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+      <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${badgeCls}`}>{badge}</span>
+      <Icon className={`w-4 h-4 ${iconCls}`} />
+      <h3 className="text-xs font-bold text-slate-800">{title}</h3>
     </div>
   );
 
   return (
-    <div className="flex flex-col gap-5 pb-8 overflow-y-auto">
-      {/* Sticky Action Bar */}
-      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 flex items-center justify-between gap-3 border-b border-slate-200/80 -mt-1 mb-1">
-        <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-emerald-700" />
-          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
-            Master Parameter Amplop
-          </h2>
-          {isModified && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse"></span>
-              Dimodifikasi
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
-          >
-            <BookOpen size={13} />
-            <span>Panduan</span>
-          </button>
-          {isModified && (
+    <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
+      {/* Sticky Search Bar & Actions */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Cari nama parameter tarif, kertas, plat, jilid..."
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs font-medium"
+          />
+          {q && (
             <button
               type="button"
-              onClick={handleResetAll}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all shadow-xs cursor-pointer"
+              onClick={() => setQ('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
             >
-              <RotateCcw size={13} />
-              <span>Reset Standar</span>
+              <X size={13} />
             </button>
           )}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer shrink-0"
+        >
+          <HelpCircle size={14} className="text-slate-500" />
+          <span>Panduan & Rumus</span>
+        </button>
+        {isModified && (
+          <button
+            type="button"
+            onClick={handleResetAll}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs transition cursor-pointer shrink-0"
+          >
+            <RotateCcw size={14} />
+            <span>Reset Semua</span>
+          </button>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Card 1: Bahan amplop jadi */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Package className="w-4 h-4 text-emerald-600" />
-            <h3 className="text-xs font-bold text-slate-800">1. Amplop Jadi &amp; Insheet</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('hargaPackBesar', 'Harga /pack Besar 11×23 (Rp)')}
-            {fieldRow('hargaPackTgg', 'Harga /pack Tgg 9,5×15,5 (Rp)')}
-            {fieldRow('insheetLembar', 'Insheet Tanggung (lbr)', false)}
-            {fieldRow('umr', 'UMR Acuan (Rp, info)')}
-          </div>
+      {/* Grid 2 Kolom Seimbang */}
+      <div className="columns-1 md:columns-2 gap-4">
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-emerald-900 bg-emerald-100', 'Bahan', Package, 'text-emerald-600', '1. Amplop Jadi & Insheet'),
+          CARD1_GROUPS,
           <p className="text-[10px] text-slate-500">
             Pack @100 pcs (Besar Rp 25.000, Tgg Rp 15.800). Insheet hanya hidup saat Tanggung; ukuran Besar otomatis 3% proporsional.
           </p>
-        </div>
+        )}
 
-        {/* Card 2: Cetak Print */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Printer className="w-4 h-4 text-blue-600" />
-            <h3 className="text-xs font-bold text-slate-800">2. Tarif Print per Pack</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('tarifPrintUnguBesar', 'Print Ungu Besar (Rp)')}
-            {fieldRow('tarifPrintBuyaBesar', 'Print Buya Besar (Rp)')}
-            {fieldRow('tarifPrintUnguTgg', 'Print Ungu Tgg (Rp)')}
-            {fieldRow('tarifPrintBuyaTgg', 'Print Buya Tgg (Rp)')}
-          </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-blue-900 bg-blue-100', 'Print', Printer, 'text-blue-600', '2. Tarif Print per Pack'),
+          CARD2_GROUPS,
           <p className="text-[10px] text-slate-500">
             P2 per pack @100. Besar: Ungu Rp 55.000 / Buya Rp 50.000 (file Besar 1 Warna). Tanggung: Rp 35.000 keduanya.
           </p>
-        </div>
+        )}
 
-        {/* Card 3: Desain, Plate & jasa */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Layers className="w-4 h-4 text-sky-600" />
-            <h3 className="text-xs font-bold text-slate-800">3. Desain, Plate &amp; Jasa</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('desainStandar', 'Desain Standar (Rp)')}
-            {fieldRow('desainBesarPrint', 'Desain Besar+Print (Rp)')}
-            {fieldRow('platOverride', 'Override Jml Plat V6 (0=auto)', false)}
-            {fieldRow('transportPerOrder', 'Transport / order (Rp)')}
-          </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-sky-900 bg-sky-100', 'Jasa', Layers, 'text-sky-600', '3. Desain, Plate & Jasa'),
+          CARD3_GROUPS,
           <p className="text-[10px] text-slate-500">
             Desain Rp 5.000, kecuali Besar+Print Rp 2.500 (file Besar FC). Plate Rp 10.000/plat (Ryobi saja), min Rp 15.000/plat, drek over Rp 30. Desain hanya dihitung bila H &lt; 1000.
           </p>
-        </div>
+        )}
 
-        {/* Card 4: BTKL, BOP & laba */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-            <Info className="w-4 h-4 text-amber-600" />
-            <h3 className="text-xs font-bold text-slate-800">4. BTKL, BOP &amp; Laba</h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {fieldRow('btklPct', 'BTKL (%)', false)}
-            {fieldRow('bopPct', 'BOP (%)', false)}
-            {fieldRow('labaPct', 'Laba Default (%)', false)}
-          </div>
+        {cardShell(
+          'bg-white border-slate-200',
+          cardHeader('text-amber-900 bg-amber-100', 'Overhead', Info, 'text-amber-600', '4. BTKL, BOP & Laba'),
+          CARD4_GROUPS,
           <p className="text-[10px] text-slate-500">
             BTKL 20% &amp; BOP 10% hanya bila Ryobi dan H ≥ 1000. Laba 30% → harga final pack dibulatkan satuan (ROUNDUP 0).
           </p>
-        </div>
+        )}
       </div>
 
       {showManualModal && (
