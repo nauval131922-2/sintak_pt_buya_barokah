@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
+import { requireApiPermission } from "@/lib/api-guard";
 import { buildFtsQuery } from "@/lib/fts";
 import { getScrapedPeriodSettingKey, parseScrapedPeriod } from "@/lib/server-scraped-period";
 import { stripRawData } from "@/lib/api-utils";
@@ -8,6 +9,9 @@ import { stripRawData } from "@/lib/api-utils";
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+  // Guard: samakan dengan halaman bahan-baku
+  const gate = await requireApiPermission('produksi_bahan_baku');
+  if (gate.error) return gate.error;
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');

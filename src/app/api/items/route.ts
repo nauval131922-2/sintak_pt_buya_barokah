@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
+import { requireApiPermission } from "@/lib/api-guard";
 import { apiError } from "@/lib/api-utils";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  // Guard: dipakai RecordsForm di halaman records (catat_kesalahan)
+  const gate = await requireApiPermission('catat_kesalahan');
+  if (gate.error) return gate.error;
   try {
     const searchParams = request.nextUrl.searchParams;
     const orderName = searchParams.get('order_name');

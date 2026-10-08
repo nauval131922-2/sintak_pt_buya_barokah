@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import db from "@/lib/db";
+import { requireApiPermission } from "@/lib/api-guard";
 import { buildFtsQuery } from "@/lib/fts";
 import { getScrapedPeriodSettingKey, parseScrapedPeriod } from "@/lib/server-scraped-period";
 import { stripRawData } from "@/lib/api-utils";
@@ -26,6 +27,9 @@ const ENRICH_SELECT = `bj.*, avg.hp_rata_rata, so.harga AS harga_so_sales_order,
 const ORDER_BY = `ORDER BY substr(bj.tgl, 7, 4) DESC, substr(bj.tgl, 4, 2) DESC, substr(bj.tgl, 1, 2) DESC, bj.id DESC`;
 
 export async function GET(request: Request) {
+  // Guard: samakan dengan halaman barang-jadi
+  const gate = await requireApiPermission('produksi_barang_jadi');
+  if (gate.error) return gate.error;
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
