@@ -40,26 +40,26 @@ export async function sendPushNotification(title: string, body: string, url?: st
 
     console.log('[PUSH] Payload:', payload);
 
-    // Send to all subscribed users
-    const promises = result.rows.map(async (row: any, index: number) => {
-      try {
-        console.log(`[PUSH] Sending to subscription #${index + 1}...`);
-        const subscription = JSON.parse(row.subscription);
-        await webpush.sendNotification(subscription, payload);
-        console.log(`[PUSH] ✅ Sent to subscription #${index + 1}`);
-      } catch (err: any) {
-        console.error(`[PUSH] ❌ Failed to send to subscription #${index + 1}:`, err.message);
-        // Remove invalid subscription
-        await db.execute({
-          sql: `DELETE FROM push_subscriptions WHERE subscription = ?`,
-          args: [row.subscription]
-        });
-      }
-    });
-
-    await Promise.all(promises);
-    console.log('[PUSH] All notifications sent. Total:', result.rows.length);
-    return { success: true, count: result.rows.length };
+    // Bound fan-out: batch 10 konkuren + cap 500 subscript — cegah thundering-herd
+    const subs = result.rows.slice(0, 500);
+    let sent = 0;
+    for (let i = 0; i < subs.length; i += 10) {
+      const batch = subs.slice(i, i + 10);
+      await Promise.all(batch.map(async (row: any) => {
+        try {
+          const subscription = JSON.parse(row.subscription);
+          await webpush.sendNotification(subscription, payload);
+          sent++;
+        } catch (err: any) {
+          // Hapus subscription invalid
+          await db.execute({
+            sql: `DELETE FROM push_subscriptions WHERE subscription = ?`,
+            args: [row.subscription]
+          });
+        }
+      }));
+    }
+    return { success: true, count: sent };
   } catch (error: any) {
     console.error('[PUSH] sendPushNotification error:', error);
     return { success: false, error: error.message };

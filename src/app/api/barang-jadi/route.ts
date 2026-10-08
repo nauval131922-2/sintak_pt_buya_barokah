@@ -171,7 +171,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("Fetch barang-jadi error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch cached barang_jadi", details: error.message },
+      { error: "Failed to fetch cached barang_jadi" },
       { status: 500 }
     );
   }

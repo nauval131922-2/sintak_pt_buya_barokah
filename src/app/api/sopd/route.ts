@@ -314,7 +314,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("Upload Error:", error);
     return NextResponse.json(
-      { error: "Gagal memproses chunk data", details: error.message },
+      { error: "Gagal memproses chunk data" },
       { status: 500 }
     );
   }

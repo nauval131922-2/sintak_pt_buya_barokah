@@ -167,7 +167,7 @@ export async function GET(request: Request) {
   } catch (error: any) {
     console.error("Fetch bahan-baku error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch cached bahan_baku", details: error.message },
+      { error: "Failed to fetch cached bahan_baku" },
       { status: 500 }
     );
   }

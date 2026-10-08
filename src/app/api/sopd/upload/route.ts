@@ -167,6 +167,6 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error("SOPD Upload Error:", error);
-    return NextResponse.json({ error: "Gagal memproses file Excel di server", details: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Gagal memproses file Excel di server" }, { status: 500 });
   }
 }

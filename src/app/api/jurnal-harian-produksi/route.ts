@@ -609,7 +609,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("Upload Error:", error);
     return NextResponse.json(
-      { error: "Gagal memproses file Excel", details: error.message },
+      { error: "Gagal memproses file Excel" },
       { status: 500 }
     );
   }

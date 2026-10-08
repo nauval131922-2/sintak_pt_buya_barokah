@@ -16,6 +16,9 @@ import { canViewActivityLog } from '@/lib/activity-log-permissions';
 
 const CACHE_TTL = 30_000; // 30 seconds for stats/count cache
 
+// ponytail: rate-limit in-memory per-user untuk query mahal (konsisten throttle login)
+const heavyHits = new Map<string, number[]>();
+
 function cacheKey(params: ActivityLogQueryParams): string {
   const p = params;
   const deep = p.opts?.skipRawDataSearch === false ? 'deep' : 'normal';
@@ -183,14 +186,27 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    void searchParams.get('preview');
-
     // Guard: preview maupun list wajib lolos permission lihat (tutup bypass preview=1)
     const roles = Array.isArray(session.roles) && session.roles.length > 0 ? session.roles : [session.role];
     const allowed = await canViewActivityLog(roles);
     if (!allowed) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
+
+    // Rate-limit query mahal (deepSearch LIKE raw_data + preview/logId): 10/menit per user
+    const deepSearch = searchParams.get('deepSearch') === '1';
+    const isHeavy = deepSearch || searchParams.get('preview') || searchParams.get('logId');
+    if (isHeavy) {
+      const key = `activity-log-heavy:${session.userId}`;
+      const now = Date.now();
+      const hits = (heavyHits.get(key) || []).filter((t) => now - t < 60_000);
+      if (hits.length >= 10) {
+        return NextResponse.json({ error: 'Terlalu banyak permintaan. Coba lagi sebentar.' }, { status: 429 });
+      }
+      hits.push(now);
+      heavyHits.set(key, hits);
+    }
+
 
     const logId = searchParams.get('logId');
     if (logId) {
