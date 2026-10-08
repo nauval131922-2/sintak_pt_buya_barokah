@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from "@/lib/api-guard";
 import { buildFtsQuery } from '@/lib/fts';
 import { getScrapedPeriodSettingKey, parseScrapedPeriod } from '@/lib/server-scraped-period';
 import { stripRawData, SALES_ORDERS_LIST_RAW_KEYS } from '@/lib/api-utils';
@@ -10,6 +11,9 @@ export const dynamic = 'force-dynamic';
 const ORDER_BY = `ORDER BY substr(so.tgl,7,4) DESC, substr(so.tgl,4,2) DESC, substr(so.tgl,1,2) DESC, so.id DESC`;
 
 export async function GET(req: NextRequest) {
+  // Guard: samakan dengan halaman (permission penjualan_so)
+  const gate = await requireApiPermission('penjualan_so');
+  if (gate.error) return gate.error;
   try {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get('page') || '1');

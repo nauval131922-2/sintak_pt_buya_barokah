@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
+import { requireApiPermission } from "@/lib/api-guard";
 import { apiError, stripRawData } from "@/lib/api-utils";
 import { buildFtsQuery } from "@/lib/fts";
 import { getScrapedPeriodSettingKey, parseScrapedPeriod } from "@/lib/server-scraped-period";
@@ -7,6 +8,9 @@ import { getScrapedPeriodSettingKey, parseScrapedPeriod } from "@/lib/server-scr
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  // Guard: samakan dengan halaman (permission penjualan_sph_out)
+  const gate = await requireApiPermission('penjualan_sph_out');
+  if (gate.error) return gate.error;
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');

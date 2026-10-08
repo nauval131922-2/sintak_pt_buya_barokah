@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireApiPermission } from "@/lib/api-guard";
 import { getScrapedPeriodSettingKey, parseScrapedPeriod } from '@/lib/server-scraped-period';
 import { stripRawData } from '@/lib/api-utils';
 
 export async function GET(req: NextRequest) {
+  // Guard: samakan dengan halaman (permission pembelian_po)
+  const gate = await requireApiPermission('pembelian_po');
+  if (gate.error) return gate.error;
   try {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get('page') || '1');
