@@ -83,8 +83,8 @@ export async function POST(req: NextRequest) {
       });
     }
     return NextResponse.json({ success: true, imported: importedCount });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Import error:', err);
-    return NextResponse.json({ error: `Error: ${err?.message || String(err)}` }, { status: 500 });
+    return NextResponse.json({ error: 'Terjadi kesalahan internal saat import.' }, { status: 500 });
   }
 }
