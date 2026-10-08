@@ -206,6 +206,13 @@ for (const file of masterParamFiles) {
     console.error(`[CONTRACT FAIL] ${file} - Tidak ada sticky bar baku (Action Bar / Search Bar).`);
     totalContractFailures++;
   }
+
+  // c. Wajib search bar filter parameter (DoD 2026-10-08: 26 file aktif)
+  //    Pola sah: state q/setQ + input placeholder "Cari" + filter matchQ/matchSearch.
+  if (!/setQ/.test(content) || !/placeholder="Cari/.test(content)) {
+    console.error(`[CONTRACT FAIL] ${file} - Tidak ada search bar filter parameter (wajib q/setQ + placeholder "Cari").`);
+    totalContractFailures++;
+  }
 }
 if (totalCellLeaks > 0 || totalContractFailures > 0) {
   console.error(`TOTAL PELANGGARAN: ${totalCellLeaks} kebocoran sel Excel, ${totalContractFailures} pelanggaran kontrak UI!`);

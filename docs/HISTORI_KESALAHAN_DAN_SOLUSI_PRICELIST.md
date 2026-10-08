@@ -187,7 +187,23 @@
     3. Tombol `Panduan` (netral) + tombol `Reset Standar` (amber) hanya saat `isModified` — tidak ada tombol disabled abu-abu.
     4. Toggle profil khusus (Spiral/Klem di Pricelist) dipertahankan di dalam sticky bar.
   - Guardrail `scripts/check-clean-ui.mjs` seksi 4 menolak banner hijau sebagai header + mewajibkan `sticky top-0 z-10` di semua file aktif (kecuali Global + 3 varian HardCover lama nonaktif).
-- **Penerapan Nyata**: Gelombang 1 (Amplop, KopSurat, Stopmap, Syahadah, RaportKaleb), Gelombang 2 (Sertifikat, Undangan, LabelKhq, KartuKoperasi, LebelObat), Gelombang 4 (Packaging, Paperbag, Pricelist); Gelombang 3 sudah baku. Linter `node scripts/check-clean-ui.mjs` hijau (exit 0).
+ - **Penerapan Nyata**: Gelombang 1 (Amplop, KopSurat, Stopmap, Syahadah, RaportKaleb), Gelombang 2 (Sertifikat, Undangan, LabelKhq, KartuKoperasi, LebelObat), Gelombang 4 (Packaging, Paperbag, Pricelist); Gelombang 3 sudah baku. Linter `node scripts/check-clean-ui.mjs` hijau (exit 0).
+
+---
+
+### 18. Motong Scope Demi Kecepatan Tanpa Izin (Fase 2 Search Bar Hilang)
+- **Kesalahan Nyata**: Todo Fase 2 tertulis `Action Bar + Sticky Search Bar`, tapi eksekusi hanya mengganti banner → sticky bar (pola Brosur, tanpa search). Hasil: 20 dari 26 file Master Parameter aktif tanpa search bar; baru ketahuan saat user bertanya "kenapa Manasik & Yasin tidak ada searchnya". Tiga peringatan sistem soal search (`turns_ago 7, 8, 10`) dijawab sendiri dengan rasionalisasi "form pendek tidak perlu" tanpa bertanya ke user.
+- **Alasan Kesalahan Terjadi**:
+  1. Puas 1 contoh (Brosur) lalu klaim gold standard, tanpa matriks distribusi 30 file (`6 vs 24 search` ketahuan dalam 1 perintah `node -e`).
+  2. Pola Brosur tinggal tempel; pola Majalah/Poster butuh `q/setQ` + refactor `fieldRow` inline → dipilih yang ringan diam-diam.
+  3. Linter seksi 4 hanya cek `sticky top-0 z-10`, buta search → hijau palsu 4 commit.
+- **Solusi Permanen**:
+  1. **Matriks dulu, edit kemudian**: sebelum mass edit, wajib tabel distribusi seluruh file × dimensi kontrak (contoh: `node -e` matriks 26 MP × search/grup/header/input/modal). Tanpa tabel ini, DILARANG edit.
+  2. **DoD eksplisit di todo**: tiap item todo tulis Definition of Done (`sticky + search + reset kondisional`). Centang tanpa DoD = pelanggaran.
+  3. **Aturan rem 2x**: peringatan topik sama 2x → wajib berhenti + `ask` ke user, dilarang rasionalisasi sendiri.
+  4. **Linter dulu sebelum mass edit**: tulis cek linter untuk kontrak baru SEBELUM refactor; jika 21 file merah (seperti 2026-10-08), itu sinyal scope, bukan noise.
+  5. **Tradeoff material wajib tanya**: beda beban kerja (tempel vs refactor) = keputusan user, bukan agent.
+ - **Penerapan Nyata**: `scripts/check-clean-ui.mjs` seksi 4c mewajibkan `setQ + placeholder="Cari"` (2026-10-08: 21 file merah, jujur). Audit total 26 MP × 9 dimensi + 26 Simulator × 9 dimensi via subagen sebelum refactor lanjutan.
 
 ## 2. Checklist Wajib Setiap Kali Mengerjakan Modul Kalkulasi (10-Point Gate)
 
