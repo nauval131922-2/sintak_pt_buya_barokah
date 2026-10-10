@@ -432,6 +432,13 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                         { label: 'Master Barang', href: '/data-digit/stok/master-barang', icon: <Box size={14} /> },
                       ]
                     },
+                    ...((canAccess('stok_saldo_barang')) ? [{
+                      label: 'Laporan',
+                      icon: <BarChart3 size={16} />,
+                      items: [
+                        { label: 'Saldo Barang', href: '/data-digit/stok/saldo-barang', icon: <Box size={14} /> },
+                      ]
+                    }] : []),
                   ]}
                 />
               )}

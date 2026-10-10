@@ -21,6 +21,7 @@ export const searchableMenuItems: SearchableMenuItem[] = [
 
   // Stok
   { label: 'Master Barang', href: '/data-digit/stok/master-barang', category: 'Stok', keywords: 'item produk inventory', permission: 'stok_master_barang' },
+  { label: 'Saldo Barang', href: '/data-digit/stok/saldo-barang', category: 'Stok', keywords: 'saldo stok persediaan gudang digit', permission: 'stok_saldo_barang' },
 
   // Pembelian
   { label: 'Purchase Request (PR)', href: '/pr', category: 'Pembelian', keywords: 'permintaan pembelian', permission: 'pembelian_pr' },

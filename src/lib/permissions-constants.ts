@@ -78,6 +78,7 @@ export const MODULE_REGISTRY = [
 
   // Stok
   { key: 'stok_master_barang',     label: 'Master Barang',                    group: 'Data Digit - Stok' },
+  { key: 'stok_saldo_barang',      label: 'Saldo Barang',                     group: 'Data Digit - Stok' },
 ] as const;
 
 export type ModuleKey = typeof MODULE_REGISTRY[number]['key'];
