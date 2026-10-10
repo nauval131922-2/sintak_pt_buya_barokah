@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Download, Loader2, Play, AlertCircle, Settings2, X, Plus, Trash2, Save, RefreshCw } from 'lucide-react';
+import { Download, Loader2, Play, AlertCircle, Settings2, X, Plus, Trash2, Save, RefreshCw, CircleHelp } from 'lucide-react';
 import Portal from '@/components/Portal';
 import TableFooter from '@/components/TableFooter';
 import SearchAndReload from '@/components/SearchAndReload';
@@ -96,6 +96,7 @@ export default function PenonaktifanMasterClient() {
   const mountedRef = useRef(true);
 
   const [showSettings, setShowSettings] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
@@ -192,26 +193,7 @@ export default function PenonaktifanMasterClient() {
       if (mountedRef.current) setLoading(false);
     }
   }, [cutoff]);
-
-  const handleSyncSaldo = async () => {
-    try {
-      setSyncing(true);
-      setLoading(true);
-      setError('');
-      const res = await fetch(`/api/scrape-saldo-barang?tgl=${cutoff}`);
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || json.details || 'Gagal sync saldo');
-      setData(null);
-      await handleGenerate();
-      setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Saldo ${json.tgl}: ${Number(json.total).toLocaleString('id-ID')} kode tersimpan. Usulan digenerate ulang.` });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setSyncing(false);
-      setLoading(false);
-    }
-  };
-
+ 
   const handleSyncAll = useCallback(async () => {
     const yearStart = `${cutoff.slice(0, 4)}-01-01`;
     const endPlus7 = addDaysIso(cutoff, 7);
@@ -382,14 +364,6 @@ export default function PenonaktifanMasterClient() {
                   </span>
                 </button>
                 <button
-                  onClick={handleSyncSaldo}
-                  disabled={syncing || loading}
-                  className="shrink-0 px-5 py-2.5 bg-white border border-gray-100 rounded-xl text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 text-[12px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-                >
-                  {syncing ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-                  Sync saldo Digit
-                </button>
-                <button
                   onClick={handleSyncAll}
                   disabled={syncing || loading}
                   title="Tarik semua data Digit (saldo, master, transaksi, log) lalu generate ulang"
@@ -405,6 +379,13 @@ export default function PenonaktifanMasterClient() {
                 >
                   {exporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
                   Unduh Excel usulan
+                </button>
+                <button
+                  onClick={() => setShowHelp(true)}
+                  className="shrink-0 w-10 h-10 bg-white border border-gray-100 rounded-lg text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 flex items-center justify-center transition-all shadow-sm"
+                  title="Alur kerja laporan penonaktifan"
+                >
+                  <CircleHelp size={18} />
                 </button>
                 <button
                   onClick={() => setShowSettings(true)}
@@ -544,6 +525,31 @@ export default function PenonaktifanMasterClient() {
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+        </Portal>
+      )}
+
+      {showHelp && (
+        <Portal>
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowHelp(false)}>
+            <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-800">Alur kerja laporan penonaktifan</h3>
+                  <p className="text-[11px] text-slate-500">Dari cutoff sampai file untuk Dhea</p>
+                </div>
+                <button onClick={() => setShowHelp(false)} className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors" title="Tutup">
+                  <X size={16} />
+                </button>
+              </div>
+              <ol className="p-5 space-y-3 overflow-y-auto text-[13px] text-slate-600 list-none">
+                <li className="flex gap-3"><span className="shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold flex items-center justify-center">1</span><span><b className="text-slate-800">Atur tanggal cutoff</b> — tanggal evaluasi (misal akhir pekan). Sekali saja: ikon gear untuk kata kunci rutin dan batas idle.</span></li>
+                <li className="flex gap-3"><span className="shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold flex items-center justify-center">2</span><span><b className="text-slate-800">Klik Sync semua &amp; Generate</b> — otomatis tarik saldo, master, transaksi, dan log Digit (awal tahun sampai cutoff + 7 hari), lalu generate usulan.</span></li>
+                <li className="flex gap-3"><span className="shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold flex items-center justify-center">3</span><span><b className="text-slate-800">Review hasil</b> — 4 kartu ringkasan (kandidat, layak, ditolak, cutoff) dan tabel alasan per kode. Kategori A ludes pesanan, B penawaran batal.</span></li>
+                <li className="flex gap-3"><span className="shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold flex items-center justify-center">4</span><span><b className="text-slate-800">Unduh Excel usulan</b> — file siap tanda tangan PPIC, Customer Service, dan Manager.</span></li>
+                <li className="flex gap-3"><span className="shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold flex items-center justify-center">5</span><span><b className="text-slate-800">Serahkan ke Dhea</b> — eksekusi nonaktif tetap di Digit. Sintak tidak mengubah status barang apa pun.</span></li>
+              </ol>
             </div>
           </div>
         </Portal>
