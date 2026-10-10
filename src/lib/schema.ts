@@ -1013,7 +1013,8 @@ export async function initSchema(db: any) {
     "CREATE INDEX IF NOT EXISTS idx_saldo_barang_kode ON saldo_barang(kode);",
     "CREATE INDEX IF NOT EXISTS idx_saldo_barang_tgl ON saldo_barang(tgl);",
     "CREATE INDEX IF NOT EXISTS idx_barang_jadi_kd_barang ON barang_jadi(kd_barang);",
-    "CREATE INDEX IF NOT EXISTS idx_bom_kd_barang ON bill_of_materials(kd_barang);",
+     "CREATE INDEX IF NOT EXISTS idx_bom_kd_barang ON bill_of_materials(kd_barang);",
+     "CREATE INDEX IF NOT EXISTS idx_usr_log_channel_tgl ON usr_log(channel, tgl);",
   ];
 
   const executor = db.client || db;
