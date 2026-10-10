@@ -1,6 +1,7 @@
 // engine klasifikasi lap. penonaktifan: kandidat master -> agregat transaksi -> 4 pilar.
+// BULK: 6 query total (tanpa N+1 per kode). Tabel kecil (2-7rb baris) diagregasi di JS.
 // Sumber: stok_master_barang, orders (PR), barang_jadi (PD), sales_reports,
-// sales_orders, pengiriman, sph_out (QO), bill_of_materials, purchase_requests.
+// sales_orders, sph_out (QO), bill_of_materials.
 import db from '@/lib/db';
 import {
   GOLONGAN_BJP,
@@ -33,85 +34,144 @@ export interface GenerateResult {
   rows: UsulanRow[];
 }
 
-const iso = (tgl: unknown) => ddMmYyyyToIso(tgl);
+type DbVal = string | number | null | undefined | Uint8Array | unknown;
+type DbRow = Record<string, DbVal>;
+
+function str(v: DbVal): string {
+  if (v === null || v === undefined) return '';
+  if (v instanceof Uint8Array) return Buffer.from(v).toString('utf-8');
+  return String(v);
+}
+
+function num(v: DbVal): number {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+interface PdAgg {
+  totPD: number;
+  hasPost: boolean;
+  lastSelesai: number | null;
+  lastWip: number | null;
+  prFakturs: Set<string>;
+}
 
 export async function generateUsulan(cutoffIso: string, limit?: number): Promise<GenerateResult> {
   // 1. Kandidat Pilar 1: BJP + saldo 0 + masih aktif (checked).
+  const cap = limit && limit > 0 ? ` LIMIT ${Math.floor(limit)}` : '';
   const masterRes = await db.execute({
-    sql: `SELECT kode, nama, kd_satuan, kd_golongan, kd_kelompok, saldo, status
+    sql: `SELECT kode, nama, kd_satuan, kd_golongan, kd_kelompok, status
           FROM stok_master_barang
           WHERE kd_golongan = ? AND (saldo IS NULL OR saldo = 0)
-          ORDER BY kode ASC${limit && limit > 0 ? ` LIMIT ${Math.floor(limit)}` : ''}`,
+          ORDER BY kode ASC${cap}`,
     args: [GOLONGAN_BJP],
   });
-  const kandidatAll = (masterRes.rows as any[]).filter((m) => isMasterAktif(m.status));
+  const kandidat = (masterRes.rows as DbRow[]).filter((m) => isMasterAktif(str(m.status)));
+  const kodes = kandidat.map((m) => str(m.kode));
+  const kodeSet = new Set(kodes);
 
+  // 2. Bulk transaksi (6 query, chunk IN 400 agar hemat variabel).
+  const CH = 400;
+  const chunks: string[][] = [];
+  for (let i = 0; i < kodes.length; i += CH) chunks.push(kodes.slice(i, i + CH));
+
+  const pdByKode = new Map<string, PdAgg>();
+  const pjSet = new Set<string>();
+  const soSet = new Set<string>();
+  const bomSet = new Set<string>();
+  for (const ch of chunks) {
+    const marks = ch.map(() => '?').join(',');
+    const [pd, pj, so, bom] = await Promise.all([
+      db.execute({ sql: `SELECT kd_barang, faktur_prd, qty, qty_wip_akhir, selesai, tgl FROM barang_jadi WHERE kd_barang IN (${marks})`, args: [...ch] }),
+      db.execute({ sql: `SELECT DISTINCT kd_barang FROM sales_reports WHERE kd_barang IN (${marks})`, args: [...ch] }),
+      db.execute({ sql: `SELECT DISTINCT kd_barang FROM sales_orders WHERE kd_barang IN (${marks})`, args: [...ch] }),
+      db.execute({ sql: `SELECT DISTINCT kd_barang FROM bill_of_materials WHERE kd_barang IN (${marks})`, args: [...ch] }),
+    ]);
+    for (const r of pd.rows as DbRow[]) {
+      const k = str(r.kd_barang);
+      if (!kodeSet.has(k)) continue;
+      let a = pdByKode.get(k);
+      if (!a) { a = { totPD: 0, hasPost: false, lastSelesai: null, lastWip: null, prFakturs: new Set<string>() }; pdByKode.set(k, a); }
+      const d = ddMmYyyyToIso(str(r.tgl));
+      const f = extractFakturPrd(str(r.faktur_prd));
+      if (f) a.prFakturs.add(f);
+      if (!d) continue;
+      if (d > cutoffIso) { a.hasPost = true; continue; }
+      a.totPD += num(r.qty);
+      a.lastSelesai = num(r.selesai);
+      a.lastWip = num(r.qty_wip_akhir);
+    }
+    for (const r of pj.rows as DbRow[]) pjSet.add(str(r.kd_barang));
+    for (const r of so.rows as DbRow[]) soSet.add(str(r.kd_barang));
+    for (const r of bom.rows as DbRow[]) bomSet.add(str(r.kd_barang));
+  }
+
+  // 3. PR: satu query untuk semua faktur_prd distinct + fallback nama per kode.
+  const allPrFakturs = [...new Set([...pdByKode.values()].flatMap((a) => [...a.prFakturs]))];
+  const prQty = new Map<string, number>();
+  for (let i = 0; i < allPrFakturs.length; i += CH) {
+    const ch = allPrFakturs.slice(i, i + CH);
+    const marks = ch.map(() => '?').join(',');
+    const pr = await db.execute({ sql: `SELECT faktur, qty, tgl FROM orders WHERE faktur IN (${marks})`, args: [...ch] });
+    for (const r of pr.rows as DbRow[]) {
+      const d = ddMmYyyyToIso(str(r.tgl));
+      if (d && d > cutoffIso) continue;
+      const f = str(r.faktur).toUpperCase();
+      prQty.set(f, (prQty.get(f) ?? 0) + num(r.qty));
+    }
+  }
+  // Fallback re-order lama: orders yang nama_prd-nya memuat kode (satu scan).
+  const needFallback = kodes.filter((k) => {
+    const a = pdByKode.get(k);
+    const tot = [...(a?.prFakturs ?? [])].reduce((s, f) => s + (prQty.get(f) ?? 0), 0);
+    return tot === 0;
+  });
+  const fallbackPR = new Map<string, number>();
+  if (needFallback.length > 0) {
+    const allOrders = await db.execute({ sql: `SELECT faktur, qty, tgl, nama_prd FROM orders` });
+    for (const r of allOrders.rows as DbRow[]) {
+      const d = ddMmYyyyToIso(str(r.tgl));
+      if (d && d > cutoffIso) continue;
+      const nm = str(r.nama_prd);
+      for (const k of needFallback) {
+        if (nm.includes(k)) fallbackPR.set(k, (fallbackPR.get(k) ?? 0) + num(r.qty));
+      }
+    }
+  }
+
+  // 4. QO hulu: satu scan sph_out, cocokkan kode di JS (kolom barang teks bebas).
+  const qoSet = new Set<string>();
+  if (needFallback.length > 0 || true) {
+    const qo = await db.execute({ sql: `SELECT barang FROM sph_out` });
+    for (const r of qo.rows as DbRow[]) {
+      const b = str(r.barang);
+      for (const k of kodes) {
+        if (b.includes(k)) { qoSet.add(k); break; }
+      }
+    }
+  }
+
+  // 5. Klasifikasi per kode (murni, tanpa I/O).
   const rows: UsulanRow[] = [];
   const ditolak: GenerateResult['ditolak'] = [];
-
-  for (const m of kandidatAll) {
-    const kode: string = String(m.kode);
-    const nama: string = String(m.nama ?? '');
-
-    // 2a. PD s.d. cutoff + setelah cutoff (per kd_barang langsung).
-    const pdRes = await db.execute({
-      sql: `SELECT faktur_prd, qty, qty_wip_akhir, selesai, tgl FROM barang_jadi WHERE kd_barang = ?`,
-      args: [kode],
-    });
-    const pdAll = (pdRes.rows as any[]).map((p) => ({ ...p, iso: iso(p.tgl) }));
-    const pdCut = pdAll.filter((p) => p.iso && p.iso <= cutoffIso);
-    const hasPostCutoffPD = pdAll.some((p) => p.iso && p.iso > cutoffIso);
-    const totPD = pdCut.reduce((s, p) => s + (Number(p.qty) || 0), 0);
-    const lastPD = pdCut.sort((a, b) => (a.iso < b.iso ? -1 : 1)).at(-1) ?? null;
-
-    // 2b. PR via faktur_prd PD (strip HTML BOM) + cocok nama di orders.
-    const prFakturs = [...new Set(pdAll.map((p) => extractFakturPrd(p.faktur_prd)).filter(Boolean))];
-    let totPR = 0;
-    if (prFakturs.length > 0) {
-      const marks = prFakturs.map(() => '?').join(',');
-      const prRes = await db.execute({
-        sql: `SELECT qty, tgl FROM orders WHERE faktur IN (${marks})`,
-        args: prFakturs,
-      });
-      totPR = (prRes.rows as any[])
-        .filter((o) => { const d = iso(o.tgl); return !d || d <= cutoffIso; })
-        .reduce((s, o) => s + (Number(o.qty) || 0), 0);
-    }
-    // Fallback: PR yang nama_prd-nya memuat kode (re-order lama tanpa link faktur).
-    if (totPR === 0) {
-      const prNameRes = await db.execute({
-        sql: `SELECT qty, tgl FROM orders WHERE nama_prd LIKE ? LIMIT 20`,
-        args: [`%${kode}%`],
-      });
-      totPR = (prNameRes.rows as any[])
-        .filter((o) => { const d = iso(o.tgl); return !d || d <= cutoffIso; })
-        .reduce((s, o) => s + (Number(o.qty) || 0), 0);
-    }
-
-    // 2c. Outflow: PJ / SO / pengiriman per kode.
-    const [pjRes, soRes] = await Promise.all([
-      db.execute({ sql: `SELECT 1 FROM sales_reports WHERE kd_barang = ? LIMIT 1`, args: [kode] }),
-      db.execute({ sql: `SELECT 1 FROM sales_orders WHERE kd_barang = ? LIMIT 1`, args: [kode] }),
-    ]);
-    const hasOutflow = pjRes.rows.length > 0 || soRes.rows.length > 0;
-
-    // 2d. Jejak hulu: BOM / PR-pembelian / QO (pendukung kategori Batal).
-    const [bomRes, qoRes] = await Promise.all([
-      db.execute({ sql: `SELECT 1 FROM bill_of_materials WHERE kd_barang = ? LIMIT 1`, args: [kode] }),
-      db.execute({ sql: `SELECT 1 FROM sph_out WHERE barang LIKE ? LIMIT 1`, args: [`%${kode}%`] }),
-    ]);
-    const hasHulu = bomRes.rows.length > 0 || qoRes.rows.length > 0;
+  for (const m of kandidat) {
+    const kode = str(m.kode);
+    const nama = str(m.nama);
+    const a = pdByKode.get(kode);
+    const totPD = a?.totPD ?? 0;
+    let totPR = [...(a?.prFakturs ?? [])].reduce((s, f) => s + (prQty.get(f) ?? 0), 0);
+    if (totPR === 0) totPR = fallbackPR.get(kode) ?? 0;
 
     const hasil = klasifikasiItem({
       kode,
       nama,
       totPR,
       totPD,
-      lastSelesai: lastPD ? Number(lastPD.selesai) : null,
-      lastWipAkhir: lastPD ? Number(lastPD.qty_wip_akhir ?? 0) : null,
-      hasPostCutoffPD,
-      hasOutflow,
-      hasHulu,
+      lastSelesai: a?.lastSelesai ?? null,
+      lastWipAkhir: a?.lastWip ?? null,
+      hasPostCutoffPD: a?.hasPost ?? false,
+      hasOutflow: pjSet.has(kode) || soSet.has(kode),
+      hasHulu: bomSet.has(kode) || qoSet.has(kode),
     });
 
     if (!hasil.boleh) {
@@ -121,16 +181,16 @@ export async function generateUsulan(cutoffIso: string, limit?: number): Promise
     rows.push({
       kode,
       nama,
-      satuan: String(m.kd_satuan ?? ''),
-      golongan: String(m.kd_golongan ?? GOLONGAN_BJP),
-      kelompok: String(m.kd_kelompok ?? ''),
+      satuan: str(m.kd_satuan),
+      golongan: str(m.kd_golongan) || GOLONGAN_BJP,
+      kelompok: str(m.kd_kelompok),
       saldo: '0.00',
-      kategori: hasil.kategori!,
+      kategori: hasil.kategori ?? 'B_BATAL',
       alasan: hasil.alasan,
       totPR,
       totPD,
     });
   }
 
-  return { cutoff: cutoffIso, kandidat: kandidatAll.length, bolehCount: rows.length, ditolakCount: ditolak.length, ditolak, rows };
+  return { cutoff: cutoffIso, kandidat: kandidat.length, bolehCount: rows.length, ditolakCount: ditolak.length, ditolak, rows };
 }
