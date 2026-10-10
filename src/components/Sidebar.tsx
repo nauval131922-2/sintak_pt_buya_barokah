@@ -641,7 +641,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
               />
             )}
 
-            {(canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil') || canAccess('produksi_jhp_analisa') || canAccess('produksi_laporan_pekerjaan')) && (
+            {(canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil') || canAccess('produksi_jhp_analisa') || canAccess('produksi_laporan_pekerjaan') || canAccess('produksi_penonaktifan_master')) && (
               <AccordionMenu
                 id="produksi-sistem"
                 label="Produksi"
@@ -667,6 +667,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                   }] : []),
                   ...(canAccess('produksi_hasil') ? [{ label: 'Hasil Produksi', href: '/hasil-produksi', icon: <BarChart3 size={16} /> }] : []),
                   ...(canAccess('produksi_laporan_pekerjaan') ? [{ label: 'Laporan Pekerjaan', href: '/laporan-pekerjaan', icon: <FileSpreadsheet size={16} /> }] : []),
+                  ...(canAccess('produksi_penonaktifan_master') ? [{ label: 'Lap. Penonaktifan Master Barang Jadi', href: '/penonaktifan-master-barang', icon: <FileCheck size={16} /> }] : []),
                 ]}
               />
             )}

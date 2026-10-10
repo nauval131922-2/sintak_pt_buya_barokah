@@ -64,6 +64,7 @@ export const searchableMenuItems: SearchableMenuItem[] = [
   { label: 'Master Pekerjaan Jurnal Produksi', href: '/jurnal-harian-produksi/data/master-pekerjaan-jurnal-produksi', category: 'Sistem', keywords: 'master pekerjaan jurnal produksi kategori target', permission: 'produksi_jhp_master_pekerjaan_jurnal_produksi' },
   { label: 'Hasil Produksi', href: '/hasil-produksi', category: 'Sistem', keywords: 'output produksi realisasi', permission: 'produksi_hasil' },
   { label: 'Kalkulasi HPP', href: '/hpp-kalkulasi', category: 'Sistem', keywords: 'hpp cost calculation', permission: 'hpp_kalkulasi' },
+  { label: 'Lap. Penonaktifan Master Barang Jadi', href: '/penonaktifan-master-barang', category: 'Sistem', keywords: 'nonaktif penonaktifan master barang jadi usulan', permission: 'produksi_penonaktifan_master' },
   { label: 'Pricelist', href: '/pricelist', category: 'Sistem', keywords: 'pricelist harga kalender spiral eko dwi tri wulan', permission: 'pricelist_kalkulasi' },
   { label: 'Log Aktivitas', href: '/log-aktivitas', category: 'Sistem', keywords: 'activity log audit trail', permission: 'activity_log_view' },
   { label: 'Log Perubahan', href: '/log-perubahan', category: 'Sistem', keywords: 'log perubahan changelog history update rilis versi' },

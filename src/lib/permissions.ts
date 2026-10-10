@@ -46,6 +46,7 @@ const MODULE_TO_ROUTE: Array<{ key: string; route: string }> = [
   { key: 'produksi_jhp',          route: '/jurnal-harian-produksi' },
   { key: 'produksi_hasil',        route: '/hasil-produksi' },
   { key: 'produksi_laporan_pekerjaan', route: '/laporan-pekerjaan' },
+  { key: 'produksi_penonaktifan_master', route: '/penonaktifan-master-barang' },
   { key: 'telegram_users',        route: '/settings/telegram-users' },
   { key: 'stok_master_barang',    route: '/data-digit/stok/master-barang' },
   { key: 'usr_log_view',          route: '/data-digit/sistem/log-aktivitas-user' },
