@@ -67,74 +67,79 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Failed to login. No cookies returned." }, { status: 401 });
     }
 
-    const stgl = formatDate(tglDate);
-    const PAGE_LIMIT = 2000;
-    const rawRecords: SaldoRecord[] = [];
-    let offset = 0;
+     const stgl = formatDate(tglDate);
+     const PAGE_LIMIT = 2000;
+     const MAX_PAGES = 50; // ponytail: batas anti-hang; 50x2000 = 100rb baris, jauh di atas volume riil (~13rb)
+     const rawRecords: SaldoRecord[] = [];
+     let offset = 0;
+     let truncated = false;
+     for (let pageNum = 0; pageNum < MAX_PAGES; pageNum++) {
+       const reqData = { limit: PAGE_LIMIT, offset, bsearch: { stgl, skondisi_stok: "" } };
+       const reqJson = encodeURIComponent(JSON.stringify(reqData));
+       const dataUrl = BASE_URL + "v1/stk/r_brg_s/gr1?request=" + reqJson;
+       const res = await fetch(dataUrl, {
+         method: "GET",
+         headers: {
+           Accept: "application/json; charset=utf-8",
+           "X-Bismillah-Api-Key": API_KEY,
+           Cookie: cookies,
+         },
+       });
+       if (res.status === 401) {
+         clearCachedSession();
+         return NextResponse.json({ error: "Unauthorized. Session may have expired." }, { status: 401 });
+       }
+       const jsonData = await res.json();
+       const page: SaldoRecord[] = jsonData.records || jsonData.data || jsonData.rows || jsonData.result || [];
+       rawRecords.push(...page);
+       if (page.length < PAGE_LIMIT) break;
+       offset += PAGE_LIMIT;
+       if (pageNum === MAX_PAGES - 1) truncated = true;
+     }
 
-    while (true) {
-      const reqData = { limit: PAGE_LIMIT, offset, bsearch: { stgl, skondisi_stok: "" } };
-      const reqJson = encodeURIComponent(JSON.stringify(reqData));
-      const dataUrl = BASE_URL + "v1/stk/r_brg_s/gr1?request=" + reqJson;
-
-      const res = await fetch(dataUrl, {
-        method: "GET",
-        headers: {
-          Accept: "application/json; charset=utf-8",
-          "X-Bismillah-Api-Key": API_KEY,
-          Cookie: cookies,
-        },
-      });
-
-      if (res.status === 401) {
-        clearCachedSession();
-        return NextResponse.json({ error: "Unauthorized. Session may have expired." }, { status: 401 });
-      }
-
-      const jsonData = await res.json();
-      const page: SaldoRecord[] = jsonData.records || jsonData.data || jsonData.rows || jsonData.result || [];
-      rawRecords.push(...page);
-      if (page.length < PAGE_LIMIT) break;
-      offset += PAGE_LIMIT;
-    }
-
-    const batchOps: { sql: string; args: unknown[] }[] = [];
-    for (const r of rawRecords) {
-      const kode = String(r.kode || "").trim();
-      if (!kode || kode.toLowerCase() === "total") continue;
-      batchOps.push({
-        sql: `INSERT INTO saldo_barang (kode, tgl, nama, kd_satuan, saldo, kd_golongan, kd_kelompok, status, n_persd, n_hp)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-              ON CONFLICT(kode, tgl) DO UPDATE SET
-                nama = excluded.nama, kd_satuan = excluded.kd_satuan, saldo = excluded.saldo,
-                kd_golongan = excluded.kd_golongan, kd_kelompok = excluded.kd_kelompok,
-                status = excluded.status, n_persd = excluded.n_persd, n_hp = excluded.n_hp`,
-        args: [
-          kode, tglParam, String(r.nama || "").trim(), String(r.kd_satuan || ""),
-          parseNumber(r.saldo), String(r.kd_golongan || ""), String(r.kd_kelompok || ""),
-          String(r.status || ""), parseNumber(r.n_persd), parseNumber(r.n_hp),
-        ],
-      });
-    }
-
-    const chunkSize = 100;
-    for (let i = 0; i < batchOps.length; i += chunkSize) {
-      await db.batch(batchOps.slice(i, i + chunkSize) as never, "write");
-    }
-
-    const lastUpdated = new Date().toISOString();
-    await db.batch([{
-      sql: `INSERT INTO system_settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-            ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
-      args: ['last_scrape_saldo_barang', `${lastUpdated}|${tglParam}`],
-    }] as never, "write");
-
-    setCachedSession(cookies);
-    await logActivity('SCRAPE', 'saldo_barang', `Scrape saldo barang berhasil: ${batchOps.length} baris (tgl ${stgl}).`, { total: batchOps.length, tgl: tglParam });
-
-    return NextResponse.json({ success: true, total: batchOps.length, tgl: tglParam, lastUpdated }, {
-      headers: { "Cache-Control": "no-store, max-age=0" }
-    });
+     const cleanRows: unknown[][] = [];
+     for (const r of rawRecords) {
+       const kode = String(r.kode || "").trim();
+       if (!kode || kode.toLowerCase() === "total") continue;
+       cleanRows.push([
+         kode, tglParam, String(r.nama || "").trim(), String(r.kd_satuan || ""),
+         parseNumber(r.saldo), String(r.kd_golongan || ""), String(r.kd_kelompok || ""),
+         String(r.status || ""), parseNumber(r.n_persd), parseNumber(r.n_hp),
+       ]);
+     }
+ 
+     // ponytail: multi-row upsert (bukan 1 statement/baris). Sub 50 baris x 10 kolom = 500 variabel, aman di bawah batas 999 SQLite/libSQL.
+     const ROW_CHUNK = 500;
+     for (let i = 0; i < cleanRows.length; i += ROW_CHUNK) {
+       const chunk = cleanRows.slice(i, i + ROW_CHUNK);
+       for (let j = 0; j < chunk.length; j += 50) {
+         const sub = chunk.slice(j, j + 50);
+         const placeholders = sub.map(() => `(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).join(',');
+         await db.execute({
+           sql: `INSERT INTO saldo_barang (kode, tgl, nama, kd_satuan, saldo, kd_golongan, kd_kelompok, status, n_persd, n_hp)
+                 VALUES ${placeholders}
+                 ON CONFLICT(kode, tgl) DO UPDATE SET
+                   nama = excluded.nama, kd_satuan = excluded.kd_satuan, saldo = excluded.saldo,
+                   kd_golongan = excluded.kd_golongan, kd_kelompok = excluded.kd_kelompok,
+                   status = excluded.status, n_persd = excluded.n_persd, n_hp = excluded.n_hp`,
+           args: sub.flat(),
+         });
+       }
+     }
+ 
+     const lastUpdated = new Date().toISOString();
+     await db.batch([{
+       sql: `INSERT INTO system_settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
+             ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+       args: ['last_scrape_saldo_barang', `${lastUpdated}|${tglParam}`],
+     }] as never, "write");
+ 
+     setCachedSession(cookies);
+     await logActivity('SCRAPE', 'saldo_barang', `Scrape saldo barang berhasil: ${cleanRows.length} baris (tgl ${stgl})${truncated ? ' [terpotong 50 page]' : ''}.`, { total: cleanRows.length, tgl: tglParam, truncated });
+ 
+     return NextResponse.json({ success: true, total: cleanRows.length, tgl: tglParam, lastUpdated, truncated }, {
+       headers: { "Cache-Control": "no-store, max-age=0" }
+     });
   } catch (error: unknown) {
     console.error("Scraping error:", error);
     return NextResponse.json({ error: "Failed to scrape data", details: getErrorMessage(error) }, { status: 500 });
