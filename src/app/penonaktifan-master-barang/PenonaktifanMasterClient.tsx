@@ -59,6 +59,18 @@ function dateToIso(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
+function addDaysIso(iso: string, n: number): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return iso;
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]) + n, 12, 0, 0);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function isoToDdMmYyyy(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : iso;
+}
+
 const KAT_LABEL: Record<string, string> = {
   A_LUDES: 'A — Ludes Pesanan',
   B_BATAL: 'B — Penawaran Batal',
@@ -77,6 +89,7 @@ export default function PenonaktifanMasterClient() {
   const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
   const [highlightQuery, setHighlightQuery] = useState(() => searchParams.get('search') || '');
   const [syncing, setSyncing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState<{ done: number; total: number; label: string } | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [dialog, setDialog] = useState({ isOpen: false, type: 'success' as 'success' | 'error', title: '', message: '' });
   const urlSearchRef = useRef<string | null>(null);
@@ -199,6 +212,46 @@ export default function PenonaktifanMasterClient() {
     }
   };
 
+  const handleSyncAll = useCallback(async () => {
+    const yearStart = `${cutoff.slice(0, 4)}-01-01`;
+    const endPlus7 = addDaysIso(cutoff, 7);
+    const steps = [
+      { label: 'Saldo barang', url: `/api/scrape-saldo-barang?tgl=${cutoff}` },
+      { label: 'Master barang', url: `/api/scrape-master-barang` },
+      { label: 'Order Produksi', url: `/api/scrape-orders?start=${yearStart}&end=${endPlus7}&silent=true` },
+      { label: 'Hasil produksi', url: `/api/scrape-barang-jadi?start=${yearStart}&end=${endPlus7}&silent=true` },
+      { label: 'SPH Keluar', url: `/api/scrape-sph-out?start=${yearStart}&end=${endPlus7}&silent=true` },
+      { label: 'BOM', url: `/api/scrape-bom?start=${yearStart}&end=${endPlus7}&silent=true` },
+      { label: 'Sales Order', url: `/api/scrape-sales-orders?start=${yearStart}&end=${endPlus7}&silent=true` },
+      { label: 'Log aktivitas', url: `/api/scrape-usr-log?stgl_awal=${isoToDdMmYyyy(yearStart)}&stgl_akhir=${isoToDdMmYyyy(endPlus7)}` },
+    ];
+    const total = steps.length + 1;
+    setSyncing(true);
+    setLoading(true);
+    setError('');
+    try {
+      for (let i = 0; i < steps.length; i++) {
+        if (!mountedRef.current) return;
+        setSyncProgress({ done: i, total, label: steps[i].label });
+        const res = await fetch(steps[i].url);
+        const json = await res.json().catch(() => ({})) as { success?: boolean; error?: string; details?: string };
+        if (!res.ok || json.success === false || json.error) {
+          throw new Error(`Tahap ${i + 1}/${total} (${steps[i].label}) gagal: ${json.error || json.details || `HTTP ${res.status}`}`);
+        }
+      }
+      if (!mountedRef.current) return;
+      setSyncProgress({ done: steps.length, total, label: 'Generate usulan' });
+      setData(null);
+      await handleGenerate();
+      if (!mountedRef.current) return;
+      setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Semua data Digit ditarik (${steps.length} tahap) dan usulan cutoff ${cutoff} digenerate ulang.` });
+    } catch (e) {
+      if (mountedRef.current) setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      if (mountedRef.current) { setSyncing(false); setLoading(false); setSyncProgress(null); }
+    }
+  }, [cutoff, handleGenerate]);
+
   const handleExport = async () => {
     setExporting(true);
     try {
@@ -290,6 +343,24 @@ export default function PenonaktifanMasterClient() {
         </div>
       )}
 
+      {syncProgress && (
+        <div className="shrink-0 px-4 py-3 bg-white border border-gray-100 rounded-xl shadow-sm">
+          <div className="flex items-center justify-between text-[12px] font-bold text-gray-500 mb-2">
+            <span className="flex items-center gap-2">
+              <Loader2 size={14} className="animate-spin text-emerald-600" />
+              Menarik data Digit — {syncProgress.label}
+            </span>
+            <span className="text-emerald-600">{syncProgress.done + 1}/{syncProgress.total}</span>
+          </div>
+          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+              style={{ width: `${Math.round(((syncProgress.done + 1) / syncProgress.total) * 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px] flex-wrap">
@@ -317,6 +388,15 @@ export default function PenonaktifanMasterClient() {
                 >
                   {syncing ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
                   Sync saldo Digit
+                </button>
+                <button
+                  onClick={handleSyncAll}
+                  disabled={syncing || loading}
+                  title="Tarik semua data Digit (saldo, master, transaksi, log) lalu generate ulang"
+                  className="shrink-0 px-5 py-2.5 bg-white border border-gray-100 rounded-xl text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 text-[12px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                >
+                  {syncing ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                  Sync semua & Generate
                 </button>
                 <button
                   onClick={handleExport}
