@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Download, Loader2, Play, AlertCircle, Settings2, X, Plus, Trash2, Save, RefreshCw, CircleHelp } from 'lucide-react';
+import { Download, Loader2, Play, AlertCircle, Settings2, X, Plus, Trash2, Save, RefreshCw } from 'lucide-react';
 import Portal from '@/components/Portal';
 import TableFooter from '@/components/TableFooter';
 import SearchAndReload from '@/components/SearchAndReload';
@@ -34,10 +34,9 @@ interface PreviewResult {
 }
 
 interface Settings {
-  routine_keywords: string[];
-  routine_codes: string[];
-  idle_days: number;
-}
+   routine_codes: string[];
+   idle_days: number;
+ }
 
 function todayIso(): string {
   const now = new Date();
@@ -96,12 +95,11 @@ export default function PenonaktifanMasterClient() {
   const mountedRef = useRef(true);
 
   const [showSettings, setShowSettings] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
-  const [kwInput, setKwInput] = useState('');
   const [codeInput, setCodeInput] = useState('');
+  const [codeSearch, setCodeSearch] = useState('');
   const [idleInput, setIdleInput] = useState('7');
 
   const rows = useMemo(() => data?.rows ?? [], [data]);
@@ -159,11 +157,10 @@ export default function PenonaktifanMasterClient() {
       const res = await fetch('/api/penonaktifan-master-barang/settings');
       const json = await res.json();
       if (json.success) {
-        setSettings(json.settings);
-        setKwInput('');
-        setCodeInput('');
-        setIdleInput(String(json.settings.idle_days));
-      }
+         setSettings(json.settings);
+         setCodeInput('');
+         setIdleInput(String(json.settings.idle_days));
+       }
     } catch {
       // abaikan, panel tampilkan pesan
     } finally {
@@ -381,13 +378,6 @@ export default function PenonaktifanMasterClient() {
                   Unduh Excel usulan
                 </button>
                 <button
-                  onClick={() => setShowHelp(true)}
-                  className="shrink-0 w-10 h-10 bg-white border border-gray-100 rounded-lg text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 flex items-center justify-center transition-all shadow-sm"
-                  title="Alur kerja laporan penonaktifan"
-                >
-                  <CircleHelp size={18} />
-                </button>
-                <button
                   onClick={() => setShowSettings(true)}
                   className="shrink-0 w-10 h-10 bg-white border border-gray-100 rounded-lg text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 flex items-center justify-center transition-all shadow-sm"
                   title="Pengaturan penonaktifan"
@@ -443,7 +433,7 @@ export default function PenonaktifanMasterClient() {
               />
             </div>
             <p className="text-[11px] text-gray-400 shrink-0">
-              File usulan saja — tidak mengubah status master. Eksekusi nonaktif tetap di Digit oleh Dhea.
+              File usulan saja — tidak mengubah status master. Eksekusi nonaktif tetap di Digit oleh PPIC.
               Saldo 0 di sintak diasumsikan N PERSD 0; pastikan sync master terbaru sebelum eksekusi.
             </p>
           </>
@@ -461,7 +451,7 @@ export default function PenonaktifanMasterClient() {
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-slate-800">Pengaturan penonaktifan</h3>
-                    <p className="text-[11px] text-slate-500">Kata kunci rutin dan batas idle penawaran</p>
+                    <p className="text-[11px] text-slate-500">Kode rutin dan batas idle penawaran</p>
                   </div>
                 </div>
                 <button type="button" onClick={() => setShowSettings(false)} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all cursor-pointer">
@@ -475,27 +465,7 @@ export default function PenonaktifanMasterClient() {
               ) : (
                 <div className="p-5 space-y-4 overflow-y-auto custom-scrollbar flex-1 min-h-0">
                   <div>
-                    <div className="text-xs font-bold text-slate-700 mb-1.5">Kata kunci produk rutin (cocok di nama barang)</div>
-                    <div className="flex flex-wrap gap-1.5 mb-2">
-                      {settings.routine_keywords.map((kw) => (
-                        <span key={kw} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
-                          {kw}
-                          <button onClick={() => setSettings({ ...settings, routine_keywords: settings.routine_keywords.filter((x) => x !== kw) })} className="hover:text-emerald-900">
-                            <Trash2 size={12} />
-                          </button>
-                        </span>
-                      ))}
-                      {settings.routine_keywords.length === 0 && <span className="text-xs text-gray-400">Belum ada — semua nama lolos.</span>}
-                    </div>
-                    <div className="flex gap-2">
-                      <input value={kwInput} onChange={(e) => setKwInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && kwInput.trim()) { setSettings({ ...settings, routine_keywords: [...settings.routine_keywords, kwInput.trim().toLowerCase()] }); setKwInput(''); } }} placeholder="cth: tafsir jalalain" className="flex-1 px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all" />
-                      <button onClick={() => { if (!kwInput.trim()) return; setSettings({ ...settings, routine_keywords: [...settings.routine_keywords, kwInput.trim().toLowerCase()] }); setKwInput(''); }} className="px-4 h-9 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold rounded-xl transition-colors shadow-sm shrink-0">
-                        <Plus size={16} />
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-slate-700 mb-1.5">Kode rutin eksplisit (tetap dilindungi walau nama umum)</div>
+                    <div className="text-xs font-bold text-slate-700 mb-1.5">Kode rutin — dilindungi dari usulan (pasti per kode)</div>
                     <div className="flex flex-wrap gap-1.5 mb-2">
                       {settings.routine_codes.map((c) => (
                         <span key={c} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-mono font-semibold">
@@ -505,11 +475,23 @@ export default function PenonaktifanMasterClient() {
                           </button>
                         </span>
                       ))}
-                      {settings.routine_codes.length === 0 && <span className="text-xs text-gray-400">Belum ada.</span>}
+                      {settings.routine_codes.length === 0 && <span className="text-xs text-gray-400">Belum ada — semua kode bisa diusulkan.</span>}
                     </div>
+                    <input value={codeSearch} onChange={(e) => { setCodeSearch(e.target.value); setCodeInput(e.target.value.replace(/\D/g, '')); }} placeholder="Cari kode / nama barang…" className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all mb-2" />
+                    {codeSearch.trim() !== '' && (
+                      <div className="max-h-40 overflow-y-auto border border-slate-200 rounded-xl divide-y divide-slate-100 mb-2">
+                        {rows.filter((r) => r.kode.includes(codeSearch.trim()) || r.nama.toLowerCase().includes(codeSearch.trim().toLowerCase())).slice(0, 20).map((r) => (
+                          <button key={r.kode} onClick={() => { if (!settings.routine_codes.includes(r.kode)) setSettings({ ...settings, routine_codes: [...settings.routine_codes, r.kode] }); setCodeSearch(''); setCodeInput(''); }} className="w-full text-left px-3 py-2 hover:bg-emerald-50 transition-colors flex items-center justify-between gap-2" title={r.nama}>
+                            <span className="text-xs font-mono font-bold text-slate-700">{r.kode}</span>
+                            <span className="text-[11px] text-slate-500 truncate flex-1">{r.nama}</span>
+                            {settings.routine_codes.includes(r.kode) ? <span className="text-[10px] font-bold text-emerald-600 shrink-0">Sudah</span> : <Plus size={14} className="text-emerald-600 shrink-0" />}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex gap-2">
-                      <input value={codeInput} onChange={(e) => setCodeInput(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => { if (e.key === 'Enter' && codeInput.trim()) { setSettings({ ...settings, routine_codes: [...settings.routine_codes, codeInput.trim()] }); setCodeInput(''); } }} placeholder="cth: 260500057" inputMode="numeric" className="flex-1 px-3 py-2 text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all" />
-                      <button onClick={() => { if (!codeInput.trim()) return; setSettings({ ...settings, routine_codes: [...settings.routine_codes, codeInput.trim()] }); setCodeInput(''); }} className="px-4 h-9 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold rounded-xl transition-colors shadow-sm shrink-0">
+                      <input value={codeInput} onChange={(e) => setCodeInput(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => { if (e.key === 'Enter' && codeInput.trim()) { setSettings({ ...settings, routine_codes: [...settings.routine_codes, codeInput.trim()] }); setCodeInput(''); } }} placeholder="atau ketik kode: 260500057" inputMode="numeric" className="flex-1 px-3 py-2 text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all" />
+                      <button onClick={() => { if (!codeInput.trim()) return; if (!settings.routine_codes.includes(codeInput.trim())) setSettings({ ...settings, routine_codes: [...settings.routine_codes, codeInput.trim()] }); setCodeInput(''); }} className="px-4 h-9 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold rounded-xl transition-colors shadow-sm shrink-0">
                         <Plus size={16} />
                       </button>
                     </div>
@@ -525,31 +507,6 @@ export default function PenonaktifanMasterClient() {
                   </button>
                 </div>
               )}
-            </div>
-          </div>
-        </Portal>
-      )}
-
-      {showHelp && (
-        <Portal>
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowHelp(false)}>
-            <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0">
-                <div>
-                  <h3 className="text-sm font-bold text-slate-800">Alur kerja laporan penonaktifan</h3>
-                  <p className="text-[11px] text-slate-500">Dari cutoff sampai file untuk Dhea</p>
-                </div>
-                <button onClick={() => setShowHelp(false)} className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors" title="Tutup">
-                  <X size={16} />
-                </button>
-              </div>
-              <ol className="p-5 space-y-3 overflow-y-auto text-[13px] text-slate-600 list-none">
-                <li className="flex gap-3"><span className="shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold flex items-center justify-center">1</span><span><b className="text-slate-800">Atur tanggal cutoff</b> — tanggal evaluasi (misal akhir pekan). Sekali saja: ikon gear untuk kata kunci rutin dan batas idle.</span></li>
-                <li className="flex gap-3"><span className="shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold flex items-center justify-center">2</span><span><b className="text-slate-800">Klik Sync semua &amp; Generate</b> — otomatis tarik saldo, master, transaksi, dan log Digit (awal tahun sampai cutoff + 7 hari), lalu generate usulan.</span></li>
-                <li className="flex gap-3"><span className="shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold flex items-center justify-center">3</span><span><b className="text-slate-800">Review hasil</b> — 4 kartu ringkasan (kandidat, layak, ditolak, cutoff) dan tabel alasan per kode. Kategori A ludes pesanan, B penawaran batal.</span></li>
-                <li className="flex gap-3"><span className="shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold flex items-center justify-center">4</span><span><b className="text-slate-800">Unduh Excel usulan</b> — file siap tanda tangan PPIC, Customer Service, dan Manager.</span></li>
-                <li className="flex gap-3"><span className="shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold flex items-center justify-center">5</span><span><b className="text-slate-800">Serahkan ke Dhea</b> — eksekusi nonaktif tetap di Digit. Sintak tidak mengubah status barang apa pun.</span></li>
-              </ol>
             </div>
           </div>
         </Portal>

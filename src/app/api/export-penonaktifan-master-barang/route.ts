@@ -123,7 +123,8 @@ export async function GET(request: NextRequest) {
     const nameRow = footLabel + 4;
     const titleRow = footLabel + 5;
     const labels: Record<number, string> = { 2: 'Hormat Kami,', 5: 'Menyetujui,', 8: 'Mengetahui,' };
-    const names: Record<number, string> = { 2: '(Dhea Aisa Sabrina)', 5: '(Sri Yatun)', 8: '(Triswadi)' };
+    const signer = gate.session?.username ? `(${gate.session.username})` : '(PPIC)';
+    const names: Record<number, string> = { 2: signer, 5: '(Sri Yatun)', 8: '(Triswadi)' };
     const titles: Record<number, string> = { 2: 'PPIC', 5: 'Customer Service', 8: 'Manager' };
     const lr = ws.getRow(footLabel);
     Object.entries(labels).forEach(([col, v]) => {

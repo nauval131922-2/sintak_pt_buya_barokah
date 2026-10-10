@@ -139,9 +139,22 @@ export default function ManualModal() {
         '**Keamanan Data**: Proses tarik data tidak menghapus data lama, melainkan melengkapi database dengan data yang baru atau diperbarui.',
         'Data dari sini akan tampil sebagai pilihan di field **Referensi Order** pada form **Pencatatan Kesalahan**.'
       ],
-      tips: 'Lakukan penarikan data secara berkala untuk memastikan nomor faktur terbaru dari Digit tersedia di sistem.'
-    },
-    '/jurnal-harian-produksi/data/excel-sopd': {
+     tips: 'Lakukan penarikan data secara berkala untuk memastikan nomor faktur terbaru dari Digit tersedia di sistem.'
+   },
+   '/penonaktifan-master-barang': {
+     title: 'Lap. Penonaktifan Master Barang Jadi',
+     icon: FileCheck,
+     description: 'Generate usulan barang jadi pesanan bersaldo nol yang aman dinonaktifkan (4 pilar). File usulan untuk PPIC — tanpa mengubah data.',
+     steps: [
+       'Atur **Tanggal cutoff** — tanggal evaluasi (misal akhir pekan). Sekali saja: ikon gear untuk kata kunci rutin dan batas idle.',
+       'Klik **Sync semua & Generate** — otomatis tarik saldo, master, transaksi, dan log Digit (awal tahun sampai cutoff + 7 hari), lalu generate usulan.',
+       'Review hasil — 4 kartu ringkasan (kandidat, layak, ditolak, cutoff) dan tabel alasan per kode. Kategori A ludes pesanan, B penawaran batal.',
+       'Klik **Unduh Excel usulan** — file siap tanda tangan PPIC, Customer Service, dan Manager.',
+       'Serahkan ke PPIC — eksekusi nonaktif tetap di Digit. Sintak tidak mengubah status barang apa pun.'
+     ],
+     tips: 'Pastikan kode kitab induk terdaftar di pengaturan rutin agar tidak ikut diusulkan.'
+   },
+   '/jurnal-harian-produksi/data/excel-sopd': {
       title: 'SOPd',
       icon: Calculator,
       description: 'Manajemen database Order Produksi (SOPd) yang diunggah melalui file Excel untuk referensi Jurnal Harian Produksi.',

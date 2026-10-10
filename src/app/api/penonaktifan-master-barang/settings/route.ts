@@ -35,7 +35,6 @@ export async function POST(req: NextRequest) {
       return [];
     };
     const saved = await savePenonaktifanSettings({
-      routine_keywords: toStrList(b.routine_keywords),
       routine_codes: toStrList(b.routine_codes),
       idle_days: typeof b.idle_days === 'number' ? b.idle_days : Number(b.idle_days ?? 7),
     });
