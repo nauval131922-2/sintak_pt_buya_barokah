@@ -418,30 +418,30 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                 </Link>
               )}
 
-              {/* STOK */}
-              {canAccess('stok_master_barang') && (
-                <AccordionMenu
-                  id="stok-digit"
-                  label="Stok"
-                  icon={<Box size={18} />}
-                  items={[
-                    {
-                      label: 'Data',
-                      icon: <Database size={16} />,
-                      items: [
-                        { label: 'Master Barang', href: '/data-digit/stok/master-barang', icon: <Box size={14} /> },
-                      ]
-                    },
-                    ...((canAccess('stok_saldo_barang')) ? [{
-                      label: 'Laporan',
-                      icon: <BarChart3 size={16} />,
-                      items: [
-                        { label: 'Saldo Barang', href: '/data-digit/stok/saldo-barang', icon: <Box size={14} /> },
-                      ]
-                    }] : []),
-                  ]}
-                />
-              )}
+               {/* STOK */}
+               {(canAccess('stok_master_barang') || canAccess('stok_saldo_barang')) && (
+                 <AccordionMenu
+                   id="stok-digit"
+                   label="Stok"
+                   icon={<Box size={18} />}
+                   items={[
+                     ...((canAccess('stok_master_barang')) ? [{
+                       label: 'Data',
+                       icon: <Database size={16} />,
+                       items: [
+                         { label: 'Master Barang', href: '/data-digit/stok/master-barang', icon: <Box size={14} /> },
+                       ]
+                     }] : []),
+                     ...((canAccess('stok_saldo_barang')) ? [{
+                       label: 'Laporan',
+                       icon: <BarChart3 size={16} />,
+                       items: [
+                         { label: 'Saldo Barang', href: '/data-digit/stok/saldo-barang', icon: <Box size={14} /> },
+                       ]
+                     }] : []),
+                   ]}
+                 />
+               )}
 
               {/* PEMBELIAN */}
               {(canAccess('pembelian_pr') || canAccess('pembelian_spph') || canAccess('pembelian_sph_in') ||
