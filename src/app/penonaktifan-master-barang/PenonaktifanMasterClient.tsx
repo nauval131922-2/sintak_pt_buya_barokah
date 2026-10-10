@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Download, Loader2, Play, AlertTriangle, CheckCircle2, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Download, Loader2, Play, AlertTriangle, CheckCircle2, Search, Settings2, X, Plus, Trash2, Save } from 'lucide-react';
 
 interface PreviewRow {
   kode: string;
@@ -19,7 +19,14 @@ interface PreviewResult {
   bolehCount: number;
   ditolakCount: number;
   rows: PreviewRow[];
+  idleDays?: number;
   error?: string;
+}
+
+interface Settings {
+  routine_keywords: string[];
+  routine_codes: string[];
+  idle_days: number;
 }
 
 function todayIso(): string {
@@ -40,6 +47,37 @@ export default function PenonaktifanMasterClient() {
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState('');
   const [q, setQ] = useState('');
+
+  const [showSettings, setShowSettings] = useState(false);
+  const [settings, setSettings] = useState<Settings | null>(null);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsSaving, setSettingsSaving] = useState(false);
+  const [kwInput, setKwInput] = useState('');
+  const [codeInput, setCodeInput] = useState('');
+  const [idleInput, setIdleInput] = useState('7');
+
+  const loadSettings = async () => {
+    setSettingsLoading(true);
+    try {
+      const res = await fetch('/api/penonaktifan-master-barang/settings');
+      const json = await res.json();
+      if (json.success) {
+        setSettings(json.settings);
+        setKwInput('');
+        setCodeInput('');
+        setIdleInput(String(json.settings.idle_days));
+      }
+    } catch {
+      // abaikan, panel tampilkan pesan
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showSettings && !settings) loadSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showSettings]);
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -72,6 +110,27 @@ export default function PenonaktifanMasterClient() {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setExporting(false);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    if (!settings) return;
+    setSettingsSaving(true);
+    try {
+      const res = await fetch('/api/penonaktifan-master-barang/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...settings, idle_days: Number(idleInput) }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'Gagal simpan');
+      setSettings(json.settings);
+      setIdleInput(String(json.settings.idle_days));
+      setData(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSettingsSaving(false);
     }
   };
 
@@ -108,6 +167,13 @@ export default function PenonaktifanMasterClient() {
         >
           {exporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
           Unduh Excel usulan
+        </button>
+        <button
+          onClick={() => setShowSettings(true)}
+          className="h-9 px-4 inline-flex items-center gap-2 rounded-lg border border-gray-300 text-gray-600 text-sm font-semibold hover:bg-gray-50"
+        >
+          <Settings2 size={16} />
+          Pengaturan
         </button>
         {data && (
           <div className="ml-auto relative">
@@ -183,8 +249,134 @@ export default function PenonaktifanMasterClient() {
           </div>
           <p className="text-[11px] text-gray-400">
             File usulan saja — tidak mengubah status master. Eksekusi nonaktif tetap di Digit oleh Dhea.
+            Saldo 0 di sintak diasumsikan N PERSD 0; pastikan sync master terbaru sebelum eksekusi.
           </p>
         </>
+      )}
+
+      {showSettings && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setShowSettings(false)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-auto p-5" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-bold text-gray-800">Pengaturan penonaktifan</h2>
+              <button onClick={() => setShowSettings(false)} className="p-1 rounded-lg hover:bg-gray-100 text-gray-500">
+                <X size={18} />
+              </button>
+            </div>
+            {settingsLoading || !settings ? (
+              <div className="py-8 text-center text-gray-400 text-sm">
+                <Loader2 size={20} className="inline animate-spin mr-1" /> Memuat pengaturan…
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <div>
+                  <div className="text-xs font-semibold text-gray-500 mb-1">Kata kunci produk rutin (cocok di nama barang)</div>
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {settings.routine_keywords.map((kw) => (
+                      <span key={kw} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
+                        {kw}
+                        <button
+                          onClick={() => setSettings({ ...settings, routine_keywords: settings.routine_keywords.filter((x) => x !== kw) })}
+                          className="hover:text-emerald-900"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </span>
+                    ))}
+                    {settings.routine_keywords.length === 0 && <span className="text-xs text-gray-400">Belum ada — semua nama lolos.</span>}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      value={kwInput}
+                      onChange={(e) => setKwInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && kwInput.trim()) {
+                          setSettings({ ...settings, routine_keywords: [...settings.routine_keywords, kwInput.trim().toLowerCase()] });
+                          setKwInput('');
+                        }
+                      }}
+                      placeholder="cth: tafsir jalalain"
+                      className="flex-1 h-9 px-3 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <button
+                      onClick={() => {
+                        if (!kwInput.trim()) return;
+                        setSettings({ ...settings, routine_keywords: [...settings.routine_keywords, kwInput.trim().toLowerCase()] });
+                        setKwInput('');
+                      }}
+                      className="h-9 px-3 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700"
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-xs font-semibold text-gray-500 mb-1">Kode rutin eksplisit (tetap dilindungi walau nama umum)</div>
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {settings.routine_codes.map((c) => (
+                      <span key={c} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-mono font-semibold">
+                        {c}
+                        <button
+                          onClick={() => setSettings({ ...settings, routine_codes: settings.routine_codes.filter((x) => x !== c) })}
+                          className="hover:text-blue-900"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </span>
+                    ))}
+                    {settings.routine_codes.length === 0 && <span className="text-xs text-gray-400">Belum ada.</span>}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      value={codeInput}
+                      onChange={(e) => setCodeInput(e.target.value.replace(/\D/g, ''))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && codeInput.trim()) {
+                          setSettings({ ...settings, routine_codes: [...settings.routine_codes, codeInput.trim()] });
+                          setCodeInput('');
+                        }
+                      }}
+                      placeholder="cth: 260500057"
+                      inputMode="numeric"
+                      className="flex-1 h-9 px-3 rounded-lg border border-gray-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                    <button
+                      onClick={() => {
+                        if (!codeInput.trim()) return;
+                        setSettings({ ...settings, routine_codes: [...settings.routine_codes, codeInput.trim()] });
+                        setCodeInput('');
+                      }}
+                      className="h-9 px-3 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700"
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-xs font-semibold text-gray-500 mb-1">Batas idle penawaran batal (hari)</div>
+                  <input
+                    value={idleInput}
+                    onChange={(e) => setIdleInput(e.target.value.replace(/\D/g, ''))}
+                    inputMode="numeric"
+                    className="h-9 w-28 px-3 rounded-lg border border-gray-300 text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                  <p className="text-[11px] text-gray-400 mt-1">Penawaran (QO/BOM) yang umurnya di bawah ini tidak diusulkan.</p>
+                </div>
+
+                <button
+                  onClick={handleSaveSettings}
+                  disabled={settingsSaving}
+                  className="h-10 inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {settingsSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                  Simpan pengaturan
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

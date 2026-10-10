@@ -1,11 +1,9 @@
 // penonaktifan-master.ts — Klasifikasi 4 pilar Lap. Penonaktifan Master Barang Jadi.
 // Cakupan: kd_golongan = 'Barang Jadi Pesanan', saldo 0, status Aktif (checked).
 // Pilar 2 = filter pelindung: DILARANG tutup walau saldo 0.
+// Produk rutin ditentukan via settings (keyword + kode eksplisit), bukan regex hardcode.
 
 export const GOLONGAN_BJP = 'Barang Jadi Pesanan';
-
-// Rumpun terbitan rutin Yayasan (continuous multi-batch, saldo 0 = jeda antar-batch).
-export const ROUTINE_NAME_RE = /al[\s\-_]*quddus|yanbu/i;
 
 // ponytail: strip tag HTML Digit (mis. faktur_prd BOM "<i class=...> PR001...").
 export function stripHtmlTags(v: unknown): string {
@@ -32,20 +30,31 @@ export function ddMmYyyyToIso(tgl: unknown): string {
   return `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}`;
 }
 
-export function isRoutineProduct(nama: unknown): boolean {
-  return ROUTINE_NAME_RE.test(String(nama ?? ''));
+// 'yyyy-mm-dd' -> 'dd/mm/yyyy' untuk alasan. Terima 'yyyy-mm-dd HH:MM:SS' juga.
+export function isoToSlash(tglIso: string): string {
+  const s = String(tglIso ?? '').trim().slice(0, 10);
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : s;
+}
+
+export interface OutflowBukti {
+  jenis: 'PJ' | 'SM' | 'SV';
+  faktur: string;
+  tgl: string; // yyyy-mm-dd (dari kolom tgl usr_log)
 }
 
 export interface KlasifikasiInput {
   kode: string;
-  nama: string;
   totPR: number; // oplah SPK s.d. cutoff
   totPD: number; // realisasi hasil s.d. cutoff
   lastSelesai: number | null; // flag penyerahan terakhir (0 = masih jalan)
   lastWipAkhir: number | null;
   hasPostCutoffPD: boolean; // ada setoran PD setelah cutoff
-  hasOutflow: boolean; // ada PJ/SO/pengiriman
-  hasHulu: boolean; // ada jejak BOM/QO/SO (pendukung kategori Batal)
+  isRoutine: boolean; // dari settings (keyword/kode)
+  outflows: OutflowBukti[]; // PJ/SM/SV s.d. cutoff (dari usr_log)
+  lastHuluIso: string; // tgl hulu terakhir (BOM/QO/SO) atau ''
+  idleDays: number; // batas idle kategori B (default 7)
+  cutoffIso: string;
 }
 
 export type KategoriNonaktif = 'A_LUDES' | 'B_BATAL';
@@ -61,14 +70,21 @@ function fmtNum(n: number): string {
   return Number(n || 0).toLocaleString('id-ID', { maximumFractionDigits: 0 });
 }
 
+// Selisih hari cutoff - tgl (tgl <= cutoff). -1 bila tak valid.
+function ageDays(cutoffIso: string, tglIso: string): number {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(cutoffIso) || !/^\d{4}-\d{2}-\d{2}$/.test(tglIso)) return -1;
+  const ms = Date.parse(`${cutoffIso}T12:00:00Z`) - Date.parse(`${tglIso}T12:00:00Z`);
+  return Math.floor(ms / 86400000);
+}
+
 // Klasifikasi murni (tanpa I/O): Pilar 2 dulu, baru tentukan kategori + alasan.
 export function klasifikasiItem(inp: KlasifikasiInput): KlasifikasiResult {
   const larangan: string[] = [];
   const totPR = Number(inp.totPR || 0);
   const totPD = Number(inp.totPD || 0);
 
-  if (isRoutineProduct(inp.nama)) {
-    larangan.push('Produk terbitan rutin Yayasan (multi-batch continuous)');
+  if (inp.isRoutine) {
+    larangan.push('Produk rutin (daftar pengaturan)');
   }
   if (totPR > 0 && totPD < totPR) {
     larangan.push(`Oplah belum tuntas (PR=${fmtNum(totPR)}, PD=${fmtNum(totPD)})`);
@@ -88,17 +104,29 @@ export function klasifikasiItem(inp: KlasifikasiInput): KlasifikasiResult {
   }
 
   if (totPR > 0) {
+    // Kategori A: SPK tuntas WAJIB ada bukti outflow (PJ/SM/SV).
+    if (inp.outflows.length === 0) {
+      return { boleh: false, larangan: ['SPK tuntas tapi belum ada bukti keluar (PJ/SM/SV)'], kategori: null, alasan: 'SPK tuntas tapi belum ada bukti keluar (PJ/SM/SV)' };
+    }
+    const bukti = [...inp.outflows].sort((a, b) => (a.tgl < b.tgl ? -1 : 1)).at(-1) ?? inp.outflows[0];
     return {
       boleh: true,
       larangan,
       kategori: 'A_LUDES',
-      alasan: `SPK tuntas (PR=${fmtNum(totPR)}, PD=${fmtNum(totPD)})${inp.hasOutflow ? ', outflow tercatat' : ''} (saldo 0.00)`,
+      alasan: `Ludes via ${bukti.jenis} ${bukti.faktur} tgl ${isoToSlash(bukti.tgl)} (PR=${fmtNum(totPR)}, PD=${fmtNum(totPD)}, saldo 0.00)`,
     };
   }
+
+  // Kategori B: tanpa PR WAJIB idle >= idleDays sejak hulu terakhir.
+  const umur = ageDays(inp.cutoffIso, inp.lastHuluIso);
+  if (inp.lastHuluIso && umur >= 0 && umur < inp.idleDays) {
+    return { boleh: false, larangan: [`Penawaran baru berumur ${umur} hari (< ${inp.idleDays} hari)`], kategori: null, alasan: `Penawaran baru berumur ${umur} hari (< ${inp.idleDays} hari)` };
+  }
+  const huluTxt = inp.lastHuluIso ? ` (hulu terakhir ${isoToSlash(inp.lastHuluIso)})` : '';
   return {
     boleh: true,
     larangan,
     kategori: 'B_BATAL',
-    alasan: `Penawaran batal / tidak lanjut ke Order Produksi${inp.hasHulu ? ' (ada jejak hulu)' : ''} (saldo 0.00)`,
+    alasan: `Penawaran batal / tidak lanjut ke Order Produksi${huluTxt} (saldo 0.00)`,
   };
 }
