@@ -996,6 +996,24 @@ export async function initSchema(db: any) {
     "UPDATE orders SET faktur_bom = json_extract(raw_data,'$.faktur_bom') WHERE (faktur_bom IS NULL OR faktur_bom = '') AND raw_data IS NOT NULL;",
     "UPDATE orders SET faktur_so = json_extract(raw_data,'$.faktur_so') WHERE (faktur_so IS NULL OR faktur_so = '') AND raw_data IS NOT NULL;",
     "UPDATE sph_out SET faktur_bom = json_extract(raw_data,'$.faktur_bom') WHERE (faktur_bom IS NULL OR faktur_bom = '') AND raw_data IS NOT NULL;",
+    `CREATE TABLE IF NOT EXISTS saldo_barang (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      kode TEXT NOT NULL,
+      tgl TEXT NOT NULL,
+      nama TEXT,
+      kd_satuan TEXT,
+      saldo REAL DEFAULT 0,
+      kd_golongan TEXT,
+      kd_kelompok TEXT,
+      status TEXT,
+      n_persd REAL DEFAULT 0,
+      n_hp REAL DEFAULT 0,
+      UNIQUE(kode, tgl)
+    );`,
+    "CREATE INDEX IF NOT EXISTS idx_saldo_barang_kode ON saldo_barang(kode);",
+    "CREATE INDEX IF NOT EXISTS idx_saldo_barang_tgl ON saldo_barang(tgl);",
+    "CREATE INDEX IF NOT EXISTS idx_barang_jadi_kd_barang ON barang_jadi(kd_barang);",
+    "CREATE INDEX IF NOT EXISTS idx_bom_kd_barang ON bill_of_materials(kd_barang);",
   ];
 
   const executor = db.client || db;

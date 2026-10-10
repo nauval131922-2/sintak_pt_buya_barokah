@@ -83,12 +83,21 @@ function safeJson(raw: string): Record<string, unknown> {
 export async function generateUsulan(cutoffIso: string, limit?: number): Promise<GenerateResult> {
   const settings = await getPenonaktifanSettings();
 
-  // 1. Kandidat Pilar 1: BJP + saldo 0 + masih aktif (checked).
+  // 0. Posisi saldo riil per cutoff (dari scrape-saldo-barang; fallback: lewati gate bila belum ada).
+  const saldoRes = await db.execute({ sql: `SELECT kode, saldo, n_persd FROM saldo_barang WHERE tgl <= ?`, args: [cutoffIso] });
+  const saldoByKode = new Map<string, { saldo: number; npersd: number }>();
+  for (const r of saldoRes.rows as DbRow[]) {
+    const k = str(r.kode);
+    saldoByKode.set(k, { saldo: num(r.saldo), npersd: num(r.n_persd) });
+  }
+  const hasSaldoData = saldoByKode.size > 0;
+
+  // 1. Kandidat Pilar 1: BJP + status aktif (checked). Gate saldo/N PERSD di loop §6.
   const cap = limit && limit > 0 ? ` LIMIT ${Math.floor(limit)}` : '';
   const masterRes = await db.execute({
     sql: `SELECT kode, nama, kd_satuan, kd_golongan, kd_kelompok, status
           FROM stok_master_barang
-          WHERE kd_golongan = ? AND (saldo IS NULL OR saldo = 0)
+          WHERE kd_golongan = ?
           ORDER BY kode ASC${cap}`,
     args: [GOLONGAN_BJP],
   });
@@ -233,6 +242,19 @@ export async function generateUsulan(cutoffIso: string, limit?: number): Promise
   for (const m of kandidat) {
     const kode = str(m.kode);
     const nama = str(m.nama);
+
+    // Pilar 1.2 (mesin): saldo & N PERSD riil harus 0. Hanya bila data saldo tersedia.
+    if (hasSaldoData) {
+      const s = saldoByKode.get(kode);
+      if (!s) {
+        ditolak.push({ kode, nama, alasan: 'Tidak ada data saldo pada tanggal cutoff (belum di-scrape)' });
+        continue;
+      }
+      if (s.saldo !== 0 || s.npersd !== 0) {
+        ditolak.push({ kode, nama, alasan: `Masih ada sisa (saldo=${s.saldo}, N PERSD=${s.npersd})` });
+        continue;
+      }
+    }
     const a = pdByKode.get(kode);
     const totPD = a?.totPD ?? 0;
     let totPR = [...(a?.prFakturs ?? [])].reduce((s, f) => s + (prQty.get(f) ?? 0), 0);

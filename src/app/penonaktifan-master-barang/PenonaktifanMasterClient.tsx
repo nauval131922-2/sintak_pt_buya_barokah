@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Download, Loader2, Play, AlertTriangle, CheckCircle2, Search, Settings2, X, Plus, Trash2, Save } from 'lucide-react';
+import { Download, Loader2, Play, AlertTriangle, CheckCircle2, Search, Settings2, X, Plus, Trash2, Save, RefreshCw } from 'lucide-react';
 
 interface PreviewRow {
   kode: string;
@@ -47,6 +47,8 @@ export default function PenonaktifanMasterClient() {
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState('');
   const [q, setQ] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const [saldoInfo, setSaldoInfo] = useState('');
 
   const [showSettings, setShowSettings] = useState(false);
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -91,6 +93,23 @@ export default function PenonaktifanMasterClient() {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSyncSaldo = async () => {
+    setSyncing(true);
+    setSaldoInfo('');
+    setError('');
+    try {
+      const res = await fetch(`/api/scrape-saldo-barang?tgl=${cutoff}`);
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || json.details || 'Gagal sync saldo');
+      setSaldoInfo(`Saldo ${json.tgl}: ${Number(json.total).toLocaleString('id-ID')} kode tersimpan.`);
+      setData(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -161,6 +180,14 @@ export default function PenonaktifanMasterClient() {
           Generate usulan
         </button>
         <button
+          onClick={handleSyncSaldo}
+          disabled={syncing}
+          className="h-9 px-4 inline-flex items-center gap-2 rounded-lg border border-gray-300 text-gray-600 text-sm font-semibold hover:bg-gray-50 disabled:opacity-50"
+        >
+          {syncing ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+          Sync saldo Digit
+        </button>
+        <button
           onClick={handleExport}
           disabled={!data || exporting}
           className="h-9 px-4 inline-flex items-center gap-2 rounded-lg border border-emerald-600 text-emerald-700 text-sm font-semibold hover:bg-emerald-50 disabled:opacity-50"
@@ -188,6 +215,11 @@ export default function PenonaktifanMasterClient() {
         )}
       </div>
 
+      {saldoInfo && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-xl px-4 py-3 flex items-center gap-2">
+          <CheckCircle2 size={16} /> {saldoInfo}
+        </div>
+      )}
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 flex items-center gap-2">
           <AlertTriangle size={16} /> {error}
