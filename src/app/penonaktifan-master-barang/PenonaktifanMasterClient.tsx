@@ -98,8 +98,9 @@ export default function PenonaktifanMasterClient() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
-  const [codeInput, setCodeInput] = useState('');
   const [codeSearch, setCodeSearch] = useState('');
+  const [codeHits, setCodeHits] = useState<Array<{ kode: string; nama: string }>>([]);
+  const [codeSearching, setCodeSearching] = useState(false);
   const [idleInput, setIdleInput] = useState('7');
 
   const rows = useMemo(() => data?.rows ?? [], [data]);
@@ -158,7 +159,7 @@ export default function PenonaktifanMasterClient() {
       const json = await res.json();
       if (json.success) {
          setSettings(json.settings);
-         setCodeInput('');
+         
          setIdleInput(String(json.settings.idle_days));
        }
     } catch {
@@ -172,6 +173,21 @@ export default function PenonaktifanMasterClient() {
     if (showSettings && !settings) loadSettings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showSettings]);
+
+  useEffect(() => {
+    const q = codeSearch.trim();
+    if (q.length < 2) { setCodeHits([]); setCodeSearching(false); return; }
+    setCodeSearching(true);
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/penonaktifan-master-barang/search?q=${encodeURIComponent(q)}&limit=10`);
+        const json = await res.json();
+        if (mountedRef.current && json.success) setCodeHits(json.rows ?? []);
+      } catch { /* abaikan, dropdown kosong */ }
+      finally { if (mountedRef.current) setCodeSearching(false); }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [codeSearch]);
 
   const handleGenerate = useCallback(async () => {
     setLoading(true);
@@ -477,11 +493,13 @@ export default function PenonaktifanMasterClient() {
                       ))}
                       {settings.routine_codes.length === 0 && <span className="text-xs text-gray-400">Belum ada — semua kode bisa diusulkan.</span>}
                     </div>
-                    <input value={codeSearch} onChange={(e) => { setCodeSearch(e.target.value); setCodeInput(e.target.value.replace(/\D/g, '')); }} placeholder="Cari kode / nama barang…" className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all mb-2" />
-                    {codeSearch.trim() !== '' && (
+                    <input value={codeSearch} onChange={(e) => setCodeSearch(e.target.value)} placeholder="Cari kode / nama barang…" className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all mb-2" />
+                    {codeSearch.trim().length >= 2 && (
                       <div className="max-h-40 overflow-y-auto border border-slate-200 rounded-xl divide-y divide-slate-100 mb-2">
-                        {rows.filter((r) => r.kode.includes(codeSearch.trim()) || r.nama.toLowerCase().includes(codeSearch.trim().toLowerCase())).slice(0, 20).map((r) => (
-                          <button key={r.kode} onClick={() => { if (!settings.routine_codes.includes(r.kode)) setSettings({ ...settings, routine_codes: [...settings.routine_codes, r.kode] }); setCodeSearch(''); setCodeInput(''); }} className="w-full text-left px-3 py-2 hover:bg-emerald-50 transition-colors flex items-center justify-between gap-2" title={r.nama}>
+                        {codeSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari…</div>}
+                        {!codeSearching && codeHits.length === 0 && <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada kode/nama yang cocok.</div>}
+                        {codeHits.map((r) => (
+                          <button key={r.kode} onClick={() => { if (!settings.routine_codes.includes(r.kode)) setSettings({ ...settings, routine_codes: [...settings.routine_codes, r.kode] }); setCodeSearch(''); setCodeHits([]); }} className="w-full text-left px-3 py-2 hover:bg-emerald-50 transition-colors flex items-center justify-between gap-2" title={r.nama}>
                             <span className="text-xs font-mono font-bold text-slate-700">{r.kode}</span>
                             <span className="text-[11px] text-slate-500 truncate flex-1">{r.nama}</span>
                             {settings.routine_codes.includes(r.kode) ? <span className="text-[10px] font-bold text-emerald-600 shrink-0">Sudah</span> : <Plus size={14} className="text-emerald-600 shrink-0" />}
@@ -489,12 +507,6 @@ export default function PenonaktifanMasterClient() {
                         ))}
                       </div>
                     )}
-                    <div className="flex gap-2">
-                      <input value={codeInput} onChange={(e) => setCodeInput(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => { if (e.key === 'Enter' && codeInput.trim()) { setSettings({ ...settings, routine_codes: [...settings.routine_codes, codeInput.trim()] }); setCodeInput(''); } }} placeholder="atau ketik kode: 260500057" inputMode="numeric" className="flex-1 px-3 py-2 text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all" />
-                      <button onClick={() => { if (!codeInput.trim()) return; if (!settings.routine_codes.includes(codeInput.trim())) setSettings({ ...settings, routine_codes: [...settings.routine_codes, codeInput.trim()] }); setCodeInput(''); }} className="px-4 h-9 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold rounded-xl transition-colors shadow-sm shrink-0">
-                        <Plus size={16} />
-                      </button>
-                    </div>
                   </div>
                   <div>
                     <div className="text-xs font-bold text-slate-700 mb-1.5">Batas idle penawaran batal (hari)</div>
