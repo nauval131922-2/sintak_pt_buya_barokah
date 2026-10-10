@@ -21,9 +21,10 @@ const base: KlasifikasiInput = {
   isRoutine: false,
   outflows: [],
   lastHuluIso: '',
+  lastHuluFaktur: '',
   idleDays: 7,
   cutoffIso: '2026-10-10',
-};
+ };
 
 describe('stripHtmlTags / extractFakturPrd', () => {
   it('membersihkan tag HTML Digit dari faktur_prd BOM', () => {
@@ -101,7 +102,7 @@ describe('klasifikasiItem (4 pilar)', () => {
        hasPostCutoffPD: true, outflows: [{ jenis: 'PJ', faktur: 'PJ00126090000001', tgl: '2026-09-20' }],
      });
      expect(r.boleh).toBe(false);
-   });
+  });
  
   it('Pilar 2: SPK susulan pasca-cutoff dilarang', () => {
      const r = klasifikasiItem({
@@ -110,7 +111,7 @@ describe('klasifikasiItem (4 pilar)', () => {
      });
      expect(r.boleh).toBe(false);
      expect(r.alasan).toMatch(/SPK\/order susulan/);
-   });
+  });
 
   it('Kategori A: SPK tuntas + bukti PJ boleh, alasan ada faktur', () => {
     const r = klasifikasiItem({
@@ -129,10 +130,18 @@ describe('klasifikasiItem (4 pilar)', () => {
     expect(r.alasan).toMatch(/belum ada bukti keluar/);
   });
 
-  it('Kategori B: tanpa PR + idle cukup boleh', () => {
-    const r = klasifikasiItem({ ...base, kode: '260800451', lastHuluIso: '2026-08-23' });
-    expect(r.boleh).toBe(true);
-    expect(r.kategori).toBe('B_BATAL');
+  it('Kategori B: tanpa PR + idle cukup boleh, alasan ada faktur QO', () => {
+     const r = klasifikasiItem({ ...base, kode: '260800451', lastHuluIso: '2026-08-23', lastHuluFaktur: 'QO00126082300001' });
+     expect(r.boleh).toBe(true);
+     expect(r.kategori).toBe('B_BATAL');
+     expect(r.alasan).toMatch(/QO00126082300001/);
+     expect(r.alasan).toMatch(/23\/08\/2026/);
+  });
+ 
+  it('Kategori B: tanpa faktur QO pakai teks hulu terakhir', () => {
+     const r = klasifikasiItem({ ...base, kode: '260800451', lastHuluIso: '2026-08-23' });
+     expect(r.boleh).toBe(true);
+     expect(r.alasan).toMatch(/hulu terakhir 23\/08\/2026/);
   });
 
   it('Kategori B: penawaran baru (< idle) ditolak', () => {

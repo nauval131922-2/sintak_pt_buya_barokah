@@ -54,6 +54,7 @@ export interface KlasifikasiInput {
   isRoutine: boolean; // dari settings (keyword/kode)
   outflows: OutflowBukti[]; // PJ/SM/SV s.d. cutoff (dari usr_log)
   lastHuluIso: string; // tgl hulu terakhir (BOM/QO/SO) atau ''
+  lastHuluFaktur: string; // faktur QO terakhir atau ''
   idleDays: number; // batas idle kategori B (default 7)
   cutoffIso: string;
 }
@@ -120,17 +121,18 @@ export function klasifikasiItem(inp: KlasifikasiInput): KlasifikasiResult {
       alasan: `Ludes via ${bukti.jenis} ${bukti.faktur} tgl ${isoToSlash(bukti.tgl)} (PR=${fmtNum(totPR)}, PD=${fmtNum(totPD)}, saldo 0.00)`,
     };
   }
-
-  // Kategori B: tanpa PR WAJIB idle >= idleDays sejak hulu terakhir.
-  const umur = ageDays(inp.cutoffIso, inp.lastHuluIso);
-  if (inp.lastHuluIso && umur >= 0 && umur < inp.idleDays) {
-    return { boleh: false, larangan: [`Penawaran baru berumur ${umur} hari (< ${inp.idleDays} hari)`], kategori: null, alasan: `Penawaran baru berumur ${umur} hari (< ${inp.idleDays} hari)` };
-  }
-  const huluTxt = inp.lastHuluIso ? ` (hulu terakhir ${isoToSlash(inp.lastHuluIso)})` : '';
-  return {
-    boleh: true,
-    larangan,
-    kategori: 'B_BATAL',
-    alasan: `Penawaran batal / tidak lanjut ke Order Produksi${huluTxt} (saldo 0.00)`,
-  };
-}
+   // Kategori B: tanpa PR WAJIB idle >= idleDays sejak hulu terakhir.
+   const umur = ageDays(inp.cutoffIso, inp.lastHuluIso);
+   if (inp.lastHuluIso && umur >= 0 && umur < inp.idleDays) {
+     return { boleh: false, larangan: [`Penawaran baru berumur ${umur} hari (< ${inp.idleDays} hari)`], kategori: null, alasan: `Penawaran baru berumur ${umur} hari (< ${inp.idleDays} hari)` };
+   }
+   const huluBukti = inp.lastHuluFaktur
+     ? `QO ${inp.lastHuluFaktur} tgl ${isoToSlash(inp.lastHuluIso)}`
+     : inp.lastHuluIso ? `hulu terakhir ${isoToSlash(inp.lastHuluIso)}` : 'tanpa jejak penawaran';
+   return {
+     boleh: true,
+     larangan,
+     kategori: 'B_BATAL',
+     alasan: `Penawaran batal / tidak lanjut ke Order Produksi (${huluBukti}) (saldo 0.00)`,
+   };
+ }

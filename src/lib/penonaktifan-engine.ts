@@ -113,6 +113,7 @@ export async function generateUsulan(cutoffIso: string, limit?: number): Promise
 
   const pdByKode = new Map<string, PdAgg>();
   const huluTgl = new Map<string, string>(); // kode -> tgl hulu terakhir (BOM/QO/SO)
+  const huluFaktur = new Map<string, string>(); // kode -> faktur QO terakhir (sph_out)
   const bomSet = new Set<string>();
   for (const ch of chunks) {
     const marks = ch.map(() => '?').join(',');
@@ -189,26 +190,30 @@ export async function generateUsulan(cutoffIso: string, limit?: number): Promise
      }
    }
 
-  // 4. QO hulu bertanggal: cocokkan kode di teks barang (satu scan).
-  const qoSet = new Set<string>();
-  {
-    const qo = await db.execute({ sql: `SELECT barang, tgl FROM sph_out` });
-    for (const r of qo.rows as DbRow[]) {
-      const d = ddMmYyyyToIso(str(r.tgl));
-      if (d && d > cutoffIso) continue;
-      const b = str(r.barang);
-      for (const k of kodes) {
-        if (b.includes(k)) {
-          qoSet.add(k);
-          if (d) {
-            const prev = huluTgl.get(k);
-            if (!prev || d > prev) huluTgl.set(k, d);
-          }
-          break;
-        }
-      }
-    }
-  }
+   // 4. QO hulu bertanggal: cocokkan kode di teks barang (satu scan).
+   const qoSet = new Set<string>();
+   {
+     const qo = await db.execute({ sql: `SELECT faktur, barang, tgl FROM sph_out` });
+     for (const r of qo.rows as DbRow[]) {
+       const d = ddMmYyyyToIso(str(r.tgl));
+       if (d && d > cutoffIso) continue;
+       const b = str(r.barang);
+       for (const k of kodes) {
+         if (b.includes(k)) {
+           qoSet.add(k);
+           if (d) {
+             const prev = huluTgl.get(k);
+             if (!prev || d > prev) {
+               huluTgl.set(k, d);
+               const f = str(r.faktur).trim();
+               if (f) huluFaktur.set(k, f);
+             }
+           }
+           break;
+         }
+       }
+     }
+   }
 
   // 5. Outflow PJ/SM/SV dari usr_log (filter channel + tgl <= cutoff di SQL).
   const outflowByKode = new Map<string, OutflowBukti[]>();
@@ -280,7 +285,8 @@ export async function generateUsulan(cutoffIso: string, limit?: number): Promise
       hasPostCutoffPR: a?.hasPostPR ?? false,
       isRoutine: isRoutineProduct(nama, kode, settings),
       outflows: outflowByKode.get(kode) ?? [],
-      lastHuluIso: huluTgl.get(kode) ?? '',
+       lastHuluIso: huluTgl.get(kode) ?? '',
+       lastHuluFaktur: huluFaktur.get(kode) ?? '',
       idleDays: settings.idle_days,
       cutoffIso,
     });
