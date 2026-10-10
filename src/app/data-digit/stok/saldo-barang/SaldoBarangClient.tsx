@@ -1,12 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { DownloadCloud, Loader2, AlertCircle, CheckCircle2, Package } from 'lucide-react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { DownloadCloud, Loader2, AlertCircle, Package } from 'lucide-react';
 import TableFooter from '@/components/TableFooter';
 import SearchAndReload from '@/components/SearchAndReload';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import { DataTable } from '@/components/ui/DataTable';
 import ScrapingHeader from '@/components/ScrapingHeader';
+import DatePicker from '@/components/DatePicker';
+import { useTableSelection } from '@/lib/hooks/useTableSelection';
+import { formatLastUpdate } from '@/lib/date-utils';
+import { highlightText } from '@/lib/highlight';
 
 interface SaldoRow {
+  id: string;
   kode: string;
   tgl: string;
   nama: string;
@@ -25,12 +33,30 @@ function todayIso(): string {
   return wib.toISOString().slice(0, 10);
 }
 
+function isoToDate(iso: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return null;
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12, 0, 0);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function dateToIso(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 const PAGE_SIZE = 50;
 
 export default function SaldoBarangClient() {
-  const [tgl, setTgl] = useState(todayIso());
-  const [searchQuery, setSearchQuery] = useState('');
-  const [deb, setDeb] = useState('');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isMounted, setIsMounted] = useState(false);
+  const [tgl, setTgl] = useState(() => searchParams.get('tgl') || todayIso());
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
+  const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
+  const [highlightQuery, setHighlightQuery] = useState(() => searchParams.get('search') || '');
   const [page, setPage] = useState(1);
   const [rows, setRows] = useState<SaldoRow[]>([]);
   const [total, setTotal] = useState(0);
@@ -38,57 +64,175 @@ export default function SaldoBarangClient() {
   const [loading, setLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const [msg, setMsg] = useState('');
+  const [loadTime, setLoadTime] = useState<number | null>(null);
   const [error, setError] = useState('');
+  const [dialog, setDialog] = useState({ isOpen: false, type: 'success' as 'success' | 'error', title: '', message: '' });
+  const urlSearchRef = useRef<string | null>(null);
+  const mountedRef = useRef(true);
+
+  const { selectedIds, handleRowClick, clearSelection } = useTableSelection(rows);
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('saldoBarang_columnWidths');
+      if (saved) return JSON.parse(saved);
+    }
+    return {
+      kode: 120, nama: 350, kd_satuan: 100, saldo: 120, n_persd: 130, status: 100, kd_kelompok: 200,
+    };
+  });
 
   useEffect(() => {
-    const t = setTimeout(() => { setDeb(searchQuery); setPage(1); }, 400);
-    return () => clearTimeout(t);
+    localStorage.setItem('saldoBarang_columnWidths', JSON.stringify(columnWidths));
+  }, [columnWidths]);
+
+  useEffect(() => {
+    setIsMounted(true);
+    mountedRef.current = true;
+    const savedLastUpdate = localStorage.getItem('SaldoBarangClient_lastUpdated');
+    if (savedLastUpdate) setLastUpdated(formatLastUpdate(new Date(savedLastUpdate)));
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  useEffect(() => {
+    const urlSearch = searchParams.get('search');
+    const urlTgl = searchParams.get('tgl');
+    if (urlSearch !== null) {
+      urlSearchRef.current = urlSearch;
+      setSearchQuery(urlSearch);
+      setDebouncedQuery(urlSearch);
+      setHighlightQuery(urlSearch);
+      setPage(1);
+    }
+    if (urlTgl && /^\d{4}-\d{2}-\d{2}$/.test(urlTgl)) {
+      setTgl(urlTgl);
+      setPage(1);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+      if (searchQuery !== urlSearchRef.current) setHighlightQuery(searchQuery);
+      setPage(1);
+    }, 500);
+    return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  const load = async (p: number, date: string, keyword: string) => {
-    setLoading(true);
+  const load = useCallback(async (p: number, date: string, keyword: string) => {
+    setLoading(p === 1);
     setError('');
+    const startTimer = performance.now();
     try {
       const params = new URLSearchParams({ page: String(p), limit: String(PAGE_SIZE), tgl: date, q: keyword });
       const res = await fetch(`/api/saldo-barang?${params.toString()}`);
+      if (!res.ok) throw new Error('Gagal memuat data');
       const json = await res.json();
       if (!json.success) throw new Error(json.error || 'Gagal memuat');
-      setRows(json.data);
-      setTotal(json.total);
+      if (!mountedRef.current) return;
+      setRows((json.data || []).map((r: Record<string, unknown>) => ({ ...r, id: String(r.kode) })));
+      setTotal(json.total || 0);
       setAvailable(json.available ?? []);
+      setLoadTime(Math.round(performance.now() - startTimer));
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      if (mountedRef.current) {
+        setError(e instanceof Error ? e.message : String(e));
+        setRows([]);
+      }
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    load(page, tgl, deb);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, tgl, deb]);
+    if (!isMounted) return;
+    load(page, tgl, debouncedQuery);
+  }, [page, tgl, debouncedQuery, isMounted, load]);
+
+  useEffect(() => {
+    if (!isMounted) return;
+    const params = new URLSearchParams();
+    if (debouncedQuery) params.set('search', debouncedQuery);
+    if (tgl) params.set('tgl', tgl);
+    const qs = params.toString();
+    router.replace(qs ? `/data-digit/stok/saldo-barang?${qs}` : '/data-digit/stok/saldo-barang', { scroll: false });
+  }, [debouncedQuery, tgl, isMounted, router]);
 
   const handleSync = async () => {
-    setIsSyncing(true);
-    setMsg('');
-    setError('');
     try {
+      setIsSyncing(true);
+      setLoading(true);
+      setError('');
+      setPage(1);
       const res = await fetch(`/api/scrape-saldo-barang?tgl=${tgl}`);
       const json = await res.json();
-      if (!json.success) throw new Error(json.error || json.details || 'Gagal sync');
-      setMsg(`Tersimpan ${Number(json.total).toLocaleString('id-ID')} kode per ${json.tgl}.`);
-      setLastUpdated(new Date().toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }));
-      setPage(1);
-      await load(1, tgl, deb);
+      if (!res.ok || !json.success) throw new Error(json.error || json.details || 'Gagal sinkronisasi data');
+      const now = new Date();
+      localStorage.setItem('SaldoBarangClient_lastUpdated', now.toISOString());
+      setLastUpdated(formatLastUpdate(now));
+      await load(1, tgl, debouncedQuery);
+      setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Berhasil menarik ${Number(json.total).toLocaleString('id-ID')} kode saldo per ${json.tgl}.` });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setIsSyncing(false);
+      setLoading(false);
     }
   };
 
   const totalPages = Math.max(Math.ceil(total / PAGE_SIZE), 1);
+
+  const columns = useMemo(() => [
+    {
+      accessorKey: 'kode',
+      header: 'Kode',
+      size: 120,
+      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
+    },
+    {
+      accessorKey: 'nama',
+      header: 'Nama Barang',
+      size: 350,
+      cell: ({ getValue, row }: any) => <span className={`font-bold tracking-tight block truncate ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`} title={String(getValue())}>{highlightText(String(getValue()), highlightQuery)}</span>
+    },
+    {
+      accessorKey: 'kd_satuan',
+      header: 'Satuan',
+      size: 100,
+      cell: ({ getValue, row }: any) => <span className={`font-bold transition-colors ${row.getIsSelected() ? 'text-emerald-700' : 'text-slate-600'}`}>{String(getValue() || '—')}</span>
+    },
+    {
+      accessorKey: 'saldo',
+      header: 'Saldo',
+      size: 120,
+      meta: { align: 'right' },
+      cell: ({ getValue, row }: any) => <span className={`font-extrabold tabular-nums px-2 py-1 rounded bg-emerald-50/50 ${row.getIsSelected() ? 'text-emerald-800' : 'text-emerald-700'}`}>{Number(getValue() || 0).toLocaleString('id-ID')}</span>
+    },
+    {
+      accessorKey: 'n_persd',
+      header: 'N Persediaan',
+      size: 130,
+      meta: { align: 'right' },
+      cell: ({ getValue, row }: any) => <span className={`font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-slate-700'}`}>{Number(getValue() || 0).toLocaleString('id-ID')}</span>
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      size: 100,
+      cell: ({ getValue, row }: any) => {
+        const val = String(getValue() || '');
+        const aktif = val === 'Aktif';
+        return <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-bold ${aktif ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>{val || '—'}</span>;
+      }
+    },
+    {
+      accessorKey: 'kd_kelompok',
+      header: 'Kelompok',
+      size: 200,
+      cell: ({ getValue, row }: any) => <span className={`font-medium block truncate ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-600'}`} title={String(getValue())}>{highlightText(String(getValue() || '—'), highlightQuery)}</span>
+    },
+  ], [highlightQuery]);
+
+  if (!isMounted) return null;
 
   return (
     <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-500 overflow-hidden">
@@ -98,17 +242,11 @@ export default function SaldoBarangClient() {
           <p>{error}</p>
         </div>
       )}
-      {msg && (
-        <div className="p-4 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl shadow-sm shadow-emerald-900/5 text-sm font-bold flex items-start gap-3 animate-in fade-in shrink-0">
-          <CheckCircle2 className="w-5 h-5 shrink-0" />
-          <p>{msg}</p>
-        </div>
-      )}
 
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-4">
               <ScrapingHeader title="Data Saldo Barang" icon={<Package size={16} />} lastUpdated={lastUpdated} scrapedPeriod={null} />
 
               {loading && rows.length > 0 && (
@@ -122,18 +260,14 @@ export default function SaldoBarangClient() {
             <div className="flex items-end gap-2 flex-wrap">
               <div>
                 <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal posisi</label>
-                <input
-                  type="date"
-                  value={tgl}
-                  onChange={(e) => { setTgl(e.target.value); setPage(1); }}
-                  className="h-10 px-3 rounded-lg border border-gray-100 bg-white text-[13px] font-medium focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 shadow-sm"
-                />
+                <DatePicker name="tgl" value={isoToDate(tgl)} onChange={(d) => { setTgl(dateToIso(d)); setPage(1); }} />
               </div>
               <button
                 onClick={handleSync}
                 disabled={isSyncing || loading}
                 className="shrink-0 w-full sm:w-auto min-w-[140px] px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-xl text-[12px] font-bold shadow-sm shadow-emerald-900/20 hover:shadow-emerald-900/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group/btn relative overflow-hidden"
               >
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
                 <span className="relative z-10 flex items-center gap-2">
                   {isSyncing ? (
                     <><Loader2 size={16} className="animate-spin" /> Sedang Menarik...</>
@@ -149,8 +283,8 @@ export default function SaldoBarangClient() {
             <div className="flex-1 min-w-[200px]">
               <SearchAndReload
                 searchQuery={searchQuery}
-                setSearchQuery={(v) => { setSearchQuery(v); }}
-                onReload={() => load(page, tgl, deb)}
+                setSearchQuery={setSearchQuery}
+                onReload={() => load(page, tgl, debouncedQuery)}
                 loading={loading}
                 placeholder="Cari berdasarkan kode, nama barang, atau kelompok..."
               />
@@ -173,57 +307,37 @@ export default function SaldoBarangClient() {
         </div>
 
         <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
-          <div className="flex-1 min-h-0 bg-white rounded-2xl border border-gray-100/80 shadow-sm overflow-auto">
-            <table className="w-full text-sm min-w-[1000px]">
-              <thead className="sticky top-0 bg-emerald-700 text-white">
-                <tr>
-                  <th className="px-3 py-2 text-center font-semibold w-12">No</th>
-                  <th className="px-3 py-2 text-center font-semibold w-32">Kode</th>
-                  <th className="px-3 py-2 text-left font-semibold">Nama barang</th>
-                  <th className="px-3 py-2 text-center font-semibold w-20">Satuan</th>
-                  <th className="px-3 py-2 text-right font-semibold w-24">Saldo</th>
-                  <th className="px-3 py-2 text-right font-semibold w-28">N Persediaan</th>
-                  <th className="px-3 py-2 text-center font-semibold w-24">Status</th>
-                  <th className="px-3 py-2 text-left font-semibold">Kelompok</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r, i) => (
-                  <tr key={r.kode} className={i % 2 ? 'bg-gray-50' : 'bg-white'}>
-                    <td className="px-3 py-2 text-center tabular-nums text-gray-500">{(page - 1) * PAGE_SIZE + i + 1}</td>
-                    <td className="px-3 py-2 text-center font-mono font-semibold">{r.kode}</td>
-                    <td className="px-3 py-2">{r.nama}</td>
-                    <td className="px-3 py-2 text-center">{r.kd_satuan}</td>
-                    <td className="px-3 py-2 text-right tabular-nums font-semibold">{Number(r.saldo).toLocaleString('id-ID')}</td>
-                    <td className="px-3 py-2 text-right tabular-nums">{Number(r.n_persd).toLocaleString('id-ID')}</td>
-                    <td className="px-3 py-2 text-center">
-                      <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-semibold ${r.status === 'Aktif' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
-                        {r.status || '-'}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 text-gray-500 text-[13px]">{r.kd_kelompok}</td>
-                  </tr>
-                ))}
-                {!loading && rows.length === 0 && (
-                  <tr>
-                    <td colSpan={8} className="px-3 py-8 text-center text-gray-400">
-                      Belum ada data tanggal ini — klik Tarik Data.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <DataTable
+            columns={columns}
+            data={rows}
+            isLoading={loading}
+            selectedIds={selectedIds}
+            onRowClick={handleRowClick}
+            columnWidths={columnWidths}
+            onColumnWidthChange={setColumnWidths}
+            rowHeight="h-11"
+          />
           <TableFooter
             totalCount={total}
             currentCount={rows.length}
             label="Saldo Barang"
+            selectedCount={selectedIds.size}
+            onClearSelection={clearSelection}
+            loadTime={loadTime}
             page={page}
             totalPages={totalPages}
             onPageChange={setPage}
           />
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={dialog.isOpen}
+        type={dialog.type}
+        title={dialog.title}
+        message={dialog.message}
+        onConfirm={() => setDialog({ ...dialog, isOpen: false })}
+      />
     </div>
   );
 }

@@ -72,12 +72,12 @@ Kriteria sederhana: **apakah user di halaman itu merasakan bedanya?** Jika ya �
 
 ## Gaya & Tema
 
-- **Warna utama**: Emerald/hijau (`emerald-600`, `green-600`) — **bukan biru**. Gunakan `rounded-xl`/`rounded-2xl`, shadow halus.
-- **Typography**: Sentence case, **dilarang** `uppercase` paksa. Font: Outfit (via `next/font`).
-- **Popup/dropdown**: Wajib React Portal agar tidak terpotong `overflow-hidden` — lihat `src/components/Portal.tsx`.
-- **Notifikasi**: `Toast`, jangan `alert()` atau `window.confirm()`.
-- **Dropdown dengan banyak data** (>100 item): batasi render 30-50 via `useMemo` + `slice`.
-
+ - **Warna utama**: Emerald/hijau (`emerald-600`, `green-600`) — **bukan biru**. Gunakan `rounded-xl`/`rounded-2xl`, shadow halus.
+ - **Typography**: Sentence case, **dilarang** `uppercase` paksa. Font: Outfit (via `next/font`).
+ - **Popup/dropdown**: Wajib React Portal agar tidak terpotong `overflow-hidden` — lihat `src/components/Portal.tsx`.
+ - **Notifikasi**: `Toast`, jangan `alert()` atau `window.confirm()`.
+ - **Dropdown dengan banyak data** (>100 item): batasi render 30-50 via `useMemo` + `slice`.
+ - **Checklist parity halaman scraper Digit (wajib sebelum klaim "selaras")**: rujukan `src/app/data-digit/stok/master-barang/MasterBarangClient.tsx`, `src/app/barang-jadi/BarangJadiClient.tsx`, `src/app/data-digit/produksi/produksi-selesai/ProduksiSelesaiClient.tsx`. Klaim selaras wajib sitasi `path:line` per item: (1) Shell `PageHeader` + wrapper `gap-6 ... duration-500`; (2) Tombol tarik gradasi `from-emerald-600 to-emerald-500` + `DownloadCloud` label "Tarik Data"; (3) `SearchAndReload` baku; (4) `TableFooter` + `loadTime`; (5) `DataTable` + `useTableSelection` + `highlightText` + `columnWidths` di `localStorage`; (6) `DatePicker`/`DateRangeCard` + `scraper-period` (bukan `<input type=date>` mentah); (7) sync URL `?search` (`?from&to` bila range) dua arah; (8) `ConfirmDialog`, error pola Master (`AlertCircle` + `font-bold`). DILARANG klaim selaras hanya dari kulit (poin 1-4).
 ## Env Variable Kunci
 
 `DB_PATH`, `USE_REMOTE_DB`, `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `SESSION_SECRET` (wajib ganti di production), `SCRAPER_EMAIL`, `SCRAPER_PASSWORD`, `CRON_SECRET`.
