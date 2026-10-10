@@ -17,6 +17,7 @@ const base: KlasifikasiInput = {
   lastSelesai: null,
   lastWipAkhir: null,
   hasPostCutoffPD: false,
+  hasPostCutoffPR: false,
   isRoutine: false,
   outflows: [],
   lastHuluIso: '',
@@ -95,12 +96,21 @@ describe('klasifikasiItem (4 pilar)', () => {
   });
 
   it('Pilar 2: setoran pasca-cutoff dilarang', () => {
-    const r = klasifikasiItem({
-      ...base, kode: '260900508', totPR: 6600, totPD: 6600, lastSelesai: 1, lastWipAkhir: 0,
-      hasPostCutoffPD: true, outflows: [{ jenis: 'PJ', faktur: 'PJ00126090000001', tgl: '2026-09-20' }],
-    });
-    expect(r.boleh).toBe(false);
-  });
+     const r = klasifikasiItem({
+       ...base, kode: '260900508', totPR: 6600, totPD: 6600, lastSelesai: 1, lastWipAkhir: 0,
+       hasPostCutoffPD: true, outflows: [{ jenis: 'PJ', faktur: 'PJ00126090000001', tgl: '2026-09-20' }],
+     });
+     expect(r.boleh).toBe(false);
+   });
+ 
+  it('Pilar 2: SPK susulan pasca-cutoff dilarang', () => {
+     const r = klasifikasiItem({
+       ...base, kode: '260900509', totPR: 6600, totPD: 6600, lastSelesai: 1, lastWipAkhir: 0,
+         hasPostCutoffPR: true, outflows: [{ jenis: 'PJ', faktur: 'PJ00126090000001', tgl: '2026-09-20' }],
+     });
+     expect(r.boleh).toBe(false);
+     expect(r.alasan).toMatch(/SPK\/order susulan/);
+   });
 
   it('Kategori A: SPK tuntas + bukti PJ boleh, alasan ada faktur', () => {
     const r = klasifikasiItem({

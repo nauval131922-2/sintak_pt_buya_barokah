@@ -50,6 +50,7 @@ export interface KlasifikasiInput {
   lastSelesai: number | null; // flag penyerahan terakhir (0 = masih jalan)
   lastWipAkhir: number | null;
   hasPostCutoffPD: boolean; // ada setoran PD setelah cutoff
+  hasPostCutoffPR: boolean; // ada SPK/order susulan setelah cutoff
   isRoutine: boolean; // dari settings (keyword/kode)
   outflows: OutflowBukti[]; // PJ/SM/SV s.d. cutoff (dari usr_log)
   lastHuluIso: string; // tgl hulu terakhir (BOM/QO/SO) atau ''
@@ -93,11 +94,14 @@ export function klasifikasiItem(inp: KlasifikasiInput): KlasifikasiResult {
     larangan.push('WIP masih berjalan (selesai=0)');
   }
   if (inp.lastWipAkhir != null && Number(inp.lastWipAkhir) > 0) {
-    larangan.push(`Sisa WIP ${fmtNum(Number(inp.lastWipAkhir))}`);
-  }
+     larangan.push(`Sisa WIP ${fmtNum(Number(inp.lastWipAkhir))}`);
+   }
   if (inp.hasPostCutoffPD) {
-    larangan.push('Ada setoran hasil produksi lanjutan pasca-cutoff');
-  }
+     larangan.push('Ada setoran hasil produksi lanjutan pasca-cutoff');
+   }
+  if (inp.hasPostCutoffPR) {
+     larangan.push('Ada SPK/order susulan pasca-cutoff');
+   }
 
   if (larangan.length > 0) {
     return { boleh: false, larangan, kategori: null, alasan: larangan.join('; ') };

@@ -50,14 +50,15 @@ function num(v: DbVal): number {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
 }
-
+ 
 interface PdAgg {
   totPD: number;
   hasPost: boolean;
+  hasPostPR: boolean;
   lastSelesai: number | null;
   lastWip: number | null;
   prFakturs: Set<string>;
-}
+ }
 
 // tgl usr_log bisa 'yyyy-mm-dd' atau 'yyyy-mm-dd HH:MM:SS' -> potong 10 char.
 function logTgl(v: DbVal): string {
@@ -124,7 +125,7 @@ export async function generateUsulan(cutoffIso: string, limit?: number): Promise
       const k = str(r.kd_barang);
       if (!kodeSet.has(k)) continue;
       let a = pdByKode.get(k);
-      if (!a) { a = { totPD: 0, hasPost: false, lastSelesai: null, lastWip: null, prFakturs: new Set<string>() }; pdByKode.set(k, a); }
+      if (!a) { a = { totPD: 0, hasPost: false, hasPostPR: false, lastSelesai: null, lastWip: null, prFakturs: new Set<string>() }; pdByKode.set(k, a); }
       const d = ddMmYyyyToIso(str(r.tgl));
       const f = extractFakturPrd(str(r.faktur_prd));
       if (f) a.prFakturs.add(f);
@@ -151,16 +152,19 @@ export async function generateUsulan(cutoffIso: string, limit?: number): Promise
   const allPrFakturs = [...new Set([...pdByKode.values()].flatMap((a) => [...a.prFakturs]))];
   const prQty = new Map<string, number>();
   for (let i = 0; i < allPrFakturs.length; i += CH) {
-    const ch = allPrFakturs.slice(i, i + CH);
-    const marks = ch.map(() => '?').join(',');
-    const pr = await db.execute({ sql: `SELECT faktur, qty, tgl FROM orders WHERE faktur IN (${marks})`, args: [...ch] });
+     const ch = allPrFakturs.slice(i, i + CH);
+     const marks = ch.map(() => '?').join(',');
+     const pr = await db.execute({ sql: `SELECT faktur, qty, tgl FROM orders WHERE faktur IN (${marks})`, args: [...ch] });
     for (const r of pr.rows as DbRow[]) {
       const d = ddMmYyyyToIso(str(r.tgl));
-      if (d && d > cutoffIso) continue;
       const f = str(r.faktur).toUpperCase();
+      if (d && d > cutoffIso) {
+         for (const a of pdByKode.values()) if (a.prFakturs.has(f)) a.hasPostPR = true;
+         continue;
+      }
       prQty.set(f, (prQty.get(f) ?? 0) + num(r.qty));
-    }
-  }
+     }
+   }
   const needFallback = kodes.filter((k) => {
     const a = pdByKode.get(k);
     const tot = [...(a?.prFakturs ?? [])].reduce((s, f) => s + (prQty.get(f) ?? 0), 0);
@@ -168,16 +172,22 @@ export async function generateUsulan(cutoffIso: string, limit?: number): Promise
   });
   const fallbackPR = new Map<string, number>();
   if (needFallback.length > 0) {
-    const allOrders = await db.execute({ sql: `SELECT qty, tgl, nama_prd FROM orders` });
-    for (const r of allOrders.rows as DbRow[]) {
-      const d = ddMmYyyyToIso(str(r.tgl));
-      if (d && d > cutoffIso) continue;
-      const nm = str(r.nama_prd);
-      for (const k of needFallback) {
-        if (nm.includes(k)) fallbackPR.set(k, (fallbackPR.get(k) ?? 0) + num(r.qty));
-      }
-    }
-  }
+     const allOrders = await db.execute({ sql: `SELECT qty, tgl, nama_prd FROM orders` });
+     for (const r of allOrders.rows as DbRow[]) {
+       const d = ddMmYyyyToIso(str(r.tgl));
+       const nm = str(r.nama_prd);
+       for (const k of needFallback) {
+         if (!nm.includes(k)) continue;
+         if (d && d > cutoffIso) {
+           let a = pdByKode.get(k);
+           if (!a) { a = { totPD: 0, hasPost: false, hasPostPR: false, lastSelesai: null, lastWip: null, prFakturs: new Set<string>() }; pdByKode.set(k, a); }
+           a.hasPostPR = true;
+           continue;
+         }
+         if (!d || d <= cutoffIso) fallbackPR.set(k, (fallbackPR.get(k) ?? 0) + num(r.qty));
+       }
+     }
+   }
 
   // 4. QO hulu bertanggal: cocokkan kode di teks barang (satu scan).
   const qoSet = new Set<string>();
@@ -267,6 +277,7 @@ export async function generateUsulan(cutoffIso: string, limit?: number): Promise
       lastSelesai: a?.lastSelesai ?? null,
       lastWipAkhir: a?.lastWip ?? null,
       hasPostCutoffPD: a?.hasPost ?? false,
+      hasPostCutoffPR: a?.hasPostPR ?? false,
       isRoutine: isRoutineProduct(nama, kode, settings),
       outflows: outflowByKode.get(kode) ?? [],
       lastHuluIso: huluTgl.get(kode) ?? '',
