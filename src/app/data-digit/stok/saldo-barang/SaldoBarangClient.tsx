@@ -10,6 +10,7 @@ import { DataTable } from '@/components/ui/DataTable';
  import DatePicker from '@/components/DatePicker';
  import { formatLastUpdate } from '@/lib/date-utils';
  import { useTableSelection } from '@/lib/hooks/useTableSelection';
+ import { highlightText } from '@/lib/highlight';
 
 interface SaldoRow {
   id: string;
