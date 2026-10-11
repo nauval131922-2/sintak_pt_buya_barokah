@@ -11,6 +11,7 @@ import { DataTable } from '@/components/ui/DataTable';
 import DatePicker from '@/components/DatePicker';
 import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import { highlightText } from '@/lib/highlight';
+import { formatLastUpdate } from '@/lib/date-utils';
 
 interface PreviewRow {
   id: string;
@@ -394,7 +395,7 @@ export default function PenonaktifanMasterClient() {
           <div className="flex items-center justify-between gap-4 min-h-[32px] flex-wrap">
             <div className="flex items-end gap-2 flex-wrap">
                <div>
-                 <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal cutoff{lastGenerate ? <span className="font-semibold text-gray-300"> • Generate: {lastGenerate.split('|')[0].slice(0, 16).replace('T', ' ')}</span> : null}{lastSyncAll ? <span className="font-semibold text-gray-300"> • Sync: {lastSyncAll.split('|')[0].slice(0, 16).replace('T', ' ')}</span> : null}</label>
+                 <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal cutoff{lastGenerate ? <span className="font-semibold text-gray-300"> • Generate: {formatLastUpdate(lastGenerate.split('|')[0])}</span> : null}{lastSyncAll ? <span className="font-semibold text-gray-300"> • Sync: {formatLastUpdate(lastSyncAll.split('|')[0])}</span> : null}</label>
                  <DatePicker name="cutoff" value={isoToDate(cutoff)} onChange={(d) => setCutoff(dateToIso(d))} />
                </div>
               <div className="flex items-end gap-2">
@@ -492,7 +493,7 @@ export default function PenonaktifanMasterClient() {
       {showSettings && (
         <Portal>
           <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowSettings(false)}>
-            <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+             <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">
@@ -514,38 +515,38 @@ export default function PenonaktifanMasterClient() {
               ) : (
                 <div className="p-5 space-y-4 overflow-y-auto custom-scrollbar flex-1 min-h-0">
                   <div>
-                    <div className="text-xs font-bold text-slate-700 mb-1.5">Kode rutin — dilindungi dari usulan (pasti per kode)</div>
-                    <div className="flex flex-wrap gap-1.5 mb-2">
-                      {settings.routine_codes.map((c) => {
-                        const nm = routineItems.find((r) => r.kode === c)?.nama ?? '';
-                        return (
-                        <span key={c} title={nm || c} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold max-w-full">
-                          <span className="font-mono">{c}</span>
-                          {nm && <span className="font-normal text-blue-600 truncate max-w-[220px]">— {nm.slice(0, 40)}</span>}
-                          <button onClick={() => setSettings({ ...settings, routine_codes: settings.routine_codes.filter((x) => x !== c) })} className="hover:text-blue-900 shrink-0">
-                            <Trash2 size={12} />
-                          </button>
-                        </span>
-                        );
-                      })}
-                      {settings.routine_codes.length === 0 && <span className="text-xs text-gray-400">Belum ada — semua kode bisa diusulkan.</span>}
-                    </div>
-                    <input value={codeSearch} onChange={(e) => setCodeSearch(e.target.value)} placeholder="Cari kode / nama barang…" className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all mb-2" />
-                    {codeSearch.trim().length >= 2 && (
-                      <div className="max-h-40 overflow-y-auto border border-slate-200 rounded-xl divide-y divide-slate-100 mb-2">
-                        {codeSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari…</div>}
-                        {!codeSearching && codeHits.length === 0 && <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada kode/nama yang cocok.</div>}
-                        {codeHits.map((r) => (
-                          <button key={r.kode} onClick={() => { if (!settings.routine_codes.includes(r.kode)) setSettings({ ...settings, routine_codes: [...settings.routine_codes, r.kode] }); setCodeSearch(''); setCodeHits([]); }} className="w-full text-left px-3 py-2 hover:bg-emerald-50 transition-colors flex items-center justify-between gap-2" title={r.nama}>
-                            <span className="text-xs font-mono font-bold text-slate-700">{r.kode}</span>
-                            <span className="text-[11px] text-slate-500 truncate flex-1">{r.nama}</span>
-                            {settings.routine_codes.includes(r.kode) ? <span className="text-[10px] font-bold text-emerald-600 shrink-0">Sudah</span> : <Plus size={14} className="text-emerald-600 shrink-0" />}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div>
+                     <div className="text-xs font-bold text-slate-700 mb-1.5">Kode rutin — dilindungi dari usulan (pasti per kode)</div>
+                     <input value={codeSearch} onChange={(e) => setCodeSearch(e.target.value)} placeholder="Cari kode / nama barang…" className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all mb-2" />
+                     {codeSearch.trim().length >= 2 && (
+                       <div className="max-h-40 overflow-y-auto border border-slate-200 rounded-xl divide-y divide-slate-100 mb-2">
+                         {codeSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari…</div>}
+                         {!codeSearching && codeHits.length === 0 && <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada kode/nama yang cocok.</div>}
+                         {codeHits.map((r) => (
+                           <button key={r.kode} onClick={() => { if (!settings.routine_codes.includes(r.kode)) setSettings({ ...settings, routine_codes: [...settings.routine_codes, r.kode] }); setCodeSearch(''); setCodeHits([]); }} className="w-full text-left px-3 py-2 hover:bg-emerald-50 transition-colors flex items-center justify-between gap-2" title={r.nama}>
+                             <span className="text-xs font-mono font-bold text-slate-700">{r.kode}</span>
+                             <span className="text-[11px] text-slate-500 truncate flex-1">{r.nama}</span>
+                             {settings.routine_codes.includes(r.kode) ? <span className="text-[10px] font-bold text-emerald-600 shrink-0">Sudah</span> : <Plus size={14} className="text-emerald-600 shrink-0" />}
+                           </button>
+                         ))}
+                       </div>
+                     )}
+                     <div className="flex flex-wrap gap-1.5 mb-2 max-h-64 overflow-y-auto custom-scrollbar">
+                       {settings.routine_codes.map((c) => {
+                         const nm = routineItems.find((r) => r.kode === c)?.nama ?? '';
+                         return (
+                         <span key={c} title={nm || c} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold max-w-full">
+                           <span className="font-mono">{c}</span>
+                           {nm && <span className="font-normal text-blue-600 truncate max-w-[220px]">— {nm.slice(0, 40)}</span>}
+                           <button onClick={() => setSettings({ ...settings, routine_codes: settings.routine_codes.filter((x) => x !== c) })} className="hover:text-blue-900 shrink-0">
+                             <Trash2 size={12} />
+                           </button>
+                         </span>
+                         );
+                       })}
+                       {settings.routine_codes.length === 0 && <span className="text-xs text-gray-400">Belum ada — semua kode bisa diusulkan.</span>}
+                     </div>
+                   </div>
+                   <div>
                     <div className="text-xs font-bold text-slate-700 mb-1.5">Batas idle penawaran batal (hari)</div>
                     <input value={idleInput} onChange={(e) => setIdleInput(e.target.value.replace(/\D/g, ''))} inputMode="numeric" className="px-3 py-2 w-28 text-xs tabular-nums bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all" />
                     <p className="text-[11px] text-slate-400 mt-1">Penawaran yang umurnya di bawah ini tidak diusulkan.</p>

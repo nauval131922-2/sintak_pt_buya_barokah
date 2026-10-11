@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireApiPermission } from '@/lib/api-guard';
+import db from '@/lib/db';
 import {
   getPenonaktifanSettings,
   savePenonaktifanSettings,
@@ -15,7 +16,6 @@ export const dynamic = 'force-dynamic';
      const s = await getPenonaktifanSettings();
      let items: Array<{ kode: string; nama: string }> = [];
      if (s.routine_codes.length > 0) {
-       const { default: db } = await import('@/lib/db');
        const marks = s.routine_codes.map(() => '?').join(',');
        const r = await db.execute({ sql: `SELECT kode, nama FROM stok_master_barang WHERE kode IN (${marks})`, args: [...s.routine_codes] });
        const nameByKode = new Map((r.rows as Array<Record<string, unknown>>).map((row) => [String(row.kode ?? ''), String(row.nama ?? '')]));
