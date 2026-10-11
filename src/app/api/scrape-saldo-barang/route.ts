@@ -123,24 +123,23 @@ export async function GET(request: NextRequest) {
        ]);
      }
  
-     // ponytail: multi-row upsert (bukan 1 statement/baris). Sub 50 baris x 10 kolom = 500 variabel, aman di bawah batas 999 SQLite/libSQL.
-     const ROW_CHUNK = 500;
-     for (let i = 0; i < cleanRows.length; i += ROW_CHUNK) {
-       const chunk = cleanRows.slice(i, i + ROW_CHUNK);
-       for (let j = 0; j < chunk.length; j += 50) {
-         const sub = chunk.slice(j, j + 50);
-         const placeholders = sub.map(() => `(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).join(',');
-         await db.execute({
-           sql: `INSERT INTO saldo_barang (kode, tgl, nama, kd_satuan, saldo, kd_golongan, kd_kelompok, status, n_persd, n_hp)
-                 VALUES ${placeholders}
-                 ON CONFLICT(kode, tgl) DO UPDATE SET
-                   nama = excluded.nama, kd_satuan = excluded.kd_satuan, saldo = excluded.saldo,
-                   kd_golongan = excluded.kd_golongan, kd_kelompok = excluded.kd_kelompok,
-                   status = excluded.status, n_persd = excluded.n_persd, n_hp = excluded.n_hp`,
-           args: sub.flat(),
-         });
-       }
+     // 90 baris x 10 kolom = 900 variabel, di bawah batas 999 SQLite/libSQL.
+     // Semua statement jalan paralel seperti scrape-master-barang.
+     const UPSERT_COLS = 'kode, tgl, nama, kd_satuan, saldo, kd_golongan, kd_kelompok, status, n_persd, n_hp';
+     const UPSERT_SET = `nama = excluded.nama, kd_satuan = excluded.kd_satuan, saldo = excluded.saldo,
+                       kd_golongan = excluded.kd_golongan, kd_kelompok = excluded.kd_kelompok,
+                       status = excluded.status, n_persd = excluded.n_persd, n_hp = excluded.n_hp`;
+     const CHUNK = 90;
+     const batchStmts: { sql: string; args: unknown[] }[] = [];
+     for (let i = 0; i < cleanRows.length; i += CHUNK) {
+       const sub = cleanRows.slice(i, i + CHUNK);
+       const placeholders = sub.map(() => `(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).join(',');
+       batchStmts.push({
+         sql: `INSERT INTO saldo_barang (${UPSERT_COLS}) VALUES ${placeholders} ON CONFLICT(kode, tgl) DO UPDATE SET ${UPSERT_SET}`,
+         args: sub.flat(),
+       });
      }
+     await Promise.all(batchStmts.map((stmt) => db.execute(stmt)));
  
      const lastUpdated = new Date().toISOString();
      await db.batch([{
