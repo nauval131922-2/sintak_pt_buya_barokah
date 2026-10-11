@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
 import db from "@/lib/db";
 import { getErrorMessage } from "@/lib/api-utils";
+import { requireApiPermission } from "@/lib/api-guard";
 import { getCachedSession, setCachedSession, clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
 import { getSession } from "@/lib/session";
 import { logActivity } from "@/lib/activity";
-
 const API_EMAIL = process.env.SCRAPER_EMAIL || "nauval";
 if (!process.env.SCRAPER_PASSWORD) throw new Error("SCRAPER_PASSWORD env tidak diset");
 const API_PASSWORD = process.env.SCRAPER_PASSWORD;
@@ -34,21 +34,29 @@ function parseNumber(val: unknown): number {
 
 type SaldoRecord = Record<string, unknown>;
 
+async function markProgress(payload: Record<string, unknown>) {
+  await db.execute({
+    sql: `INSERT INTO system_settings (key, value, updated_at) VALUES ('saldo_scrape_progress', ?, CURRENT_TIMESTAMP)
+          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+    args: [JSON.stringify(payload)],
+  });
+}
+
 // GET /api/scrape-saldo-barang?tgl=YYYY-MM-DD
 // Scrape posisi saldo barang Digit (v1/stk/r_brg_s/gr1, bsearch.stgl tunggal).
 export async function GET(request: NextRequest) {
   try {
-     const searchParams = request.nextUrl.searchParams;
-     if (searchParams.get("progress") === "1") {
-       const gate = await requireApiPermission('stok_saldo_barang');
-       if (gate.error) return gate.error;
-       const r = await db.execute({ sql: `SELECT value FROM system_settings WHERE key = 'saldo_scrape_progress'` });
-       const raw = (r.rows[0] as Record<string, unknown> | undefined)?.value as string | undefined;
-       let prog: Record<string, unknown> | null = null;
-       try { prog = raw ? JSON.parse(String(raw)) : null; } catch { prog = null; }
-       return NextResponse.json({ success: true, progress: prog }, { headers: { "Cache-Control": "no-store" } });
-     }
-     let tglParam = searchParams.get("tgl");
+    const searchParams = request.nextUrl.searchParams;
+    if (searchParams.get("progress") === "1") {
+      const gate = await requireApiPermission('stok_saldo_barang');
+      if (gate.error) return gate.error;
+      const r = await db.execute({ sql: `SELECT value FROM system_settings WHERE key = 'saldo_scrape_progress'` });
+      const raw = (r.rows[0] as Record<string, unknown> | undefined)?.value as string | undefined;
+      let prog: Record<string, unknown> | null = null;
+      try { prog = raw ? JSON.parse(String(raw)) : null; } catch { prog = null; }
+      return NextResponse.json({ success: true, progress: prog }, { headers: { "Cache-Control": "no-store" } });
+    }
+    let tglParam = searchParams.get("tgl");
     if (!tglParam) tglParam = new Date().toISOString().split("T")[0];
 
     const tglDate = new Date(tglParam);
@@ -56,7 +64,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Invalid date format. Use YYYY-MM-DD" }, { status: 400 });
     }
 
-    await getSession();
+    const gate = await requireApiPermission('stok_saldo_barang');
+    if (gate.error) return gate.error;
     const cookies = await getScraperSession(async () => {
       const loginReqUrl = BASE_URL + "v1/auth/login";
       const loginBody = JSON.stringify({ username: API_EMAIL, password: API_PASSWORD });
@@ -101,6 +110,7 @@ export async function GET(request: NextRequest) {
        const jsonData = await res.json();
        const page: SaldoRecord[] = jsonData.records || jsonData.data || jsonData.rows || jsonData.result || [];
        rawRecords.push(...page);
+       await markProgress({ tgl: tglParam, page: pageNum + 1, fetched: rawRecords.length, done: false, at: new Date().toISOString() });
        if (page.length < PAGE_LIMIT) break;
        offset += PAGE_LIMIT;
        if (pageNum === MAX_PAGES - 1) truncated = true;
@@ -144,13 +154,15 @@ export async function GET(request: NextRequest) {
      }] as never, "write");
  
      setCachedSession(cookies);
+     await markProgress({ tgl: tglParam, page: -1, fetched: cleanRows.length, done: true, at: new Date().toISOString() });
      await logActivity('SCRAPE', 'saldo_barang', `Scrape saldo barang berhasil: ${cleanRows.length} baris (tgl ${stgl})${truncated ? ' [terpotong 50 page]' : ''}.`, { total: cleanRows.length, tgl: tglParam, truncated });
  
      return NextResponse.json({ success: true, total: cleanRows.length, tgl: tglParam, lastUpdated, truncated }, {
        headers: { "Cache-Control": "no-store, max-age=0" }
      });
-  } catch (error: unknown) {
-    console.error("Scraping error:", error);
-    return NextResponse.json({ error: "Failed to scrape data", details: getErrorMessage(error) }, { status: 500 });
-  }
+   } catch (error: unknown) {
+     console.error("Scraping error:", error);
+     try { await markProgress({ page: -1, fetched: 0, done: true, error: getErrorMessage(error), at: new Date().toISOString() }); } catch { /* abaikan */ }
+     return NextResponse.json({ error: "Failed to scrape data", details: getErrorMessage(error) }, { status: 500 });
+   }
 }

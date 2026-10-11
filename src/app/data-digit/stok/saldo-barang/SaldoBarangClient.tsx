@@ -61,6 +61,7 @@ export default function SaldoBarangClient() {
   const [available, setAvailable] = useState<{ tgl: string; n: number }[]>([]);
   const [loading, setLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState<{ page: number; fetched: number } | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [dialog, setDialog] = useState({ isOpen: false, type: 'success' as 'success' | 'error', title: '', message: '' });
@@ -167,18 +168,33 @@ export default function SaldoBarangClient() {
       setLoading(true);
       setError('');
       setPage(1);
-      const res = await fetch(`/api/scrape-saldo-barang?tgl=${tgl}`);
+      setSyncProgress(null);
+      const poll = setInterval(async () => {
+        try {
+          const pr = await fetch('/api/scrape-saldo-barang?progress=1');
+          const pj = await pr.json();
+          if (pj.progress && !pj.progress.done && mountedRef.current) {
+            setSyncProgress({ page: Number(pj.progress.page) || 0, fetched: Number(pj.progress.fetched) || 0 });
+          }
+        } catch { /* abaikan kegagalan polling */ }
+      }, 2000);
+      try {
+        const res = await fetch(`/api/scrape-saldo-barang?tgl=${tgl}`);
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error || json.details || 'Gagal sinkronisasi data');
       const now = new Date();
       localStorage.setItem('SaldoBarangClient_lastUpdated', now.toISOString());
       await load(1, tgl, debouncedQuery, sorting);
-      setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Berhasil menarik ${Number(json.total).toLocaleString('id-ID')} kode saldo per ${json.tgl}.` });
+        setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Berhasil menarik ${Number(json.total).toLocaleString('id-ID')} kode saldo per ${json.tgl}.` });
+      } finally {
+        clearInterval(poll);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setIsSyncing(false);
       setLoading(false);
+      setSyncProgress(null);
     }
   };
 
@@ -261,7 +277,7 @@ export default function SaldoBarangClient() {
                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
                <span className="relative z-10 flex items-center gap-2">
                  {isSyncing ? (
-                   <><Loader2 size={16} className="animate-spin" /> Sedang Menarik...</>
+                   <><Loader2 size={16} className="animate-spin" /> {syncProgress ? `Menarik page ${syncProgress.page} (${syncProgress.fetched.toLocaleString('id-ID')} baris)...` : 'Sedang Menarik...'}</>
                  ) : (
                    <><DownloadCloud size={16} className="group-hover/btn:-translate-y-0.5 transition-transform duration-300" /> Tarik Data</>
                  )}
