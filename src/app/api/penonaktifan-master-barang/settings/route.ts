@@ -8,17 +8,25 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
-  const gate = await requireApiPermission('produksi_penonaktifan_master');
-  if (gate.error) return gate.error;
-  try {
-    const s = await getPenonaktifanSettings();
-    return NextResponse.json({ success: true, settings: s, defaults: DEFAULT_SETTINGS });
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ success: false, error: msg }, { status: 500 });
-  }
-}
+ export async function GET() {
+   const gate = await requireApiPermission('produksi_penonaktifan_master');
+   if (gate.error) return gate.error;
+   try {
+     const s = await getPenonaktifanSettings();
+     let items: Array<{ kode: string; nama: string }> = [];
+     if (s.routine_codes.length > 0) {
+       const { default: db } = await import('@/lib/db');
+       const marks = s.routine_codes.map(() => '?').join(',');
+       const r = await db.execute({ sql: `SELECT kode, nama FROM stok_master_barang WHERE kode IN (${marks})`, args: [...s.routine_codes] });
+       const nameByKode = new Map((r.rows as Array<Record<string, unknown>>).map((row) => [String(row.kode ?? ''), String(row.nama ?? '')]));
+       items = s.routine_codes.map((kode) => ({ kode, nama: nameByKode.get(kode) ?? '' }));
+     }
+     return NextResponse.json({ success: true, settings: s, routine_items: items, defaults: DEFAULT_SETTINGS });
+   } catch (error) {
+     const msg = error instanceof Error ? error.message : String(error);
+     return NextResponse.json({ success: false, error: msg }, { status: 500 });
+   }
+ }
 
 export async function POST(req: NextRequest) {
   const gate = await requireApiPermission('produksi_penonaktifan_master');

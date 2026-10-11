@@ -57,15 +57,8 @@ const MODULE_GROUPS = [
       { id: 'sph-out', name: 'SPH Keluar', endpoint: '/api/scrape-sph-out', description: 'Surat Penawaran Harga Keluar' },
       { id: 'sales-orders', name: 'Sales Order Barang', endpoint: '/api/scrape-sales-orders', description: 'Pesanan dari pelanggan' },
       { id: 'sales', name: 'Laporan Penjualan', endpoint: '/api/scrape-sales', description: 'Faktur penjualan barang' },
-      { id: 'pengiriman', name: 'Pengiriman', endpoint: '/api/scrape-pengiriman', description: 'Logistik barang keluar' },
       { id: 'pelunasan-piutang', name: 'Pelunasan Piutang Penjualan', endpoint: '/api/scrape-pelunasan-piutang', description: 'Penerimaan dari pelanggan' },
-    ]
-  },
-  {
-    group: 'Sistem',
-    color: 'slate',
-    modules: [
-      { id: 'usr-log', name: 'Log Aktivitas User', endpoint: '/api/scrape-usr-log', description: 'Audit trail aktivitas user Digit', usrLogRange: true },
+      { id: 'pengiriman', name: 'Pengiriman', endpoint: '/api/scrape-pengiriman', description: 'Logistik barang keluar' },
     ]
   },
   {
@@ -74,6 +67,13 @@ const MODULE_GROUPS = [
     modules: [
       { id: 'rek-akuntansi', name: 'Rekening Akuntansi', endpoint: '/api/scrape-rek-akuntansi', description: 'Master rekening akuntansi', noDateRange: true },
       { id: 'jurnal-umum', name: 'Jurnal Umum', endpoint: '/api/scrape-jurnal-umum', description: 'Transaksi jurnal akuntansi' },
+    ]
+  },
+  {
+    group: 'Sistem',
+    color: 'slate',
+    modules: [
+      { id: 'usr-log', name: 'Log Aktivitas User', endpoint: '/api/scrape-usr-log', description: 'Audit trail aktivitas user Digit', usrLogRange: true },
     ]
   },
 ];

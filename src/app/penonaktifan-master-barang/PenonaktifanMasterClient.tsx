@@ -102,6 +102,9 @@ export default function PenonaktifanMasterClient() {
   const [codeHits, setCodeHits] = useState<Array<{ kode: string; nama: string }>>([]);
   const [codeSearching, setCodeSearching] = useState(false);
   const [idleInput, setIdleInput] = useState('7');
+  const [routineItems, setRoutineItems] = useState<Array<{ kode: string; nama: string }>>([]);
+  const [lastGenerate, setLastGenerate] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_lastGenerate') : null));
+  const [lastSyncAll, setLastSyncAll] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_lastSyncAll') : null));
 
   const rows = useMemo(() => data?.rows ?? [], [data]);
   const { selectedIds, handleRowClick, clearSelection } = useTableSelection(rows);
@@ -120,6 +123,13 @@ export default function PenonaktifanMasterClient() {
   useEffect(() => {
     setIsMounted(true);
     mountedRef.current = true;
+    try {
+      const saved = localStorage.getItem('penonaktifan_lastData');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && Array.isArray(parsed.rows)) setData(parsed);
+      }
+    } catch { /* abaikan cache rusak */ }
     return () => { mountedRef.current = false; };
   }, []);
 
@@ -159,8 +169,9 @@ export default function PenonaktifanMasterClient() {
       const json = await res.json();
       if (json.success) {
          setSettings(json.settings);
-         
          setIdleInput(String(json.settings.idle_days));
+         const items = (json as unknown as { routine_items?: Array<{ kode: string; nama: string }> }).routine_items;
+         if (Array.isArray(items)) setRoutineItems(items);
        }
     } catch {
       // abaikan, panel tampilkan pesan
@@ -200,6 +211,12 @@ export default function PenonaktifanMasterClient() {
       if (!mountedRef.current) return;
       setData({ ...json, rows: (json.rows || []).map((r) => ({ ...r, id: r.kode })) });
       setLoadTime(Math.round(performance.now() - startTimer));
+      const stamp = `${new Date().toISOString()}|${cutoff}`;
+      setLastGenerate(stamp);
+      try {
+        localStorage.setItem('penonaktifan_lastGenerate', stamp);
+        localStorage.setItem('penonaktifan_lastData', JSON.stringify({ ...json, rows: (json.rows || []).map((r) => ({ ...r, id: r.kode })) }));
+      } catch { /* abaikan kuota */ }
     } catch (e) {
       if (mountedRef.current) setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -245,6 +262,9 @@ export default function PenonaktifanMasterClient() {
       await handleGenerate();
       history.push({ label: 'Generate usulan', secs: Math.round(((performance.now() - genStart) / 1000) * 10) / 10 });
       if (!mountedRef.current) return;
+      const syncStamp = `${new Date().toISOString()}|${cutoff}`;
+      setLastSyncAll(syncStamp);
+      try { localStorage.setItem('penonaktifan_lastSyncAll', syncStamp); } catch { /* abaikan */ }
       const totalSecs = Math.round((performance.now() - syncStart) / 1000);
       const rincian = history.map((h) => `${h.label}: ${h.secs}s`).join(' • ');
       setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Semua data Digit ditarik (${steps.length} tahap, total ${totalSecs}s) dan usulan cutoff ${cutoff} digenerate ulang. Rincian: ${rincian}.` });
@@ -373,10 +393,10 @@ export default function PenonaktifanMasterClient() {
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px] flex-wrap">
             <div className="flex items-end gap-2 flex-wrap">
-              <div>
-                <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal cutoff</label>
-                <DatePicker name="cutoff" value={isoToDate(cutoff)} onChange={(d) => setCutoff(dateToIso(d))} />
-              </div>
+               <div>
+                 <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal cutoff{lastGenerate ? <span className="font-semibold text-gray-300"> • Generate: {lastGenerate.split('|')[0].slice(0, 16).replace('T', ' ')}</span> : null}{lastSyncAll ? <span className="font-semibold text-gray-300"> • Sync: {lastSyncAll.split('|')[0].slice(0, 16).replace('T', ' ')}</span> : null}</label>
+                 <DatePicker name="cutoff" value={isoToDate(cutoff)} onChange={(d) => setCutoff(dateToIso(d))} />
+               </div>
               <div className="flex items-end gap-2">
                 <button
                   onClick={handleGenerate}
@@ -496,14 +516,18 @@ export default function PenonaktifanMasterClient() {
                   <div>
                     <div className="text-xs font-bold text-slate-700 mb-1.5">Kode rutin — dilindungi dari usulan (pasti per kode)</div>
                     <div className="flex flex-wrap gap-1.5 mb-2">
-                      {settings.routine_codes.map((c) => (
-                        <span key={c} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-mono font-semibold">
-                          {c}
-                          <button onClick={() => setSettings({ ...settings, routine_codes: settings.routine_codes.filter((x) => x !== c) })} className="hover:text-blue-900">
+                      {settings.routine_codes.map((c) => {
+                        const nm = routineItems.find((r) => r.kode === c)?.nama ?? '';
+                        return (
+                        <span key={c} title={nm || c} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold max-w-full">
+                          <span className="font-mono">{c}</span>
+                          {nm && <span className="font-normal text-blue-600 truncate max-w-[220px]">— {nm.slice(0, 40)}</span>}
+                          <button onClick={() => setSettings({ ...settings, routine_codes: settings.routine_codes.filter((x) => x !== c) })} className="hover:text-blue-900 shrink-0">
                             <Trash2 size={12} />
                           </button>
                         </span>
-                      ))}
+                        );
+                      })}
                       {settings.routine_codes.length === 0 && <span className="text-xs text-gray-400">Belum ada — semua kode bisa diusulkan.</span>}
                     </div>
                     <input value={codeSearch} onChange={(e) => setCodeSearch(e.target.value)} placeholder="Cari kode / nama barang…" className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all mb-2" />
