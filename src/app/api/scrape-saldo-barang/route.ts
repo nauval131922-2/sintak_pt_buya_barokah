@@ -86,15 +86,12 @@ export async function GET(request: NextRequest) {
     }
 
      const stgl = formatDate(tglDate);
-     const PAGE_LIMIT = 2000;
-     const MAX_PAGES = 50; // ponytail: batas anti-hang; 50x2000 = 100rb baris, jauh di atas volume riil (~13rb)
+     // Endpoint Digit abaikan limit/offset: 1 request mengembalikan full set (~13rb baris).
      const rawRecords: SaldoRecord[] = [];
-     const seenKodes = new Set<string>();
-     let offset = 0;
-     let truncated = false;
+     const truncated = false;
      await markProgress({ tgl: tglParam, page: 0, fetched: 0, done: false, at: new Date().toISOString() });
-     for (let pageNum = 0; pageNum < MAX_PAGES; pageNum++) {
-       const reqData = { limit: PAGE_LIMIT, offset, bsearch: { stgl, skondisi_stok: "" } };
+     for (let pageNum = 0; pageNum < 1; pageNum++) {
+       const reqData = { limit: 100000, offset: 0, bsearch: { stgl, skondisi_stok: "" } };
        const reqJson = encodeURIComponent(JSON.stringify(reqData));
        const dataUrl = BASE_URL + "v1/stk/r_brg_s/gr1?request=" + reqJson;
        const res = await fetch(dataUrl, {
@@ -111,19 +108,8 @@ export async function GET(request: NextRequest) {
        }
        const jsonData = await res.json();
        const page: SaldoRecord[] = jsonData.records || jsonData.data || jsonData.rows || jsonData.result || [];
-       // Digit mengabaikan limit/offset di endpoint ini: tiap request mengembalikan full set
-       // yang sama. Hentikan loop bila page ini id-nya duplikat dari yang sudah ada.
-       let fresh = 0;
-       for (const r of page) {
-         const id = String((r as Record<string, unknown>).kode || "").trim().toLowerCase();
-         if (id && id !== "total" && !seenKodes.has(id)) { seenKodes.add(id); fresh += 1; }
-       }
-       if (fresh === 0) break;
        rawRecords.push(...page);
-       await markProgress({ tgl: tglParam, page: pageNum + 1, fetched: rawRecords.length, done: false, at: new Date().toISOString() });
-       if (page.length < PAGE_LIMIT) break;
-       offset += PAGE_LIMIT;
-       if (pageNum === MAX_PAGES - 1) truncated = true;
+       await markProgress({ tgl: tglParam, page: 1, fetched: rawRecords.length, done: false, at: new Date().toISOString() });
      }
 
      const cleanRows: unknown[][] = [];
