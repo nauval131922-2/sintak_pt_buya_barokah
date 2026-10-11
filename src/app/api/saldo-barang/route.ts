@@ -4,6 +4,25 @@ import { requireApiPermission } from "@/lib/api-guard";
 
 export const dynamic = 'force-dynamic';
 
+const SORT_COLS: Record<string, string> = {
+  kode: 'kode', nama: 'nama', kd_satuan: 'kd_satuan', saldo: 'saldo',
+  n_persd: 'n_persd', status: 'status', kd_kelompok: 'kd_kelompok',
+};
+
+function getOrderBy(sortParam: string | null): string {
+  let states: { id?: string; desc?: boolean }[] = [];
+  try {
+    const parsed: unknown = JSON.parse(sortParam || '[]');
+    if (Array.isArray(parsed)) states = parsed as { id?: string; desc?: boolean }[];
+  } catch { /* abaikan sort rusak */ }
+  const mapped = states
+    .filter((st) => st && st.id && SORT_COLS[st.id])
+    .map((st) => `${SORT_COLS[st.id as string]} ${st.desc ? 'DESC' : 'ASC'}`);
+  if (mapped.length === 0) return 'kode ASC';
+  mapped.push('kode ASC');
+  return mapped.join(', ');
+}
+
 // GET /api/saldo-barang?tgl=yyyy-mm-dd&q=&golongan=&page=1&limit=50
 // Baca posisi saldo hasil scrape (tabel saldo_barang).
 export async function GET(req: NextRequest) {
@@ -17,6 +36,7 @@ export async function GET(req: NextRequest) {
     const q = (searchParams.get('q') || '').trim();
     const tgl = (searchParams.get('tgl') || '').trim();
     const golongan = (searchParams.get('golongan') || '').trim();
+    const orderBy = getOrderBy(searchParams.get('sort'));
 
     const where: string[] = [];
     const params: unknown[] = [];
@@ -31,7 +51,7 @@ export async function GET(req: NextRequest) {
     const [dataRes, countRes, tglRes] = await Promise.all([
       db.execute({
         sql: `SELECT kode, tgl, nama, kd_satuan, saldo, kd_golongan, kd_kelompok, status, n_persd, n_hp
-              FROM saldo_barang ${whereClause} ORDER BY kode ASC LIMIT ? OFFSET ?`,
+              FROM saldo_barang ${whereClause} ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
         args: [...params, limit, offset],
       }),
       db.execute({ sql: `SELECT COUNT(*) as total FROM saldo_barang ${whereClause}`, args: params }),

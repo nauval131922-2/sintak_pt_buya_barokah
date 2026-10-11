@@ -2,15 +2,13 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { DownloadCloud, Loader2, AlertCircle, Package } from 'lucide-react';
+import { DownloadCloud, Loader2, AlertCircle } from 'lucide-react';
 import TableFooter from '@/components/TableFooter';
 import SearchAndReload from '@/components/SearchAndReload';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { DataTable } from '@/components/ui/DataTable';
-import ScrapingHeader from '@/components/ScrapingHeader';
 import DatePicker from '@/components/DatePicker';
 import { useTableSelection } from '@/lib/hooks/useTableSelection';
-import { formatLastUpdate } from '@/lib/date-utils';
 import { highlightText } from '@/lib/highlight';
 
 interface SaldoRow {
@@ -63,7 +61,6 @@ export default function SaldoBarangClient() {
   const [available, setAvailable] = useState<{ tgl: string; n: number }[]>([]);
   const [loading, setLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [dialog, setDialog] = useState({ isOpen: false, type: 'success' as 'success' | 'error', title: '', message: '' });
@@ -89,7 +86,6 @@ export default function SaldoBarangClient() {
     setIsMounted(true);
     mountedRef.current = true;
     const savedLastUpdate = localStorage.getItem('SaldoBarangClient_lastUpdated');
-    if (savedLastUpdate) setLastUpdated(formatLastUpdate(new Date(savedLastUpdate)));
     return () => { mountedRef.current = false; };
   }, []);
 
@@ -118,12 +114,20 @@ export default function SaldoBarangClient() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  const load = useCallback(async (p: number, date: string, keyword: string) => {
+  const [sorting, setSorting] = useState<Array<{ id: string; desc: boolean }>>([]);
+
+  const handleSortingChange = useCallback((updater: unknown) => {
+    setSorting((prev) => (typeof updater === 'function' ? (updater as (o: Array<{ id: string; desc: boolean }>) => Array<{ id: string; desc: boolean }>)(prev) : updater as Array<{ id: string; desc: boolean }>));
+    setPage(1);
+  }, []);
+
+  const load = useCallback(async (p: number, date: string, keyword: string, sort: Array<{ id: string; desc: boolean }>) => {
     setLoading(p === 1);
     setError('');
     const startTimer = performance.now();
     try {
       const params = new URLSearchParams({ page: String(p), limit: String(PAGE_SIZE), tgl: date, q: keyword });
+      if (sort.length > 0) params.set('sort', JSON.stringify(sort));
       const res = await fetch(`/api/saldo-barang?${params.toString()}`);
       if (!res.ok) throw new Error('Gagal memuat data');
       const json = await res.json();
@@ -145,8 +149,8 @@ export default function SaldoBarangClient() {
 
   useEffect(() => {
     if (!isMounted) return;
-    load(page, tgl, debouncedQuery);
-  }, [page, tgl, debouncedQuery, isMounted, load]);
+    load(page, tgl, debouncedQuery, sorting);
+  }, [page, tgl, debouncedQuery, sorting, isMounted, load]);
 
   useEffect(() => {
     if (!isMounted) return;
@@ -168,8 +172,7 @@ export default function SaldoBarangClient() {
       if (!res.ok || !json.success) throw new Error(json.error || json.details || 'Gagal sinkronisasi data');
       const now = new Date();
       localStorage.setItem('SaldoBarangClient_lastUpdated', now.toISOString());
-      setLastUpdated(formatLastUpdate(now));
-      await load(1, tgl, debouncedQuery);
+      await load(1, tgl, debouncedQuery, sorting);
       setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Berhasil menarik ${Number(json.total).toLocaleString('id-ID')} kode saldo per ${json.tgl}.` });
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -245,16 +248,6 @@ export default function SaldoBarangClient() {
 
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
-          <div className="flex items-center gap-4 min-h-[32px] flex-wrap">
-            <ScrapingHeader title="Data Saldo Barang" icon={<Package size={16} />} lastUpdated={lastUpdated} scrapedPeriod={null} />
-            {loading && rows.length > 0 && (
-              <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
-                <Loader2 size={12} className="animate-spin" />
-                <span>Memuat...</span>
-              </div>
-            )}
-          </div>
-
           <div className="flex items-end gap-2 flex-wrap">
             <div>
               <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal posisi</label>
@@ -278,25 +271,12 @@ export default function SaldoBarangClient() {
               <SearchAndReload
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
-                onReload={() => load(page, tgl, debouncedQuery)}
+                onReload={() => load(page, tgl, debouncedQuery, sorting)}
                 loading={loading}
                 placeholder="Cari berdasarkan kode, nama barang, atau kelompok..."
               />
             </div>
-            {available.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 items-center text-xs">
-                <span className="text-gray-400 font-bold">Tersedia:</span>
-                {available.map((a) => (
-                  <button
-                    key={String(a.tgl)}
-                    onClick={() => { setTgl(String(a.tgl)); setPage(1); }}
-                    className={`px-2 py-1 rounded-full font-bold ${a.tgl === tgl ? 'bg-emerald-600 text-white' : 'bg-white border border-gray-100 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 shadow-sm'}`}
-                  >
-                    {String(a.tgl)} ({Number(a.n).toLocaleString('id-ID')})
-                  </button>
-                ))}
-              </div>
-            )}
+ 
           </div>
         </div>
 
@@ -304,6 +284,9 @@ export default function SaldoBarangClient() {
           <DataTable
             columns={columns}
             data={rows}
+            sorting={sorting}
+            onSortingChange={handleSortingChange}
+            manualSorting
             isLoading={loading}
             selectedIds={selectedIds}
             onRowClick={handleRowClick}
