@@ -236,16 +236,16 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Auto-scroll to active item
+  // Auto-scroll to active item saat initial mount, ganti halaman, atau sidebar mekar (expand / hover)
   useEffect(() => {
-    if (isMounted) {
+    if (isMounted && isExpanded) {
       const timer = setTimeout(() => {
         const activeItem = navRef.current?.querySelector('.sidebar-active');
         if (activeItem) activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       }, 150);
       return () => clearTimeout(timer);
     }
-  }, [pathname, isMounted]);
+  }, [pathname, isMounted, isExpanded]);
 
   // Tutup panel popup profil jika sidebar menciut (auto collapse)
   useEffect(() => {
@@ -819,7 +819,17 @@ function AccordionMenu({
   const menuId = id ?? label;
   const isActive = items.some(item => isAnyChildActive(item));
   const isOpen = openMenuIds.has(menuId) || isActive;
+  const menuRef = useRef<HTMLDivElement>(null);
 
+  // Auto-scroll menu aktif ke viewport saat sidebar mekar (collapsed -> hover-expand)
+  useEffect(() => {
+    if (isExpanded && isActive && menuRef.current) {
+      const timer = setTimeout(() => {
+        menuRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [isExpanded, isActive]);
   // Tutup semua saat sidebar di-collapse
   useEffect(() => {
     if (isCollapsed) resetMenuIds();
@@ -844,7 +854,7 @@ function AccordionMenu({
 
   // Mode expanded: accordion
   return (
-    <div className="mb-0.5">
+    <div ref={menuRef} className="mb-0.5">
       <button
         onClick={() => toggleMenuId(menuId)}
         className={`
