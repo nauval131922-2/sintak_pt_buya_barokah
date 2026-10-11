@@ -247,29 +247,27 @@ export default function SaldoBarangClient() {
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center gap-4 min-h-[32px] flex-wrap">
             <ScrapingHeader title="Data Saldo Barang" icon={<Package size={16} />} lastUpdated={lastUpdated} scrapedPeriod={null} />
-            <div className="flex items-end gap-2 flex-wrap">
-              <div>
-                <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal posisi</label>
-                <DatePicker name="tgl" value={isoToDate(tgl)} onChange={(d) => { setTgl(dateToIso(d)); setPage(1); }} />
+            {loading && rows.length > 0 && (
+              <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
+                <Loader2 size={12} className="animate-spin" />
+                <span>Memuat...</span>
               </div>
-              <button
-                onClick={handleSync}
-                disabled={isSyncing || loading}
-                className="shrink-0 px-5 py-2.5 bg-white border border-gray-100 rounded-xl text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 text-[12px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-              >
-                {isSyncing ? <Loader2 size={16} className="animate-spin" /> : <DownloadCloud size={16} />}
-                {isSyncing ? 'Menarik…' : 'Tarik Data'}
-              </button>
-              {loading && rows.length > 0 && (
-                <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none self-center">
-                  <Loader2 size={12} className="animate-spin" />
-                  <span>Memuat...</span>
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-end gap-2 flex-wrap">
+            <div>
+              <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal posisi</label>
+              <DatePicker name="tgl" value={isoToDate(tgl)} onChange={(d) => { setTgl(dateToIso(d)); setPage(1); }} />
+            </div>
+            <button
+              onClick={handleSync}
+              disabled={isSyncing || loading}
+              className="shrink-0 px-5 py-2.5 bg-white border border-gray-100 rounded-xl text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 text-[12px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+            >
+              {isSyncing ? <Loader2 size={16} className="animate-spin" /> : <DownloadCloud size={16} />}
+              {isSyncing ? 'Menarik…' : 'Tarik Data'}
+            </button>
             <div className="flex-1 min-w-[200px]">
               <SearchAndReload
                 searchQuery={searchQuery}
