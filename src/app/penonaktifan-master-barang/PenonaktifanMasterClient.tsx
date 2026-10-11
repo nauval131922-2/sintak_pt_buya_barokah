@@ -88,7 +88,7 @@ export default function PenonaktifanMasterClient() {
   const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
   const [highlightQuery, setHighlightQuery] = useState(() => searchParams.get('search') || '');
   const [syncing, setSyncing] = useState(false);
-  const [syncProgress, setSyncProgress] = useState<{ done: number; total: number; label: string } | null>(null);
+  const [syncProgress, setSyncProgress] = useState<{ done: number; total: number; label: string; elapsed: number; history: { label: string; secs: number }[] } | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [dialog, setDialog] = useState({ isOpen: false, type: 'success' as 'success' | 'error', title: '', message: '' });
   const urlSearchRef = useRef<string | null>(null);
@@ -224,22 +224,30 @@ export default function PenonaktifanMasterClient() {
     setSyncing(true);
     setLoading(true);
     setError('');
+    const history: { label: string; secs: number }[] = [];
+    const syncStart = performance.now();
     try {
       for (let i = 0; i < steps.length; i++) {
         if (!mountedRef.current) return;
-        setSyncProgress({ done: i, total, label: steps[i].label });
+        setSyncProgress({ done: i, total, label: steps[i].label, elapsed: (performance.now() - syncStart) / 1000, history: [...history] });
+        const stepStart = performance.now();
         const res = await fetch(steps[i].url);
         const json = await res.json().catch(() => ({})) as { success?: boolean; error?: string; details?: string };
         if (!res.ok || json.success === false || json.error) {
           throw new Error(`Tahap ${i + 1}/${total} (${steps[i].label}) gagal: ${json.error || json.details || `HTTP ${res.status}`}`);
         }
+        history.push({ label: steps[i].label, secs: Math.round(((performance.now() - stepStart) / 1000) * 10) / 10 });
       }
       if (!mountedRef.current) return;
-      setSyncProgress({ done: steps.length, total, label: 'Generate usulan' });
+      setSyncProgress({ done: steps.length, total, label: 'Generate usulan', elapsed: (performance.now() - syncStart) / 1000, history: [...history] });
       setData(null);
+      const genStart = performance.now();
       await handleGenerate();
+      history.push({ label: 'Generate usulan', secs: Math.round(((performance.now() - genStart) / 1000) * 10) / 10 });
       if (!mountedRef.current) return;
-      setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Semua data Digit ditarik (${steps.length} tahap) dan usulan cutoff ${cutoff} digenerate ulang.` });
+      const totalSecs = Math.round((performance.now() - syncStart) / 1000);
+      const rincian = history.map((h) => `${h.label}: ${h.secs}s`).join(' • ');
+      setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Semua data Digit ditarik (${steps.length} tahap, total ${totalSecs}s) dan usulan cutoff ${cutoff} digenerate ulang. Rincian: ${rincian}.` });
     } catch (e) {
       if (mountedRef.current) setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -343,7 +351,7 @@ export default function PenonaktifanMasterClient() {
           <div className="flex items-center justify-between text-[12px] font-bold text-gray-500 mb-2">
             <span className="flex items-center gap-2">
               <Loader2 size={14} className="animate-spin text-emerald-600" />
-              Menarik data Digit — {syncProgress.label}
+              Menarik data Digit — {syncProgress.label} ({Math.round(syncProgress.elapsed)}s)
             </span>
             <span className="text-emerald-600">{syncProgress.done + 1}/{syncProgress.total}</span>
           </div>
@@ -353,6 +361,11 @@ export default function PenonaktifanMasterClient() {
               style={{ width: `${Math.round(((syncProgress.done + 1) / syncProgress.total) * 100)}%` }}
             />
           </div>
+          {syncProgress.history.length > 0 && (
+            <p className="mt-2 text-[11px] font-semibold text-gray-400 leading-relaxed">
+              {syncProgress.history.map((h) => `${h.label} ${h.secs}s`).join(' • ')}
+            </p>
+          )}
         </div>
       )}
 
