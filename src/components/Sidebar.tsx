@@ -236,12 +236,12 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Auto-scroll to active item saat initial mount, ganti halaman, atau sidebar mekar (expand / hover)
+  // Lompat langsung ke item aktif saat initial mount, ganti halaman, atau sidebar mekar (expand / hover)
   useEffect(() => {
     if (isMounted && isExpanded) {
       const timer = setTimeout(() => {
         const activeItem = navRef.current?.querySelector('.sidebar-active');
-        if (activeItem) activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        if (activeItem) activeItem.scrollIntoView({ block: 'nearest' });
       }, 150);
       return () => clearTimeout(timer);
     }
@@ -821,11 +821,11 @@ function AccordionMenu({
   const isOpen = openMenuIds.has(menuId) || isActive;
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll menu aktif ke viewport saat sidebar mekar (collapsed -> hover-expand)
+  // Lompat langsung ke menu aktif saat sidebar mekar (collapsed -> hover-expand)
   useEffect(() => {
     if (isExpanded && isActive && menuRef.current) {
       const timer = setTimeout(() => {
-        menuRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        menuRef.current?.scrollIntoView({ block: 'nearest' });
       }, 150);
       return () => clearTimeout(timer);
     }
