@@ -105,21 +105,21 @@ export async function generateUsulan(cutoffIso: string, limit?: number): Promise
   const kandidat = (masterRes.rows as DbRow[]).filter((m) => isMasterAktif(str(m.status)));
   const kodes = kandidat.map((m) => str(m.kode));
   const kodeSet = new Set(kodes);
-
   // 2. Bulk transaksi per kode (chunk IN 400).
   const CH = 400;
   const chunks: string[][] = [];
   for (let i = 0; i < kodes.length; i += CH) chunks.push(kodes.slice(i, i + CH));
 
-  const pdByKode = new Map<string, PdAgg>();
-  const huluTgl = new Map<string, string>(); // kode -> tgl hulu terakhir (BOM/QO/SO)
-  const huluFaktur = new Map<string, string>(); // kode -> faktur QO terakhir (sph_out)
-  const bomSet = new Set<string>();
-  for (const ch of chunks) {
+   const pdByKode = new Map<string, PdAgg>();
+   const huluTgl = new Map<string, string>(); // kode -> tgl hulu terakhir (BOM/QO/SO)
+   const huluFaktur = new Map<string, string>(); // kode -> faktur QO terakhir (sph_out)
+   const bomSet = new Set<string>();
+   const bomFakturByKode = new Map<string, Set<string>>();
+   for (const ch of chunks) {
     const marks = ch.map(() => '?').join(',');
     const [pd, bom, so] = await Promise.all([
       db.execute({ sql: `SELECT kd_barang, faktur_prd, qty, qty_wip_akhir, selesai, tgl FROM barang_jadi WHERE kd_barang IN (${marks})`, args: [...ch] }),
-      db.execute({ sql: `SELECT kd_barang, tgl FROM bill_of_materials WHERE kd_barang IN (${marks})`, args: [...ch] }),
+       db.execute({ sql: `SELECT kd_barang, faktur, tgl FROM bill_of_materials WHERE kd_barang IN (${marks})`, args: [...ch] }),
       db.execute({ sql: `SELECT kd_barang, tgl FROM sales_orders WHERE kd_barang IN (${marks})`, args: [...ch] }),
     ]);
     for (const r of pd.rows as DbRow[]) {
@@ -141,15 +141,42 @@ export async function generateUsulan(cutoffIso: string, limit?: number): Promise
       const prev = huluTgl.get(k);
       if (!prev || iso > prev) huluTgl.set(k, iso);
     };
-    for (const r of bom.rows as DbRow[]) {
-      const k = str(r.kd_barang);
-      bomSet.add(k);
-      touchHulu(k, ddMmYyyyToIso(str(r.tgl)));
-    }
-    for (const r of so.rows as DbRow[]) touchHulu(str(r.kd_barang), ddMmYyyyToIso(str(r.tgl)));
-  }
+     for (const r of bom.rows as DbRow[]) {
+       const k = str(r.kd_barang);
+       bomSet.add(k);
+       const f = str((r as Record<string, unknown>).faktur).toUpperCase();
+       if (f) {
+         let s = bomFakturByKode.get(k);
+         if (!s) { s = new Set<string>(); bomFakturByKode.set(k, s); }
+         s.add(f);
+       }
+       touchHulu(k, ddMmYyyyToIso(str(r.tgl)));
+     }
+     for (const r of so.rows as DbRow[]) touchHulu(str(r.kd_barang), ddMmYyyyToIso(str(r.tgl)));
+   }
 
-  // 3. PR: satu query untuk semua faktur_prd distinct + fallback scan nama.
+   // 2b. Jembatan BOM -> SPK: SPK terbit (orders.faktur_bom cocok faktur BOM)
+   // walau barang_jadi belum ada setoran (totPD=0).
+   {
+     const allBomFakturs = [...new Set([...bomFakturByKode.values()].flatMap((s) => [...s]))];
+     for (let i = 0; i < allBomFakturs.length; i += CH) {
+       const ch = allBomFakturs.slice(i, i + CH);
+       const marks = ch.map(() => '?').join(',');
+       const ors = await db.execute({ sql: `SELECT faktur, faktur_bom FROM orders WHERE faktur_bom IN (${marks})`, args: [...ch] });
+       for (const r of ors.rows as DbRow[]) {
+         const pr = str(r.faktur).toUpperCase();
+         const bm = str((r as Record<string, unknown>).faktur_bom).toUpperCase();
+         if (!pr || !bm) continue;
+         for (const [k, s] of bomFakturByKode) {
+           if (!s.has(bm)) continue;
+           let a = pdByKode.get(k);
+           if (!a) { a = { totPD: 0, hasPost: false, hasPostPR: false, lastSelesai: null, lastWip: null, prFakturs: new Set<string>() }; pdByKode.set(k, a); }
+           a.prFakturs.add(pr);
+           break;
+         }
+       }
+     }
+   }
   const allPrFakturs = [...new Set([...pdByKode.values()].flatMap((a) => [...a.prFakturs]))];
   const prQty = new Map<string, number>();
   for (let i = 0; i < allPrFakturs.length; i += CH) {
