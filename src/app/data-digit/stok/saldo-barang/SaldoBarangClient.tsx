@@ -245,18 +245,8 @@ export default function SaldoBarangClient() {
 
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
-          <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <div className="flex items-center gap-4">
-              <ScrapingHeader title="Data Saldo Barang" icon={<Package size={16} />} lastUpdated={lastUpdated} scrapedPeriod={null} />
-
-              {loading && rows.length > 0 && (
-                <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
-                  <Loader2 size={12} className="animate-spin" />
-                  <span>Memuat...</span>
-                </div>
-              )}
-            </div>
-
+          <div className="flex items-center gap-4 min-h-[32px] flex-wrap">
+            <ScrapingHeader title="Data Saldo Barang" icon={<Package size={16} />} lastUpdated={lastUpdated} scrapedPeriod={null} />
             <div className="flex items-end gap-2 flex-wrap">
               <div>
                 <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal posisi</label>
@@ -265,17 +255,17 @@ export default function SaldoBarangClient() {
               <button
                 onClick={handleSync}
                 disabled={isSyncing || loading}
-                className="shrink-0 w-full sm:w-auto min-w-[140px] px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-xl text-[12px] font-bold shadow-sm shadow-emerald-900/20 hover:shadow-emerald-900/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group/btn relative overflow-hidden"
+                className="shrink-0 px-5 py-2.5 bg-white border border-gray-100 rounded-xl text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 text-[12px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
               >
-                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
-                <span className="relative z-10 flex items-center gap-2">
-                  {isSyncing ? (
-                    <><Loader2 size={16} className="animate-spin" /> Sedang Menarik...</>
-                  ) : (
-                    <><DownloadCloud size={16} className="group-hover/btn:-translate-y-0.5 transition-transform duration-300" /> Tarik Data</>
-                  )}
-                </span>
+                {isSyncing ? <Loader2 size={16} className="animate-spin" /> : <DownloadCloud size={16} />}
+                {isSyncing ? 'Menarik…' : 'Tarik Data'}
               </button>
+              {loading && rows.length > 0 && (
+                <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none self-center">
+                  <Loader2 size={12} className="animate-spin" />
+                  <span>Memuat...</span>
+                </div>
+              )}
             </div>
           </div>
 
