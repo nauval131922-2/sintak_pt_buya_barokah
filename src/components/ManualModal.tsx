@@ -144,15 +144,20 @@ export default function ManualModal() {
    '/penonaktifan-master-barang': {
      title: 'Lap. Penonaktifan Master Barang Jadi',
      icon: FileCheck,
-     description: 'Generate usulan barang jadi pesanan bersaldo nol yang aman dinonaktifkan (4 pilar). File usulan untuk PPIC — tanpa mengubah data.',
+     description: 'Generate usulan barang jadi pesanan bersaldo nol yang aman dinonaktifkan. Cakupan: golongan Barang Jadi Pesanan, saldo 0, status Aktif. File usulan untuk PPIC — Sintak tidak mengubah status barang apa pun, eksekusi nonaktif tetap di Digit.',
      steps: [
-       'Atur **Tanggal cutoff** — tanggal evaluasi (misal akhir pekan). Sekali saja: ikon gear untuk kata kunci rutin dan batas idle.',
-       'Klik **Sync semua & Generate** — otomatis tarik saldo, master, transaksi, dan log Digit (awal tahun sampai cutoff + 7 hari), lalu generate usulan.',
-       'Review hasil — 4 kartu ringkasan (kandidat, layak, ditolak, cutoff) dan tabel alasan per kode. Kategori A ludes pesanan, B penawaran batal.',
-       'Klik **Unduh Excel usulan** — file siap tanda tangan PPIC, Customer Service, dan Manager.',
-       'Serahkan ke PPIC — eksekusi nonaktif tetap di Digit. Sintak tidak mengubah status barang apa pun.'
+       'Atur **Tanggal cutoff** — tanggal evaluasi (misal akhir pekan). Semua transaksi dihitung sampai tanggal ini; order susulan sesudahnya justru jadi alasan penolakan.',
+       'Sekali saja — klik ikon **gear** (Pengaturan): daftarkan **kata kunci rutin** (misal kitab induk) dan **kode eksplisit** agar produk langganan tidak ikut diusulkan; atur **batas idle** kategori B (default 7 hari).',
+       'Klik **Sync semua & Generate** — otomatis tarik 8 tahap dari Digit (saldo per cutoff; order, hasil produksi, SPH, BOM, sales order, dan log aktivitas dari awal tahun sampai cutoff + 7 hari), lalu generate usulan. Total ±3 menit; rincian detik per tahap tampil di progress bar dan dialog Berhasil.',
+       'Atau klik **Generate usulan** saja bila data Digit sudah ditarik — hitung ulang dari database lokal dalam ±3 detik.',
+       'Baca 4 kartu ringkasan: **Kandidat aktif saldo 0** (semua yang masuk saringan awal), **Layak diusulkan** (lolos 4 pilar), **Ditolak Pilar 2** (ditahan filter pelindung), dan **Cutoff** yang dipakai.',
+       'Review tabel per kode — kolom **Kategori**: A_LUDES = pesanan ludes (SPK tuntas + ada bukti keluar PJ/SM/SV, alasan menyebut faktur dan tanggal keluarnya); B_BATAL = penawaran batal (tanpa SPK dan hulu terakhir sudah idle ≥ batas hari, alasan menyebut QO terakhir).',
+       'Kolom **Alasan** juga menjelaskan penolakan: produk rutin, oplah belum tuntas (PR > PD), WIP masih berjalan, sisa WIP, ada setoran/order susulan pasca-cutoff, SPK tuntas tanpa bukti keluar, atau penawaran masih baru (< batas idle).',
+       'Gunakan **Kotak Pencarian** untuk memfilter kode/nama; klik baris untuk menandai; footer menampilkan jumlah dan waktu muat.',
+       'Klik **Unduh Excel usulan** — file siap tanda tangan PPIC, Customer Service, dan Manager (kolom penanda tangan otomatis terisi nama user login).',
+       'Serahkan ke PPIC — pastikan sync master terbaru sebelum eksekusi, karena saldo 0 di Sintak diasumsikan N PERSD 0.'
      ],
-     tips: 'Pastikan kode kitab induk terdaftar di pengaturan rutin agar tidak ikut diusulkan.'
+     tips: 'Cutoff + 7 hari sengaja ditarik untuk menangkap order susulan: kode yang dipesan lagi setelah cutoff otomatis ditolak dengan alasan SPK/order susulan pasca-cutoff.'
    },
    '/jurnal-harian-produksi/data/excel-sopd': {
       title: 'SOPd',

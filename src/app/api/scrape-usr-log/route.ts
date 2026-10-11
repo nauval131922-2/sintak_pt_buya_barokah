@@ -63,31 +63,35 @@ export async function GET(request: NextRequest) {
     if (!res.ok) return NextResponse.json({ error: `Digit error: HTTP ${res.status}` }, { status: res.status });
 
     const json = await res.json();
-    const rows: any[] = Array.isArray(json) ? json : (json.data ?? json.rows ?? []);
+    const rows: Record<string, unknown>[] = Array.isArray(json) ? (json as Record<string, unknown>[]) : ((json.data ?? json.rows ?? []) as Record<string, unknown>[]);
 
     // Hapus data lama untuk rentang ini lalu insert baru (replace strategi per periode)
     const isoAwal = toIso(stglAwal);
     const isoAkhir = toIso(stglAkhir);
     await db.execute({ sql: `DELETE FROM usr_log WHERE tgl BETWEEN ? AND ?`, args: [isoAwal, isoAkhir] });
 
-    const chunkSize = 50;
-    for (let i = 0; i < rows.length; i += chunkSize) {
-      await db.batch(
-        rows.slice(i, i + chunkSize).map((r: any) => ({
-          sql: `INSERT INTO usr_log (level, datetime, channel, username, pesan, data_json, tgl) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          args: [
-            r.Level || '',
-            r.Datetime || '',
-            r.Channel || '',
-            r.User || '',
-            r.Pesan || '',
-            r.Data ? JSON.stringify(r.Data) : null,
-            r.Datetime ? r.Datetime.substring(0, 10) : isoAwal,
-          ],
-        })),
-        'write'
-      );
+    // 100 baris x 7 kolom = 700 variabel, di bawah batas 999 SQLite/libSQL.
+    // Semua statement jalan paralel.
+    const CHUNK = 100;
+    const batchStmts: { sql: string; args: unknown[] }[] = [];
+    for (let i = 0; i < rows.length; i += CHUNK) {
+      const sub = rows.slice(i, i + CHUNK);
+      const placeholders = sub.map(() => `(?, ?, ?, ?, ?, ?, ?)`).join(', ');
+      const allArgs = sub.flatMap((r) => [
+        (r.Level as string) || '',
+        (r.Datetime as string) || '',
+        (r.Channel as string) || '',
+        (r.User as string) || '',
+        (r.Pesan as string) || '',
+        r.Data ? JSON.stringify(r.Data) : null,
+        typeof r.Datetime === 'string' && r.Datetime ? r.Datetime.substring(0, 10) : isoAwal,
+      ]);
+      batchStmts.push({
+        sql: `INSERT INTO usr_log (level, datetime, channel, username, pesan, data_json, tgl) VALUES ${placeholders}`,
+        args: allArgs,
+      });
     }
+    await Promise.all(batchStmts.map((stmt) => db.execute(stmt)));
 
     const lastUpdated = new Date().toISOString();
     await db.batch([

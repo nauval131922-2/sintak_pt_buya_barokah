@@ -154,47 +154,44 @@ export async function GET(request: NextRequest) {
         existingFakturs = new Set(existingRes.rows.map((row: any) => row.faktur));
     }
 
-    // 2. Prepare batch inserts
-    const batchOps: any[] = [];
-    let newInsertedCount = 0;
-    
-    for (const record of finalRecords) {
-        if (!record.faktur) continue;
-        if (!existingFakturs.has(record.faktur)) newInsertedCount++;
-        
-        batchOps.push({
-            sql: `
-              INSERT INTO sph_out (faktur, tgl, kd_pelanggan, barang, total, status, faktur_so, faktur_bom, raw_data)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-              ON CONFLICT(faktur) DO UPDATE SET
-                tgl = excluded.tgl,
-                kd_pelanggan = excluded.kd_pelanggan,
-                barang = excluded.barang,
-                total = excluded.total,
-                status = excluded.status,
-                faktur_so = excluded.faktur_so,
-                faktur_bom = excluded.faktur_bom,
-                raw_data = excluded.raw_data
-            `,
-            args: [
-              record.faktur,
-              record.tgl,
-              record.kd_pelanggan,
-              record.barang,
-              record.total,
-              record.status,
-              record.faktur_so,
-              record.faktur_bom,
-              record.raw_data
-            ]
-        });
+    // 2. Prepare multi-row batch inserts
+    const validRecords = finalRecords.filter((r: any) => Boolean(r.faktur));
+    const newInsertedCount = validRecords.filter((r: any) => !existingFakturs.has(r.faktur)).length;
+
+    const SPH_COLS = ['faktur', 'tgl', 'kd_pelanggan', 'barang', 'total', 'status', 'faktur_so', 'faktur_bom', 'raw_data'];
+    const SPH_UPDATE_SET = `tgl = excluded.tgl,
+      kd_pelanggan = excluded.kd_pelanggan,
+      barang = excluded.barang,
+      total = excluded.total,
+      status = excluded.status,
+      faktur_so = excluded.faktur_so,
+      faktur_bom = excluded.faktur_bom,
+      raw_data = excluded.raw_data`;
+    const CHUNK = 100; // 100 faktur x 9 kolom = 900 variabel per statement (<= 999 limit)
+    const batchStmts: { sql: string; args: unknown[] }[] = [];
+
+    for (let i = 0; i < validRecords.length; i += CHUNK) {
+      const chunk = validRecords.slice(i, i + CHUNK);
+      const placeholders = chunk.map(() => '(?, ?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
+      const args = chunk.flatMap((r: any) => [
+        r.faktur,
+        r.tgl,
+        r.kd_pelanggan,
+        r.barang,
+        r.total,
+        r.status,
+        r.faktur_so,
+        r.faktur_bom,
+        r.raw_data
+      ]);
+      batchStmts.push({
+        sql: `INSERT INTO sph_out (${SPH_COLS.join(', ')}) VALUES ${placeholders}
+              ON CONFLICT(faktur) DO UPDATE SET ${SPH_UPDATE_SET}`,
+        args
+      });
     }
 
-    // Process batch
-    const chunkSize = 100;
-    for (let i = 0; i < batchOps.length; i += chunkSize) {
-        await db.batch(batchOps.slice(i, i + chunkSize), "write");
-    }
+    await Promise.all(batchStmts.map(stmt => db.execute(stmt)));
 
     const lastUpdated = new Date().toISOString();
     

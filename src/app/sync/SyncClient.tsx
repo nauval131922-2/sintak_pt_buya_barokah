@@ -23,6 +23,7 @@ const MODULE_GROUPS = [
     color: 'indigo',
     modules: [
       { id: 'master-barang', name: 'Master Barang', endpoint: '/api/scrape-master-barang', description: 'Data master barang stok', noDateRange: true },
+      { id: 'saldo-barang', name: 'Saldo Barang', endpoint: '/api/scrape-saldo-barang', description: 'Posisi saldo & N persediaan (per tanggal akhir)', saldoTgl: true },
     ]
   },
   {
@@ -61,6 +62,13 @@ const MODULE_GROUPS = [
     ]
   },
   {
+    group: 'Sistem',
+    color: 'slate',
+    modules: [
+      { id: 'usr-log', name: 'Log Aktivitas User', endpoint: '/api/scrape-usr-log', description: 'Audit trail aktivitas user Digit', usrLogRange: true },
+    ]
+  },
+  {
     group: 'Akuntansi & Keuangan',
     color: 'amber',
     modules: [
@@ -75,6 +83,8 @@ const MODULES = MODULE_GROUPS.flatMap(g => g.modules);
 
 const PERSISTENCE_KEYS: Record<string, { stateKey: string; periodKey: string }> = {
   'master-barang': { stateKey: 'masterBarangState', periodKey: 'MasterBarangClient_scrapedPeriod' },
+  'saldo-barang': { stateKey: 'saldoBarangState', periodKey: 'SaldoBarangClient_scrapedPeriod' },
+  'usr-log': { stateKey: 'usrLogState', periodKey: 'UsrLog_scrapedPeriod' },
   'bom': { stateKey: 'bomReportState', periodKey: 'BOMClient_scrapedPeriod' },
   'sph-out': { stateKey: 'sphOutState', periodKey: 'SphOutClient_scrapedPeriod' },
   'sales-orders': { stateKey: 'salesOrderState', periodKey: 'SalesOrderClient_scrapedPeriod' },
@@ -106,6 +116,8 @@ interface ModuleSyncState {
 
 const SYNC_TO_PERM_MAP: Record<string, string> = {
   'master-barang': 'stok_master_barang',
+  'saldo-barang': 'stok_saldo_barang',
+  'usr-log': 'usr_log_view',
   'pr': 'pembelian_pr',
   'spph-out': 'pembelian_spph',
   'sph-in': 'pembelian_sph_in',
@@ -229,9 +241,14 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
 
       const startStr = formatDate(startDate);
       const endStr = formatDate(endDate);
+      const toDdMmYyyy = (iso: string) => iso.split('-').reverse().join('-');
       const url = (mod as any).noDateRange
         ? `${mod.endpoint}`
-        : `${mod.endpoint}?start=${startStr}&end=${endStr}&metaStart=${startStr}&metaEnd=${endStr}`;
+        : (mod as any).saldoTgl
+          ? `${mod.endpoint}?tgl=${endStr}`
+          : (mod as any).usrLogRange
+            ? `${mod.endpoint}?stgl_awal=${toDdMmYyyy(startStr)}&stgl_akhir=${toDdMmYyyy(endStr)}`
+            : `${mod.endpoint}?start=${startStr}&end=${endStr}&metaStart=${startStr}&metaEnd=${endStr}`;
 
       const response = await fetch(url, { method: 'GET', cache: 'no-store' });
       const data = await response.json();

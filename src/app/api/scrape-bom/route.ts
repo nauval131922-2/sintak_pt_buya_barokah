@@ -114,57 +114,58 @@ export async function GET(request: NextRequest) {
       return match ? parseFloat(match[0]) : 0;
     };
 
-    const batchOps: any[] = [];
-    for (const record of allRecords) {
-      batchOps.push({
-        sql: `
-          INSERT INTO bill_of_materials (
-            faktur, tgl, kd_mtd, nama_prd, kd_pelanggan, 
-            bbb, btkl, bop, hp, spesifikasi, 
-            kd_barang, qty_order, faktur_sph, faktur_prd, 
-            raw_data
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          ON CONFLICT(faktur) DO UPDATE SET
-            tgl = excluded.tgl,
-            kd_mtd = excluded.kd_mtd,
-            nama_prd = excluded.nama_prd,
-            kd_pelanggan = excluded.kd_pelanggan,
-            bbb = excluded.bbb,
-            btkl = excluded.btkl,
-            bop = excluded.bop,
-            hp = excluded.hp,
-            spesifikasi = excluded.spesifikasi,
-            kd_barang = excluded.kd_barang,
-            qty_order = excluded.qty_order,
-            faktur_sph = excluded.faktur_sph,
-            faktur_prd = excluded.faktur_prd,
-            raw_data = excluded.raw_data
-        `,
-        args: [
-          record.faktur || '',
-          record.tgl || '',
-          record.kd_mtd || '',
-          record.nama_prd || '',
-          record.kd_pelanggan || '',
-          parseDigitVal(record.bbb),
-          parseDigitVal(record.btkl),
-          parseDigitVal(record.bop),
-          parseDigitVal(record.hp),
-          record.spesifikasi || '',
-          record.kd_barang || '',
-          parseDigitVal(record.qty_order),
-          record.faktur_sph || '',
-          record.faktur_prd || '',
-          JSON.stringify(record)
-        ]
+    const recordArgs = (record: Record<string, unknown>) => [
+      String(record.faktur || ''),
+      String(record.tgl || ''),
+      String(record.kd_mtd || ''),
+      String(record.nama_prd || ''),
+      String(record.kd_pelanggan || ''),
+      parseDigitVal(record.bbb),
+      parseDigitVal(record.btkl),
+      parseDigitVal(record.bop),
+      parseDigitVal(record.hp),
+      String(record.spesifikasi || ''),
+      String(record.kd_barang || ''),
+      parseDigitVal(record.qty_order),
+      String(record.faktur_sph || ''),
+      String(record.faktur_prd || ''),
+      JSON.stringify(record)
+    ];
+
+    // 60 faktur x 15 kolom = 900 variabel per statement (batas libSQL 999)
+    const CHUNK = 60;
+    const MARKER = '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    const COLS = 'faktur, tgl, kd_mtd, nama_prd, kd_pelanggan, bbb, btkl, bop, hp, spesifikasi, kd_barang, qty_order, faktur_sph, faktur_prd, raw_data';
+    const UPDATE_SET = `
+      tgl = excluded.tgl,
+      kd_mtd = excluded.kd_mtd,
+      nama_prd = excluded.nama_prd,
+      kd_pelanggan = excluded.kd_pelanggan,
+      bbb = excluded.bbb,
+      btkl = excluded.btkl,
+      bop = excluded.bop,
+      hp = excluded.hp,
+      spesifikasi = excluded.spesifikasi,
+      kd_barang = excluded.kd_barang,
+      qty_order = excluded.qty_order,
+      faktur_sph = excluded.faktur_sph,
+      faktur_prd = excluded.faktur_prd,
+      raw_data = excluded.raw_data
+    `;
+
+    const batchStmts: { sql: string; args: unknown[] }[] = [];
+    for (let i = 0; i < allRecords.length; i += CHUNK) {
+      const chunk = allRecords.slice(i, i + CHUNK);
+      const allMarkers = chunk.map(() => MARKER).join(', ');
+      const allArgs = chunk.flatMap(recordArgs);
+      batchStmts.push({
+        sql: `INSERT INTO bill_of_materials (${COLS}) VALUES ${allMarkers}
+              ON CONFLICT(faktur) DO UPDATE SET ${UPDATE_SET}`,
+        args: allArgs,
       });
     }
 
-    const chunkSize = 100;
-    for (let i = 0; i < batchOps.length; i += chunkSize) {
-      await db.batch(batchOps.slice(i, i + chunkSize), "write");
-    }
+    await Promise.all(batchStmts.map(stmt => db.execute(stmt)));
 
     const lastUpdated = new Date().toISOString();
     await db.batch([
