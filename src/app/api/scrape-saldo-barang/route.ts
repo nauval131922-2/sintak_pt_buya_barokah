@@ -91,6 +91,7 @@ export async function GET(request: NextRequest) {
      const rawRecords: SaldoRecord[] = [];
      let offset = 0;
      let truncated = false;
+     await markProgress({ tgl: tglParam, page: 0, fetched: 0, done: false, at: new Date().toISOString() });
      for (let pageNum = 0; pageNum < MAX_PAGES; pageNum++) {
        const reqData = { limit: PAGE_LIMIT, offset, bsearch: { stgl, skondisi_stok: "" } };
        const reqJson = encodeURIComponent(JSON.stringify(reqData));

@@ -169,7 +169,11 @@ export default function SaldoBarangClient() {
       setError('');
       setPage(1);
       setSyncProgress(null);
+      let polls = 0;
       const poll = setInterval(async () => {
+        polls += 1;
+        // ponytail: max ~5 menit (150x2s); Digit lambat tapi 13rb baris kelar jauh sebelum itu
+        if (polls > 150) { clearInterval(poll); return; }
         try {
           const pr = await fetch('/api/scrape-saldo-barang?progress=1');
           const pj = await pr.json();
