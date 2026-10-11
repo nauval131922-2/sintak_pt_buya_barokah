@@ -271,13 +271,10 @@ export default function SaldoBarangClient() {
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-end gap-2 flex-wrap">
-            <div>
-              <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal posisi</label>
-              <DatePicker name="tgl" value={isoToDate(tgl)} onChange={(d) => { setTgl(dateToIso(d)); setPage(1); }} />
-              {lastUpdated && (
-                <p className="mt-1 text-[11px] font-bold text-gray-400 leading-none">Update: {lastUpdated.split('|')[0].slice(0, 16).replace('T', ' ')}</p>
-              )}
-            </div>
+             <div>
+               <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal posisi{lastUpdated ? <span className="font-semibold text-gray-300"> • Update: {lastUpdated.split('|')[0].slice(0, 16).replace('T', ' ')}</span> : null}</label>
+               <DatePicker name="tgl" value={isoToDate(tgl)} onChange={(d) => { setTgl(dateToIso(d)); setPage(1); }} />
+             </div>
             <button
               onClick={handleSync}
                disabled={isSyncing || loading}
