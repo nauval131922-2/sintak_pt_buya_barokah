@@ -482,16 +482,28 @@ export default function ManualModal() {
       tips: 'Kolom Laba/Rugi dan Arus Kas dihitung secara berkesinambungan (running total). Perhatikan warna baris di tabel dan di Excel untuk membedakan transaksi kas (ungu), pendapatan (hijau), dan beban (merah).'
     },
     '/akuntansi/data/rek-akuntansi': {
-      title: 'Rekening Akuntansi',
-      icon: Database,
-      description: 'Master data bagan akun (Chart of Accounts) yang menjadi referensi pengelompokan transaksi jurnal umum dan penandaan kategori kas.',
-      steps: [
-        'Klik tombol **Tarik Data** untuk memperbarui daftar rekening akuntansi dari server Digit.',
-        'Gunakan **Kotak Pencarian** untuk menemukan rekening berdasarkan kode akun atau nama rekening.',
-        'Kolom **Arus Kas** menentukan apakah rekening tersebut diperlakukan sebagai Kas dalam kalkulasi mutasi Arus Kas pada Jurnal Umum.'
-      ]
-    }
-  }), [pathname]);
+       title: 'Rekening Akuntansi',
+       icon: Database,
+       description: 'Master data bagan akun (Chart of Accounts) yang menjadi referensi pengelompokan transaksi jurnal umum dan penandaan kategori kas.',
+       steps: [
+         'Klik tombol **Tarik Data** untuk memperbarui daftar rekening akuntansi dari server Digit.',
+         'Gunakan **Kotak Pencarian** untuk menemukan rekening berdasarkan kode akun atau nama rekening.',
+         'Kolom **Arus Kas** menentukan apakah rekening tersebut diperlakukan sebagai Kas dalam kalkulasi mutasi Arus Kas pada Jurnal Umum.'
+       ]
+     },
+    '/data-digit/stok/saldo-barang': {
+       title: 'Saldo Barang',
+       icon: Box,
+       description: 'Posisi saldo dan N persediaan per tanggal dari Digit.',
+       steps: [
+         'Pilih **Tanggal posisi** lalu klik **Tarik Data** untuk menarik posisi saldo tanggal tersebut.',
+         'Gunakan **Kotak Pencarian** untuk memfilter berdasarkan kode, nama barang, atau kelompok.',
+         'Klik header kolom (Kode, Nama, Saldo, dsb.) untuk mengurutkan — pengurutan berlaku global lintas halaman.',
+         'Klik baris untuk menandai, footer menampilkan jumlah dan waktu muat.'
+       ],
+       tips: 'Tarik data cukup sekali per tanggal — data tersimpan dan generate berikutnya instan.'
+     }
+   }), [pathname]);
 
   // Listen for custom open-manual event
   useEffect(() => {
@@ -500,7 +512,17 @@ export default function ManualModal() {
     return () => window.removeEventListener('open-manual', handleOpen);
   }, []);
 
-  const currentGuide = allGuides[pathname as keyof typeof allGuides] || allGuides['/dashboard'];
+  const fallbackGuide = {
+    title: 'Panduan',
+    icon: Info,
+    description: 'Halaman ini belum memiliki panduan khusus.',
+    steps: [
+      'Gunakan **Kotak Pencarian** untuk memfilter data yang tampil.',
+      'Klik header kolom untuk mengurutkan data.',
+      'Klik tombol **Tarik Data** bila tersedia untuk memperbarui dari Digit.',
+    ],
+  };
+  const currentGuide = (allGuides as Record<string, typeof fallbackGuide>)[pathname] || fallbackGuide;
 
   return (
     <BaseModal

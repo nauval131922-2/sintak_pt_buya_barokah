@@ -38,8 +38,17 @@ type SaldoRecord = Record<string, unknown>;
 // Scrape posisi saldo barang Digit (v1/stk/r_brg_s/gr1, bsearch.stgl tunggal).
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    let tglParam = searchParams.get("tgl");
+     const searchParams = request.nextUrl.searchParams;
+     if (searchParams.get("progress") === "1") {
+       const gate = await requireApiPermission('stok_saldo_barang');
+       if (gate.error) return gate.error;
+       const r = await db.execute({ sql: `SELECT value FROM system_settings WHERE key = 'saldo_scrape_progress'` });
+       const raw = (r.rows[0] as Record<string, unknown> | undefined)?.value as string | undefined;
+       let prog: Record<string, unknown> | null = null;
+       try { prog = raw ? JSON.parse(String(raw)) : null; } catch { prog = null; }
+       return NextResponse.json({ success: true, progress: prog }, { headers: { "Cache-Control": "no-store" } });
+     }
+     let tglParam = searchParams.get("tgl");
     if (!tglParam) tglParam = new Date().toISOString().split("T")[0];
 
     const tglDate = new Date(tglParam);
