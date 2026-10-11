@@ -117,10 +117,9 @@ export async function generateUsulan(cutoffIso: string, limit?: number): Promise
    const bomFakturByKode = new Map<string, Set<string>>();
    for (const ch of chunks) {
     const marks = ch.map(() => '?').join(',');
-    const [pd, bom, so] = await Promise.all([
+    const [pd, bom] = await Promise.all([
       db.execute({ sql: `SELECT kd_barang, faktur_prd, qty, qty_wip_akhir, selesai, tgl FROM barang_jadi WHERE kd_barang IN (${marks})`, args: [...ch] }),
-       db.execute({ sql: `SELECT kd_barang, faktur, tgl FROM bill_of_materials WHERE kd_barang IN (${marks})`, args: [...ch] }),
-      db.execute({ sql: `SELECT kd_barang, tgl FROM sales_orders WHERE kd_barang IN (${marks})`, args: [...ch] }),
+      db.execute({ sql: `SELECT kd_barang, faktur, tgl FROM bill_of_materials WHERE kd_barang IN (${marks})`, args: [...ch] }),
     ]);
     for (const r of pd.rows as DbRow[]) {
       const k = str(r.kd_barang);
@@ -152,7 +151,6 @@ export async function generateUsulan(cutoffIso: string, limit?: number): Promise
        }
        touchHulu(k, ddMmYyyyToIso(str(r.tgl)));
      }
-     for (const r of so.rows as DbRow[]) touchHulu(str(r.kd_barang), ddMmYyyyToIso(str(r.tgl)));
    }
 
    // 2b. Jembatan BOM -> SPK: SPK terbit (orders.faktur_bom cocok faktur BOM)

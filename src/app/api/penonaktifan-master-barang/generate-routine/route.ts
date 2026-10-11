@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
      type Cand = { kode: string; nama: string; bom: number; spk: boolean };
      // kode yang sudah punya SPK berjalan (tertahan engine otomatis, tak perlu rutin)
      const spkRes = await db.execute({
-       sql: `SELECT DISTINCT b.kd_barang AS kode FROM bill_of_materials b JOIN orders o ON b.faktur = o.faktur_bom WHERE b.kd_barang IS NOT NULL`,
+       sql: `SELECT DISTINCT b.kd_barang AS kode FROM bill_of_materials b JOIN orders o ON UPPER(TRIM(b.faktur)) = UPPER(TRIM(o.faktur_bom)) WHERE b.kd_barang IS NOT NULL AND o.faktur_bom IS NOT NULL AND TRIM(o.faktur_bom) != ''`,
      });
      const berSpk = new Set((spkRes.rows as Array<Record<string, unknown>>).map((r) => String(r.kode ?? '')));
  

@@ -29,12 +29,14 @@ export default function RoutineGeneratorClient() {
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [msg, setMsg] = useState('');
 
-  const handleGenerate = async () => {
-    setLoading(true);
-    setError('');
-    setMsg('');
-    try {
-      const res = await fetch(`/api/penonaktifan-master-barang/generate-routine?minBom=${encodeURIComponent(minBom)}&limit=200`);
+   const handleGenerate = async () => {
+     const n = Number(minBom);
+     if (!minBom.trim() || !Number.isFinite(n) || n < 1) { setError('Repeat minimal harus angka ≥ 1.'); return; }
+     setLoading(true);
+     setError('');
+     setMsg('');
+     try {
+       const res = await fetch(`/api/penonaktifan-master-barang/generate-routine?minBom=${encodeURIComponent(String(Math.floor(n)))}&limit=200`);
       const json = (await res.json()) as GenResult;
       if (!json.success) throw new Error(json.error || 'Gagal generate');
       setData(json);
@@ -106,7 +108,7 @@ export default function RoutineGeneratorClient() {
                   <td className="px-2 py-1.5 font-mono font-bold text-slate-700 whitespace-nowrap">{c.kode}</td>
                   <td className="px-2 py-1.5 text-slate-600 max-w-[280px] truncate" title={c.nama}>{c.nama}</td>
                   <td className="px-2 py-1.5 text-right tabular-nums text-slate-700">{c.bom}×</td>
-                  <td className="px-2 py-1.5 text-center">{c.spk ? <span className="text-[10px] font-bold text-amber-600">ada</span> : <span className="text-[10px] text-slate-300">—</span>}</td>
+                  <td className="px-2 py-1.5 text-center">{c.spk ? <span className="text-[10px] font-bold text-amber-600" title="Sudah ada SPK — terlindungi otomatis, tak perlu rutin">SPK ✓</span> : <span className="text-[10px] text-slate-300">—</span>}</td>
                 </tr>
               );
             })}
@@ -121,7 +123,7 @@ export default function RoutineGeneratorClient() {
     <div className="flex-1 flex flex-col gap-4 overflow-y-auto custom-scrollbar min-h-0 px-1 pb-4">
       <div className="flex items-end gap-2 flex-wrap shrink-0">
         <div>
-          <label className="block text-[11px] font-bold text-gray-400 mb-1">Repeat minimal (× BOM)</label>
+           <label className="block text-[11px] font-bold text-gray-400 mb-1">Minimal produksi berulang (×)</label>
           <input value={minBom} onChange={(e) => setMinBom(e.target.value.replace(/\D/g, ''))} inputMode="numeric" className="px-3 py-2 w-24 text-xs tabular-nums bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none" />
         </div>
         <button onClick={handleGenerate} disabled={loading} className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[12px] font-bold flex items-center gap-2 disabled:opacity-50">

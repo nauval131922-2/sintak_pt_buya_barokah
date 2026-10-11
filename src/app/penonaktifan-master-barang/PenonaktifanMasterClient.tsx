@@ -121,18 +121,19 @@ export default function PenonaktifanMasterClient() {
     localStorage.setItem('penonaktifan_columnWidths', JSON.stringify(columnWidths));
   }, [columnWidths]);
 
-  useEffect(() => {
-    setIsMounted(true);
-    mountedRef.current = true;
-    try {
-      const saved = localStorage.getItem('penonaktifan_lastData');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && Array.isArray(parsed.rows)) setData(parsed);
-      }
-    } catch { /* abaikan cache rusak */ }
-    return () => { mountedRef.current = false; };
-  }, []);
+   useEffect(() => {
+     setIsMounted(true);
+     mountedRef.current = true;
+     try {
+       const saved = localStorage.getItem('penonaktifan_lastData');
+       if (saved) {
+         const parsed = JSON.parse(saved);
+         if (parsed && Array.isArray(parsed.rows) && (!parsed.cutoff || parsed.cutoff === cutoff)) setData(parsed);
+       }
+     } catch { /* abaikan cache rusak */ }
+     return () => { mountedRef.current = false; };
+   // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, []);
 
   useEffect(() => {
     const urlSearch = searchParams.get('search');
@@ -522,7 +523,7 @@ export default function PenonaktifanMasterClient() {
                          {codeSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari…</div>}
                          {!codeSearching && codeHits.length === 0 && <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada kode/nama yang cocok.</div>}
                          {codeHits.map((r) => (
-                           <button key={r.kode} onClick={() => { if (!settings.routine_codes.includes(r.kode)) setSettings({ ...settings, routine_codes: [...settings.routine_codes, r.kode] }); setCodeSearch(''); setCodeHits([]); }} className="w-full text-left px-3 py-2 hover:bg-emerald-50 transition-colors flex items-center justify-between gap-2" title={r.nama}>
+                           <button key={r.kode} onClick={() => { if (!settings.routine_codes.includes(r.kode)) { setSettings({ ...settings, routine_codes: [...settings.routine_codes, r.kode] }); setRoutineItems((prev) => (prev.some((x) => x.kode === r.kode) ? prev : [...prev, { kode: r.kode, nama: r.nama }])); } setCodeSearch(''); setCodeHits([]); }} className="w-full text-left px-3 py-2 hover:bg-emerald-50 transition-colors flex items-center justify-between gap-2" title={r.nama}>
                              <span className="text-xs font-mono font-bold text-slate-700">{r.kode}</span>
                              <span className="text-[11px] text-slate-500 truncate flex-1">{r.nama}</span>
                              {settings.routine_codes.includes(r.kode) ? <span className="text-[10px] font-bold text-emerald-600 shrink-0">Sudah</span> : <Plus size={14} className="text-emerald-600 shrink-0" />}
