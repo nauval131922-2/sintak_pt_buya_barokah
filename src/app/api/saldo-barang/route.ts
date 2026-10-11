@@ -48,21 +48,23 @@ export async function GET(req: NextRequest) {
     }
     const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
 
-    const [dataRes, countRes, tglRes] = await Promise.all([
-      db.execute({
-        sql: `SELECT kode, tgl, nama, kd_satuan, saldo, kd_golongan, kd_kelompok, status, n_persd, n_hp
-              FROM saldo_barang ${whereClause} ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
-        args: [...params, limit, offset],
-      }),
-      db.execute({ sql: `SELECT COUNT(*) as total FROM saldo_barang ${whereClause}`, args: params }),
-      db.execute({ sql: `SELECT tgl, COUNT(*) as n FROM saldo_barang GROUP BY tgl ORDER BY tgl DESC LIMIT 10` }),
-    ]);
+     const [dataRes, countRes, tglRes, lastRes] = await Promise.all([
+       db.execute({
+         sql: `SELECT kode, tgl, nama, kd_satuan, saldo, kd_golongan, kd_kelompok, status, n_persd, n_hp
+               FROM saldo_barang ${whereClause} ORDER BY ${orderBy} LIMIT ? OFFSET ?`,
+         args: [...params, limit, offset],
+       }),
+       db.execute({ sql: `SELECT COUNT(*) as total FROM saldo_barang ${whereClause}`, args: params }),
+       db.execute({ sql: `SELECT tgl, COUNT(*) as n FROM saldo_barang GROUP BY tgl ORDER BY tgl DESC LIMIT 10` }),
+       db.execute({ sql: `SELECT value FROM system_settings WHERE key = 'last_scrape_saldo_barang'` }),
+     ]);
 
-    const rows = dataRes.rows as Record<string, unknown>[];
-    const total = (countRes.rows[0] as Record<string, unknown> | undefined)?.total as number ?? 0;
-    const available = (tglRes.rows ?? []) as Record<string, unknown>[];
+     const rows = dataRes.rows as Record<string, unknown>[];
+     const total = (countRes.rows[0] as Record<string, unknown> | undefined)?.total as number ?? 0;
+     const available = (tglRes.rows ?? []) as Record<string, unknown>[];
+     const lastUpdated = (lastRes.rows[0] as Record<string, unknown> | undefined)?.value ?? null;
 
-    return NextResponse.json({ success: true, data: rows, total, page, limit, available });
+     return NextResponse.json({ success: true, data: rows, total, page, limit, available, lastUpdated });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ success: false, error: msg }, { status: 500 });

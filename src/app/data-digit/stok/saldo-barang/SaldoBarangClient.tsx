@@ -63,6 +63,7 @@ export default function SaldoBarangClient() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState<{ page: number; fetched: number } | null>(null);
   const [loadTime, setLoadTime] = useState<number | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [dialog, setDialog] = useState({ isOpen: false, type: 'success' as 'success' | 'error', title: '', message: '' });
   const urlSearchRef = useRef<string | null>(null);
@@ -137,6 +138,7 @@ export default function SaldoBarangClient() {
       setRows((json.data || []).map((r: Record<string, unknown>) => ({ ...r, id: String(r.kode) })));
       setTotal(json.total || 0);
       setAvailable(json.available ?? []);
+      if (json.lastUpdated) setLastUpdated(String(json.lastUpdated));
       setLoadTime(Math.round(performance.now() - startTimer));
     } catch (e) {
       if (mountedRef.current) {
@@ -272,6 +274,9 @@ export default function SaldoBarangClient() {
             <div>
               <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal posisi</label>
               <DatePicker name="tgl" value={isoToDate(tgl)} onChange={(d) => { setTgl(dateToIso(d)); setPage(1); }} />
+              {lastUpdated && (
+                <p className="mt-1 text-[11px] font-bold text-gray-400 leading-none">Update: {lastUpdated.split('|')[0].slice(0, 16).replace('T', ' ')}</p>
+              )}
             </div>
             <button
               onClick={handleSync}
