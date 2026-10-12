@@ -147,17 +147,18 @@ export default function ManualModal() {
      description: 'Generate usulan barang jadi pesanan bersaldo nol yang aman dinonaktifkan. Cakupan: golongan Barang Jadi Pesanan, saldo 0, status Aktif. File usulan untuk PPIC — Sintak tidak mengubah status barang apa pun, eksekusi nonaktif tetap di Digit.',
      steps: [
        'Atur **Tanggal cutoff** — tanggal evaluasi (misal akhir pekan). Semua transaksi dihitung sampai tanggal ini; order susulan sesudahnya justru jadi alasan penolakan.',
-       'Sekali saja — klik ikon **gear** (Pengaturan): daftarkan **kata kunci rutin** (misal kitab induk) dan **kode eksplisit** agar produk langganan tidak ikut diusulkan; atur **batas idle** kategori B (default 7 hari).',
+       'Sekali saja — klik ikon **gear** (Pengaturan): daftarkan **kata kunci rutin** (misal kitab induk) dan **kode eksplisit** agar produk langganan tidak ikut diusulkan; daftarkan **keyword pengecualian** bila ada yang harus tetap diusulkan walau namanya mengandung keyword rutin; atur **batas idle** kategori B (default 7 hari).',
        'Klik **Sync semua & Generate** — otomatis tarik 8 tahap dari Digit (saldo per cutoff; order, hasil produksi, SPH, BOM, sales order, dan log aktivitas dari awal tahun sampai cutoff + 7 hari), lalu generate usulan. Total ±3 menit; rincian detik per tahap tampil di progress bar dan dialog Berhasil.',
        'Atau klik **Generate usulan** saja bila data Digit sudah ditarik — hitung ulang dari database lokal dalam ±3 detik.',
-       'Baca 4 kartu ringkasan: **Kandidat aktif saldo 0** (semua yang masuk saringan awal), **Layak diusulkan** (lolos 4 pilar), **Ditolak Pilar 2** (ditahan filter pelindung), dan **Cutoff** yang dipakai.',
-       'Review tabel per kode — kolom **Kategori**: A_LUDES = pesanan ludes (SPK tuntas + ada bukti keluar PJ/SM/SV, alasan menyebut faktur dan tanggal keluarnya); B_BATAL = penawaran batal (tanpa SPK dan hulu terakhir sudah idle ≥ batas hari, alasan menyebut QO terakhir).',
-       'Kolom **Alasan** juga menjelaskan penolakan: produk rutin, oplah belum tuntas (PR > PD), WIP masih berjalan, sisa WIP, ada setoran/order susulan pasca-cutoff, SPK tuntas tanpa bukti keluar, atau penawaran masih baru (< batas idle).',
+       'Pahami **4 pilar** penilaian per kode: **Pilar 1 (Kandidat)** — barang jadi pesanan, status Aktif, saldo & N PERSD 0. **Pilar 2 (Filter pelindung)** — ditolak bila: produk rutin, oplah belum tuntas (PR > PD), WIP masih berjalan / sisa WIP, ada setoran atau order susulan pasca-cutoff, SPK tuntas tanpa bukti keluar (PJ/SM/SV), atau penawaran masih baru (< batas idle). **Pilar 3 (Klasifikasi)** — A_LUDES = pesanan ludes (SPK tuntas + bukti keluar, alasan menyebut faktur & tanggalnya); B_BATAL = penawaran batal (tanpa SPK dan hulu terakhir sudah idle ≥ batas hari, alasan menyebut QO terakhir). **Pilar 4 (Eksekusi aman)** — file usulan saja untuk PPIC; Sintak tidak mengubah status barang apa pun, eksekusi nonaktif tetap di Digit.',
+       'Klik tombol **Ditolak Pilar 2** (di antara Generate dan Bagikan) untuk melihat daftar kode yang ditahan filter pelindung beserta alasannya.',
        'Gunakan **Kotak Pencarian** untuk memfilter kode/nama; klik baris untuk menandai; footer menampilkan jumlah dan waktu muat.',
+       'Butuh kode yang belum ada di hasil? Pakai **Tambah Usulan Manual** — ketik kode/nama (ada auto-suggest), isi alasan, lalu Tambah.',
+       'Butuh persetujuan pihak lain? Klik **Bagikan** — kirim link review (tanpa login) ke pengecek; mereka hanya bisa usul hapus/tambah + alasan. Putuskan per baris di **Rekap koreksi** (Setuju/Tolak, auto-refresh 30 detik). File Excel ikut isi tabel final yang sudah dikoreksi.',
        'Klik **Unduh Excel usulan** — file siap tanda tangan PPIC, Customer Service, dan Manager (kolom penanda tangan otomatis terisi nama user login).',
-       'Serahkan ke PPIC — pastikan sync master terbaru sebelum eksekusi, karena saldo 0 di Sintak diasumsikan N PERSD 0.'
+       'Serahkan ke PPIC — pastikan sync master terbaru sebelum eksekusi, karena saldo 0 di Sintak diasumsikan N PERSD 0.',
      ],
-     tips: 'Cutoff + 7 hari sengaja ditarik untuk menangkap order susulan: kode yang dipesan lagi setelah cutoff otomatis ditolak dengan alasan SPK/order susulan pasca-cutoff.'
+     tips: 'Cutoff + 7 hari sengaja ditarik untuk menangkap order susulan: kode yang dipesan lagi setelah cutoff otomatis ditolak dengan alasan SPK/order susulan pasca-cutoff.',
    },
    '/jurnal-harian-produksi/data/excel-sopd': {
       title: 'SOPd',
