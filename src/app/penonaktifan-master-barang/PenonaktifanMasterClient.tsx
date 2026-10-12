@@ -124,7 +124,7 @@ export default function PenonaktifanMasterClient() {
    const [lastGenerate, setLastGenerate] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_lastGenerate') : null));
    const [lastSyncAll, setLastSyncAll] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_lastSyncAll') : null));
    const [sharing, setSharing] = useState(false);
-   const [shareToken, setShareToken] = useState<string | null>(null);
+   const [shareToken, setShareToken] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_shareToken') : null));
    const [rekap, setRekap] = useState<Array<{ id: number; kode: string; nama: string; aksi: string; alasan: string; reviewer: string; keputusan: string }>>([]);
    const [rekapOpen, setRekapOpen] = useState(false);
    const [rekapAt, setRekapAt] = useState<string | null>(null);
@@ -411,6 +411,7 @@ export default function PenonaktifanMasterClient() {
       const json = await res.json();
       if (!json.success) throw new Error(json.error || 'Gagal buat link');
       setShareToken(json.token);
+      try { localStorage.setItem('penonaktifan_shareToken', json.token); } catch { /* abaikan */ }
       try { await navigator.clipboard.writeText(`${window.location.origin}/penonaktifan-review/${json.token}`); } catch { /* clipboard diblokir */ }
       setDialog({ isOpen: true, type: 'success', title: 'Link review dibuat', message: `Link disalin: ${window.location.origin}/penonaktifan-review/${json.token}` });
     } catch (e) {
@@ -915,7 +916,8 @@ export default function PenonaktifanMasterClient() {
                          <button
                            key={item.kode}
                            type="button"
-                           onClick={() => {
+                           onMouseDown={(e) => {
+                             e.preventDefault();
                              setManualKode(item.kode);
                              setManualNama(item.nama);
                              setManualDropdownOpen(false);
