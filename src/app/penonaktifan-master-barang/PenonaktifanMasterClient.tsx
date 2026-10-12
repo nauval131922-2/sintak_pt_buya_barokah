@@ -365,6 +365,7 @@ export default function PenonaktifanMasterClient() {
      try {
        const res = await fetch(`/api/penonaktifan-master-barang/review?token=${encodeURIComponent(token)}`);
        const json = await res.json();
+       if (!mountedRef.current) return;
        if (json.success) {
          setRekap(json.review.items ?? []);
          setRekapAt(new Date().toISOString());
