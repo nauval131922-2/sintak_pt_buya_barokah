@@ -136,7 +136,26 @@ export default function PenonaktifanMasterClient() {
   const [manualSearching, setManualSearching] = useState(false);
   const [manualDropdownOpen, setManualDropdownOpen] = useState(false);
   const [manualSearchActiveField, setManualSearchActiveField] = useState<'kode' | 'nama' | null>(null);
-  const manualSearchContainerRef = useRef<HTMLDivElement>(null);
+   const manualSearchContainerRef = useRef<HTMLDivElement>(null);
+   const [manualDropPos, setManualDropPos] = useState<{ left: number; top: number; width: number } | null>(null);
+
+   // Posisikan dropdown manual via Portal — lolos dari parent overflow-hidden + thead sticky z-[40].
+   useEffect(() => {
+     if (!manualDropdownOpen) { setManualDropPos(null); return; }
+     const place = () => {
+       const el = manualSearchContainerRef.current;
+       if (!el) return;
+       const r = el.getBoundingClientRect();
+       setManualDropPos({ left: r.left, top: r.bottom + 6, width: Math.min(r.width, 480) });
+     };
+     place();
+     window.addEventListener('resize', place);
+     window.addEventListener('scroll', place, true);
+     return () => {
+       window.removeEventListener('resize', place);
+       window.removeEventListener('scroll', place, true);
+     };
+   }, [manualDropdownOpen]);
 
   const rows = useMemo(() => data?.rows ?? [], [data]);
   const { selectedIds, handleRowClick, clearSelection } = useTableSelection(rows);
@@ -481,26 +500,28 @@ export default function PenonaktifanMasterClient() {
     setManualDropdownOpen(false);
     setManualSearchActiveField(null);
   };
-  const handleSaveSettings = async () => {
-    if (!settings) return;
-    setSettingsSaving(true);
-    try {
-      const res = await fetch('/api/penonaktifan-master-barang/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...settings, routine_exclude_keywords: settings.routine_exclude_keywords ?? [], idle_days: Number(idleInput) }),
-      });
-      const json = await res.json();
-      if (!json.success) throw new Error(json.error || 'Gagal simpan');
-      setSettings(json.settings);
-      setIdleInput(String(json.settings.idle_days));
-      setData(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setSettingsSaving(false);
-    }
-  };
+   const handleSaveSettings = async () => {
+     if (!settings) return;
+     setSettingsSaving(true);
+     try {
+       const res = await fetch('/api/penonaktifan-master-barang/settings', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ ...settings, routine_exclude_keywords: settings.routine_exclude_keywords ?? [], idle_days: Number(idleInput) }),
+       });
+       const json = await res.json();
+       if (!json.success) throw new Error(json.error || 'Gagal simpan');
+       setSettings(json.settings);
+       setIdleInput(String(json.settings.idle_days));
+       setData(null);
+       setShowSettings(false);
+       setDialog({ isOpen: true, type: 'success', title: 'Tersimpan', message: 'Pengaturan penonaktifan berhasil disimpan. Usulan dihitung ulang.' });
+     } catch (e) {
+       setError(e instanceof Error ? e.message : String(e));
+     } finally {
+       setSettingsSaving(false);
+     }
+   };
 
   const filtered = useMemo(() => {
     const s = debouncedQuery.trim().toLowerCase();
@@ -809,7 +830,7 @@ export default function PenonaktifanMasterClient() {
               </div>
             )}
 
-             <div className="shrink-0 bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex flex-col gap-2 relative z-30">
+             <div className="shrink-0 bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex flex-col gap-2 relative z-50">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-700">Tambah Usulan Manual</span>
                 {manualError && <span className="text-[11px] font-bold text-rose-600">{manualError}</span>}
@@ -880,34 +901,39 @@ export default function PenonaktifanMasterClient() {
                   </button>
                 </div>
 
-                {manualDropdownOpen && (manualSearchActiveField === 'kode' ? manualKode.trim().length >= 2 : manualNama.trim().length >= 2) && (
-                  <div className="absolute left-0 top-full mt-1.5 w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-52 overflow-y-auto divide-y divide-slate-100">
-                    {manualSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari barang…</div>}
-                    {!manualSearching && manualHits.length === 0 && (
-                      <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada barang yang cocok.</div>
-                    )}
-                    {!manualSearching && manualHits.map((item) => (
-                      <button
-                        key={item.kode}
-                        type="button"
-                        onClick={() => {
-                          setManualKode(item.kode);
-                          setManualNama(item.nama);
-                          setManualDropdownOpen(false);
-                          setManualHits([]);
-                          if (manualError) setManualError('');
-                        }}
-                        className="w-full text-left px-3 py-2 hover:bg-emerald-50 bg-white transition-colors flex items-center justify-between gap-3"
-                        title={item.nama}
-                      >
-                        <span className="text-xs font-mono font-bold text-slate-700 shrink-0">{item.kode}</span>
-                        <span className="text-xs text-slate-600 truncate flex-1">{item.nama}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
+                 {manualDropdownOpen && manualDropPos && (manualSearchActiveField === 'kode' ? manualKode.trim().length >= 2 : manualNama.trim().length >= 2) && (
+                   <Portal>
+                     <div
+                       className="fixed bg-white border border-slate-200 rounded-xl shadow-xl z-[9999] max-h-52 overflow-y-auto divide-y divide-slate-100"
+                       style={{ left: manualDropPos.left, top: manualDropPos.top, width: manualDropPos.width }}
+                     >
+                       {manualSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari barang…</div>}
+                       {!manualSearching && manualHits.length === 0 && (
+                         <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada barang yang cocok.</div>
+                       )}
+                       {!manualSearching && manualHits.map((item) => (
+                         <button
+                           key={item.kode}
+                           type="button"
+                           onClick={() => {
+                             setManualKode(item.kode);
+                             setManualNama(item.nama);
+                             setManualDropdownOpen(false);
+                             setManualHits([]);
+                             if (manualError) setManualError('');
+                           }}
+                           className="w-full text-left px-3 py-2 hover:bg-emerald-50 bg-white transition-colors flex items-center justify-between gap-3"
+                           title={item.nama}
+                         >
+                           <span className="text-xs font-mono font-bold text-slate-700 shrink-0">{item.kode}</span>
+                           <span className="text-xs text-slate-600 truncate flex-1">{item.nama}</span>
+                         </button>
+                       ))}
+                     </div>
+                   </Portal>
+                 )}
+               </div>
+             </div>
              <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
                <DataTable
                 columns={columns}
