@@ -536,15 +536,15 @@ export default function PenonaktifanMasterClient() {
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px] flex-wrap">
-            <div className="flex items-end gap-2 flex-wrap">
-               <div className="w-44 shrink-0">
-                 <div className="mb-1 flex items-baseline gap-2 w-max whitespace-nowrap">
-                   <label className="block text-[11px] font-bold text-gray-400 shrink-0">Tanggal cutoff</label>
-                   {(lastGenerate || lastSyncAll) && <span className="text-[10px] font-semibold text-gray-300 leading-none">{lastGenerate ? `Generate: ${formatLastUpdate(lastGenerate.split('|')[0])}` : ''}{lastGenerate && lastSyncAll ? ' • ' : ''}{lastSyncAll ? `Sync: ${formatLastUpdate(lastSyncAll.split('|')[0])}` : ''}</span>}
-                 </div>
-                 <DatePicker name="cutoff" value={isoToDate(cutoff)} onChange={(d) => setCutoff(dateToIso(d))} />
+             <div className="flex flex-col gap-1 shrink-0">
+               <div className="flex items-baseline gap-2 whitespace-nowrap">
+                 <label className="block text-[11px] font-bold text-gray-400 shrink-0">Tanggal cutoff</label>
+                 {(lastGenerate || lastSyncAll) && <span className="text-[10px] font-semibold text-gray-300 leading-none">{lastGenerate ? `Generate: ${formatLastUpdate(lastGenerate.split('|')[0])}` : ''}{lastGenerate && lastSyncAll ? ' • ' : ''}{lastSyncAll ? `Sync: ${formatLastUpdate(lastSyncAll.split('|')[0])}` : ''}</span>}
                </div>
-              <div className="flex items-end gap-2">
+               <div className="flex items-end gap-2 flex-wrap">
+                 <div className="w-44 shrink-0">
+                   <DatePicker name="cutoff" value={isoToDate(cutoff)} onChange={(d) => setCutoff(dateToIso(d))} />
+                 </div>
                 <button
                   onClick={handleGenerate}
                   disabled={loading}
