@@ -924,11 +924,11 @@ export default function PenonaktifanMasterClient() {
                              setManualHits([]);
                              if (manualError) setManualError('');
                            }}
-                           className="w-full text-left px-3 py-2 hover:bg-emerald-50 bg-white transition-colors flex items-center justify-between gap-3"
-                           title={item.nama}
+                           className="w-full text-left px-3 py-2 hover:bg-emerald-50 bg-white transition-colors block"
+                           title={`${item.kode} — ${item.nama}`}
                          >
-                           <span className="text-xs font-mono font-bold text-slate-700 shrink-0">{item.kode}</span>
-                           <span className="text-xs text-slate-600 truncate flex-1">{item.nama}</span>
+                           <span className="block text-xs font-mono font-bold text-slate-700">{item.kode}</span>
+                           <span className="block text-xs text-slate-600 whitespace-normal break-words leading-snug">{item.nama}</span>
                          </button>
                        ))}
                      </div>
