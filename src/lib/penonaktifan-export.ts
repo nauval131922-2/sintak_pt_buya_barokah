@@ -47,16 +47,16 @@ export async function buildPenonaktifanWorkbook(cutoff: string, rows: Penonaktif
       { header: '', key: 'aktif', width: 10 },
       { header: '', key: 'saldo', width: 12 },
       { header: '', key: 'npersd', width: 12 },
-      { header: '', key: 'alasan', width: 75 },
+       { header: '', key: 'alasan', width: 75, hidden: true },
     ];
-    ws.mergeCells('A1:K1');
+     ws.mergeCells('A1:J1');
     const t1 = ws.getCell('A1');
     t1.value = 'MASTER BARANG JADI';
     t1.font = { name: 'Calibri', size: 15, bold: true, color: { argb: 'FF1F4E78' } };
     t1.alignment = { horizontal: 'center', vertical: 'middle' };
     ws.getRow(1).height = 26;
     ws.getRow(1).commit();
-    ws.mergeCells('A2:K2');
+     ws.mergeCells('A2:J2');
     const t2 = ws.getCell('A2');
     t2.value = `Tanggal Data Terakhir (${tglId(cutoff)})`;
     t2.font = { name: 'Calibri', size: 11, italic: true, color: { argb: 'FF595959' } };
@@ -76,7 +76,8 @@ export async function buildPenonaktifanWorkbook(cutoff: string, rows: Penonaktif
       c.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
       c.border = cellBorder;
     });
-    hr.commit();
+     hr.commit();
+     ws.getColumn(11).hidden = true;
     rows.forEach((r, idx) => {
       const row = ws.getRow(5 + idx);
       row.height = 20;
