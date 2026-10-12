@@ -12,18 +12,21 @@ function str(v: DbVal): string {
   return String(v);
 }
 
-export interface PenonaktifanSettings {
-  routine_codes: string[];
-  idle_days: number;
-}
+ export interface PenonaktifanSettings {
+   routine_codes: string[];
+   routine_keywords: string[];
+   idle_days: number;
+ }
 
-export const DEFAULT_SETTINGS: PenonaktifanSettings = {
-  routine_codes: [],
-  idle_days: 7,
-};
+ export const DEFAULT_SETTINGS: PenonaktifanSettings = {
+   routine_codes: [],
+   routine_keywords: [],
+   idle_days: 7,
+ };
 
-const CODES_KEY = 'penonaktifan_routine_codes';
-const IDLE_KEY = 'penonaktifan_idle_days';
+ const CODES_KEY = 'penonaktifan_routine_codes';
+ const KEYWORDS_KEY = 'penonaktifan_routine_keywords';
+ const IDLE_KEY = 'penonaktifan_idle_days';
 
 function parseList(raw: string, fallback: string[]): string[] {
   try {
@@ -40,27 +43,30 @@ function parseIdle(raw: string): number {
   return Number.isFinite(n) && n >= 0 ? Math.floor(n) : DEFAULT_SETTINGS.idle_days;
 }
 
-export async function getPenonaktifanSettings(): Promise<PenonaktifanSettings> {
-  const res = await db.execute({
-    sql: `SELECT key, value FROM system_settings WHERE key IN (?, ?)`,
-    args: [CODES_KEY, IDLE_KEY],
-  });
-  const map = new Map<string, string>();
-  for (const r of res.rows as DbRow[]) map.set(str(r.key), str(r.value));
-  return {
-    routine_codes: map.has(CODES_KEY) ? parseList(map.get(CODES_KEY) ?? '', []) : [],
-    idle_days: map.has(IDLE_KEY) ? parseIdle(map.get(IDLE_KEY) ?? '') : DEFAULT_SETTINGS.idle_days,
-  };
-}
+ export async function getPenonaktifanSettings(): Promise<PenonaktifanSettings> {
+   const res = await db.execute({
+     sql: `SELECT key, value FROM system_settings WHERE key IN (?, ?, ?)`,
+     args: [CODES_KEY, KEYWORDS_KEY, IDLE_KEY],
+   });
+   const map = new Map<string, string>();
+   for (const r of res.rows as DbRow[]) map.set(str(r.key), str(r.value));
+   return {
+     routine_codes: map.has(CODES_KEY) ? parseList(map.get(CODES_KEY) ?? '', []) : [],
+     routine_keywords: map.has(KEYWORDS_KEY) ? parseList(map.get(KEYWORDS_KEY) ?? '', []) : [],
+     idle_days: map.has(IDLE_KEY) ? parseIdle(map.get(IDLE_KEY) ?? '') : DEFAULT_SETTINGS.idle_days,
+   };
+ }
 
 export async function savePenonaktifanSettings(s: PenonaktifanSettings): Promise<PenonaktifanSettings> {
   const clean: PenonaktifanSettings = {
-    routine_codes: [...new Set(s.routine_codes.map((x) => String(x).trim()).filter((x) => /^\d+$/.test(x)))],
+     routine_codes: [...new Set(s.routine_codes.map((x) => String(x).trim()).filter((x) => /^\d+$/.test(x)))],
+     routine_keywords: [...new Set((s.routine_keywords ?? []).map((x) => String(x).trim().toLowerCase()).filter((x) => x.length >= 3))],
     idle_days: Number.isFinite(s.idle_days) && s.idle_days >= 0 ? Math.floor(s.idle_days) : DEFAULT_SETTINGS.idle_days,
   };
-  const pairs: Array<[string, string]> = [
-    [CODES_KEY, JSON.stringify(clean.routine_codes)],
-    [IDLE_KEY, String(clean.idle_days)],
+   const pairs: Array<[string, string]> = [
+     [CODES_KEY, JSON.stringify(clean.routine_codes)],
+     [KEYWORDS_KEY, JSON.stringify(clean.routine_keywords)],
+     [IDLE_KEY, String(clean.idle_days)],
   ];
   for (const [k, v] of pairs) {
     await db.execute({
@@ -72,7 +78,9 @@ export async function savePenonaktifanSettings(s: PenonaktifanSettings): Promise
   return clean;
 }
 
-// Rutin = kode ada di daftar eksplisit (pasti, tanpa cocok nama).
-export function isRoutineProduct(_nama: string, kode: string, s: PenonaktifanSettings): boolean {
-  return s.routine_codes.some((c) => c === kode.trim());
-}
+ // Rutin = kode ada di daftar eksplisit ATAU nama mengandung salah satu keyword (case-insensitive).
+ export function isRoutineProduct(nama: string, kode: string, s: PenonaktifanSettings): boolean {
+   if (s.routine_codes.some((c) => c === kode.trim())) return true;
+   const nm = (nama ?? '').toLowerCase();
+   return (s.routine_keywords ?? []).some((kw) => kw && nm.includes(kw));
+ }

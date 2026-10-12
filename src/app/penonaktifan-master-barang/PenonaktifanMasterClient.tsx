@@ -23,19 +23,21 @@ interface PreviewRow {
   alasan: string;
 }
 
-interface PreviewResult {
-  success: boolean;
-  cutoff: string;
-  kandidat: number;
-  bolehCount: number;
-  ditolakCount: number;
-  rows: PreviewRow[];
-  idleDays?: number;
-  error?: string;
-}
+ interface PreviewResult {
+   success: boolean;
+   cutoff: string;
+   kandidat: number;
+   bolehCount: number;
+   ditolakCount: number;
+   rows: PreviewRow[];
+   ditolak?: Array<{ kode: string; nama: string; alasan: string }>;
+   idleDays?: number;
+   error?: string;
+ }
 
-interface Settings {
+ interface Settings {
    routine_codes: string[];
+   routine_keywords: string[];
    idle_days: number;
  }
 
@@ -69,19 +71,28 @@ function addDaysIso(iso: string, n: number): string {
 function isoToDdMmYyyy(iso: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
   return m ? `${m[3]}-${m[2]}-${m[1]}` : iso;
-}
+ }
 
-const KAT_LABEL: Record<string, string> = {
-  A_LUDES: 'A — Ludes Pesanan',
-  B_BATAL: 'B — Penawaran Batal',
-};
+ const BULAN_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+
+ function formatCutoff(iso: string): string {
+   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+   if (!m) return iso;
+   return `${m[3]} ${BULAN_SHORT[Number(m[2]) - 1] ?? m[2]} ${m[1]}`;
+ }
+
+ const KAT_LABEL: Record<string, string> = {
+   A_LUDES: 'A — Ludes Pesanan',
+   B_BATAL: 'B — Penawaran Batal',
+ };
 
 export default function PenonaktifanMasterClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isMounted, setIsMounted] = useState(false);
   const [cutoff, setCutoff] = useState(() => searchParams.get('cutoff') || todayIso());
-  const [data, setData] = useState<PreviewResult | null>(null);
+   const [data, setData] = useState<PreviewResult | null>(null);
+   const [showDitolak, setShowDitolak] = useState(false);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState('');
@@ -102,7 +113,8 @@ export default function PenonaktifanMasterClient() {
   const [codeSearch, setCodeSearch] = useState('');
   const [codeHits, setCodeHits] = useState<Array<{ kode: string; nama: string }>>([]);
   const [codeSearching, setCodeSearching] = useState(false);
-  const [idleInput, setIdleInput] = useState('7');
+   const [idleInput, setIdleInput] = useState('7');
+   const [keywordInput, setKeywordInput] = useState('');
   const [routineItems, setRoutineItems] = useState<Array<{ kode: string; nama: string }>>([]);
   const [lastGenerate, setLastGenerate] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_lastGenerate') : null));
   const [lastSyncAll, setLastSyncAll] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_lastSyncAll') : null));
@@ -207,7 +219,7 @@ export default function PenonaktifanMasterClient() {
     setError('');
     const startTimer = performance.now();
     try {
-      const res = await fetch(`/api/penonaktifan-master-barang?cutoff=${cutoff}&limit=5000`);
+       const res = await fetch(`/api/penonaktifan-master-barang?cutoff=${cutoff}&limit=5000&includeDitolak=1`);
       const json = (await res.json()) as PreviewResult;
       if (!json.success) throw new Error(json.error || 'Gagal generate');
       if (!mountedRef.current) return;
@@ -395,9 +407,10 @@ export default function PenonaktifanMasterClient() {
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px] flex-wrap">
             <div className="flex items-end gap-2 flex-wrap">
-               <div>
-                 <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal cutoff{lastGenerate ? <span className="font-semibold text-gray-300"> • Generate: {formatLastUpdate(lastGenerate.split('|')[0])}</span> : null}{lastSyncAll ? <span className="font-semibold text-gray-300"> • Sync: {formatLastUpdate(lastSyncAll.split('|')[0])}</span> : null}</label>
+               <div className="w-44 shrink-0">
+                 <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal cutoff</label>
                  <DatePicker name="cutoff" value={isoToDate(cutoff)} onChange={(d) => setCutoff(dateToIso(d))} />
+                 {(lastGenerate || lastSyncAll) && <div className="mt-1 text-[10px] font-semibold text-gray-300 leading-tight">{lastGenerate ? <span>Generate: {formatLastUpdate(lastGenerate.split('|')[0])}</span> : null}{lastGenerate && lastSyncAll ? <span> • </span> : null}{lastSyncAll ? <span>Sync: {formatLastUpdate(lastSyncAll.split('|')[0])}</span> : null}</div>}
                </div>
               <div className="flex items-end gap-2">
                 <button
@@ -447,24 +460,43 @@ export default function PenonaktifanMasterClient() {
 
         {data && (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 shrink-0">
-              {[
-                { label: 'Kandidat aktif saldo 0', value: data.kandidat },
-                { label: 'Layak diusulkan', value: data.bolehCount },
-                { label: 'Ditolak Pilar 2', value: data.ditolakCount },
-                { label: 'Cutoff', value: data.cutoff, mono: true },
-              ].map((s) => (
-                <div key={s.label} className="bg-white rounded-2xl border border-gray-100/80 shadow-sm px-4 py-3">
-                  <div className="text-[11px] font-bold text-gray-400">{s.label}</div>
-                  <div className={`text-xl font-bold text-gray-800 tabular-nums ${s.mono ? 'text-base font-mono' : ''}`}>
-                    {typeof s.value === 'number' ? s.value.toLocaleString('id-ID') : s.value}
-                  </div>
-                </div>
-              ))}
-            </div>
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 shrink-0">
+               {[
+                 { label: 'Kandidat aktif saldo 0', value: data.kandidat },
+                 { label: 'Layak diusulkan', value: data.bolehCount },
+               ].map((s) => (
+                 <div key={s.label} className="bg-white rounded-2xl border border-gray-100/80 shadow-sm px-4 py-3">
+                   <div className="text-[11px] font-bold text-gray-400">{s.label}</div>
+                   <div className="text-xl font-bold text-gray-800 tabular-nums">
+                     {typeof s.value === 'number' ? s.value.toLocaleString('id-ID') : s.value}
+                   </div>
+                 </div>
+               ))}
+               <button type="button" onClick={() => setShowDitolak((v) => !v)} title={showDitolak ? 'Sembunyikan daftar' : 'Tampilkan daftar + alasan'} className={`text-left bg-white rounded-2xl border shadow-sm px-4 py-3 transition-all cursor-pointer ${showDitolak ? 'border-amber-300 ring-2 ring-amber-200' : 'border-gray-100/80 hover:border-amber-300'}`}>
+                 <div className="text-[11px] font-bold text-gray-400">Ditolak Pilar 2 {showDitolak ? '▾' : '▸'}</div>
+                 <div className="text-xl font-bold text-amber-600 tabular-nums">{data.ditolakCount.toLocaleString('id-ID')}</div>
+               </button>
+               <div className="bg-white rounded-2xl border border-gray-100/80 shadow-sm px-4 py-3">
+                 <div className="text-[11px] font-bold text-gray-400">Cutoff</div>
+                 <div className="text-base font-bold text-gray-800">{formatCutoff(data.cutoff)}</div>
+               </div>
+             </div>
 
-            <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
-              <DataTable
+             {showDitolak && (
+               <div className="shrink-0 max-h-56 overflow-y-auto custom-scrollbar border border-amber-200 rounded-2xl divide-y divide-amber-50 bg-amber-50/40">
+                 <div className="px-4 py-2 text-[11px] font-bold text-amber-700 sticky top-0 bg-amber-50">Ditolak Pilar 2 — {data.ditolak?.length ?? data.ditolakCount} kode + alasan</div>
+                 {(data.ditolak ?? []).map((d) => (
+                   <div key={d.kode} className="px-4 py-2 flex items-start gap-3 text-xs">
+                     <span className="font-mono font-bold text-slate-700 shrink-0">{d.kode}</span>
+                     <span className="text-slate-600 flex-1 min-w-0 truncate" title={d.nama}>{d.nama}</span>
+                     <span className="text-amber-700 flex-[2]">{d.alasan}</span>
+                   </div>
+                 ))}
+                 {(!data.ditolak || data.ditolak.length === 0) && <div className="px-4 py-3 text-[11px] text-amber-600">Generate ulang untuk memuat daftar (butuh includeDitolak).</div>}
+               </div>
+             )}
+             <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
+               <DataTable
                 columns={columns}
                 data={filtered}
                 isLoading={loading}
@@ -548,14 +580,35 @@ export default function PenonaktifanMasterClient() {
                      </div>
                    </div>
                    <div>
-                    <div className="text-xs font-bold text-slate-700 mb-1.5">Batas idle penawaran batal (hari)</div>
-                    <input value={idleInput} onChange={(e) => setIdleInput(e.target.value.replace(/\D/g, ''))} inputMode="numeric" className="px-3 py-2 w-28 text-xs tabular-nums bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all" />
-                    <p className="text-[11px] text-slate-400 mt-1">Penawaran yang umurnya di bawah ini tidak diusulkan.</p>
-                  </div>
-                  <button onClick={handleSaveSettings} disabled={settingsSaving} className="w-full flex items-center justify-center gap-2 px-5 h-10 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold rounded-xl transition-colors shadow-sm disabled:opacity-60">
-                    {settingsSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                    Simpan pengaturan
-                  </button>
+                     <div className="text-xs font-bold text-slate-700 mb-1.5">Keyword rutin — lindungi semua nama yang mengandung kata ini</div>
+                     <div className="flex flex-wrap gap-1.5 mb-2">
+                       {(settings.routine_keywords ?? []).map((k) => (
+                         <span key={k} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-violet-100 text-violet-700 text-xs font-semibold">
+                           “{k}”
+                           <button onClick={() => setSettings({ ...settings, routine_keywords: (settings.routine_keywords ?? []).filter((x) => x !== k) })} className="hover:text-violet-900 shrink-0">
+                             <Trash2 size={12} />
+                           </button>
+                         </span>
+                       ))}
+                       {(settings.routine_keywords ?? []).length === 0 && <span className="text-xs text-gray-400">Belum ada keyword — mis. yanbu, quddus, yasin.</span>}
+                     </div>
+                     <div className="flex gap-2">
+                       <input value={keywordInput} onChange={(e) => setKeywordInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const v = keywordInput.trim().toLowerCase(); if (v.length >= 3 && !(settings.routine_keywords ?? []).includes(v)) setSettings({ ...settings, routine_keywords: [...(settings.routine_keywords ?? []), v] }); setKeywordInput(''); } }} placeholder="Ketik keyword + Enter…" className="flex-1 px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none transition-all" />
+                       <button onClick={() => { const v = keywordInput.trim().toLowerCase(); if (v.length >= 3 && !(settings.routine_keywords ?? []).includes(v)) setSettings({ ...settings, routine_keywords: [...(settings.routine_keywords ?? []), v] }); setKeywordInput(''); }} className="px-3 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl transition-colors flex items-center gap-1">
+                         <Plus size={13} /> Tambah
+                       </button>
+                     </div>
+                     <p className="text-[11px] text-slate-400 mt-1">Cocok sebagian nama, tanpa peduli huruf besar/kecil. Hati-hati: keyword pendek melindungi banyak barang.</p>
+                   </div>
+                   <div>
+                     <div className="text-xs font-bold text-slate-700 mb-1.5">Batas idle penawaran batal (hari)</div>
+                     <input value={idleInput} onChange={(e) => setIdleInput(e.target.value.replace(/\D/g, ''))} inputMode="numeric" className="px-3 py-2 w-28 text-xs tabular-nums bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all" />
+                     <p className="text-[11px] text-slate-400 mt-1">Penawaran yang umurnya di bawah ini tidak diusulkan.</p>
+                   </div>
+                   <button onClick={handleSaveSettings} disabled={settingsSaving} className="w-full flex items-center justify-center gap-2 px-5 h-10 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold rounded-xl transition-colors shadow-sm disabled:opacity-60">
+                     {settingsSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                     Simpan pengaturan
+                   </button>
                 </div>
               )}
             </div>

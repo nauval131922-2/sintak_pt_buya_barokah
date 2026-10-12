@@ -67,16 +67,21 @@ describe('ddMmYyyyToIso / isoToSlash', () => {
 });
 
 describe('isRoutineProduct (settings)', () => {
-  const s = { routine_codes: ['260900101'], idle_days: 7 };
+   const s = { routine_codes: ['260900101'], routine_keywords: [] as string[], idle_days: 7 };
   it('kode terdaftar dilindungi walau nama umum', () => {
     expect(isRoutineProduct('Buku Tulis NN', '260900101', s)).toBe(true);
   });
   it('nama mirip tanpa kode tetap lolos', () => {
     expect(isRoutineProduct('Al-Quddus B3 Tgg HVS', '241007505', s)).toBe(false);
   });
-  it('non-rutin lolos', () => {
-    expect(isRoutineProduct('Buku Soft Cover Portrait', '260800450', s)).toBe(false);
-  });
+   it('non-rutin lolos', () => {
+     expect(isRoutineProduct('Buku Soft Cover Portrait', '260800450', s)).toBe(false);
+   });
+   it('keyword cocok nama dilindungi (case-insensitive)', () => {
+     const sk = { routine_codes: [] as string[], routine_keywords: ['quddus'], idle_days: 7 };
+     expect(isRoutineProduct('Al-Quddus B3 Tgg HVS', '241007505', sk)).toBe(true);
+     expect(isRoutineProduct('Buku Tulis Biasa', '260800450', sk)).toBe(false);
+   });
 });
 
 describe('klasifikasiItem (4 pilar)', () => {
