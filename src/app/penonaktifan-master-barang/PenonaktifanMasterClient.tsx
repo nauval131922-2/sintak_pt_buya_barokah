@@ -953,10 +953,17 @@ export default function PenonaktifanMasterClient() {
                      <input value={idleInput} onChange={(e) => setIdleInput(e.target.value.replace(/\D/g, ''))} inputMode="numeric" className="px-3 py-2 w-28 text-xs tabular-nums bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all" />
                      <p className="text-[11px] text-slate-400 mt-1">Penawaran yang umurnya di bawah ini tidak diusulkan.</p>
                    </div>
-                   <button onClick={handleSaveSettings} disabled={settingsSaving} className="w-full flex items-center justify-center gap-2 px-5 h-10 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold rounded-xl transition-colors shadow-sm disabled:opacity-60">
-                     {settingsSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                     Simpan pengaturan
-                   </button>
+                </div>
+              )}
+              {settings && !settingsLoading && (
+                <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-2 shrink-0">
+                  <button type="button" onClick={() => setShowSettings(false)} className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer">
+                    Batal
+                  </button>
+                  <button onClick={handleSaveSettings} disabled={settingsSaving} className="flex items-center gap-2 px-5 h-9 bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-bold rounded-xl transition-colors shadow-sm disabled:opacity-60 cursor-pointer">
+                    {settingsSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                    Simpan pengaturan
+                  </button>
                 </div>
               )}
             </div>
