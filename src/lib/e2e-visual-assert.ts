@@ -45,9 +45,19 @@ export interface VisualMetrics {
   tableScrollable: boolean | null; // null = tak ada tabel di halaman
   // 6. toolbar buttons kepotong.
   cutToolbarButtons: string[];
-  // 7. dialog/modal bila terbuka.
-  dialog: DialogMetric | null;
-  viewportWidth: number;
+   // 7. dialog/modal bila terbuka.
+   dialog: DialogMetric | null;
+   // 9. clipping: elemen keluar viewport (kiri/kanan/atas/bawah).
+   clippedControls: string[];
+   // 10. covering: kontrol interaktif tertutup layer lain (z-index/backdrop) sehingga tak bisa diklik.
+   coveredControls: string[];
+   // 11. dead controls: tampak aktif tapi tak responsif (disabled tanpa gaya / pointer-events none).
+   deadControls: string[];
+   // 12. nested scroll: container scroll di dalam container scroll (scrollbar liar).
+   nestedScrolls: string[];
+   // 13. kontras: teks di bawah ambang baca.
+   lowContrastTexts: string[];
+   viewportWidth: number;
 }
 
 export interface PageVisualReport {
@@ -115,12 +125,32 @@ export function assertVisualMetrics(
   if (m.cutToolbarButtons.length > 0) {
     failures.push(`[${label}] toolbar: tombol kepotong [${m.cutToolbarButtons.join(', ')}]`);
   }
-  // 7. dialog (hanya bila ada yang terbuka).
-  if (m.dialog?.found) {
-    if (!m.dialog.centeredX) failures.push(`[${label}] dialog: tidak terpusat horizontal`);
-    if (!m.dialog.backdropCovers) failures.push(`[${label}] dialog: backdrop tidak menutup layar`);
-    if (!m.dialog.closeVisible) failures.push(`[${label}] dialog: tombol tutup tidak terlihat`);
-  }
+   // 7. dialog (hanya bila ada yang terbuka).
+   if (m.dialog?.found) {
+     if (!m.dialog.centeredX) failures.push(`[${label}] dialog: tidak terpusat horizontal`);
+     if (!m.dialog.backdropCovers) failures.push(`[${label}] dialog: backdrop tidak menutup layar`);
+     if (!m.dialog.closeVisible) failures.push(`[${label}] dialog: tombol tutup tidak terlihat`);
+   }
+   // 9. clipping: elemen keluar viewport.
+   if (m.clippedControls.length > 0) {
+     failures.push(`[${label}] clipping: keluar viewport [${m.clippedControls.join(', ')}]`);
+   }
+   // 10. covering: kontrol tertutup layer lain (elementFromPoint bukan dirinya).
+   if (m.coveredControls.length > 0) {
+     failures.push(`[${label}] covering: tak bisa diklik, tertutup layer [${m.coveredControls.join(', ')}]`);
+   }
+   // 11. dead controls.
+   if (m.deadControls.length > 0) {
+     failures.push(`[${label}] dead-control: tampak aktif tapi mati [${m.deadControls.join(', ')}]`);
+   }
+   // 12. nested scroll liar.
+   if (m.nestedScrolls.length > 0) {
+     failures.push(`[${label}] nested-scroll: scrollbar di dalam scrollbar [${m.nestedScrolls.join(', ')}]`);
+   }
+   // 13. kontras.
+   if (m.lowContrastTexts.length > 0) {
+     failures.push(`[${label}] contrast: teks sulit dibaca [${m.lowContrastTexts.join(', ')}]`);
+   }
   return { ok: failures.length === 0, failures };
 }
 
@@ -171,9 +201,44 @@ export const COLLECT_VISUAL_METRICS_FN = `() => {
       backdropCovers: dr.width >= window.innerWidth - 2 && dr.height >= window.innerHeight - 2,
       closeVisible: !!Array.from(dlgEl.querySelectorAll('button')).find((b) => b.offsetParent !== null) };
   }
-  return { anchor: anchor ? rect(anchor) : null, panel: panel ? rect(panel) : null,
-    panelItemCount: items.length, items, overlappedControls, truncatedGlobal,
-    docOverX: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    tableScrollable: tbl ? (wrap ? wrap.scrollWidth > wrap.clientWidth + 2 || window.innerWidth >= 768 : window.innerWidth >= 768) : null,
-    cutToolbarButtons, dialog, viewportWidth: window.innerWidth };
+   const vw = window.innerWidth, vh = window.innerHeight;
+   const clippedControls = Array.from(document.querySelectorAll('input, button, table'))
+     .filter((el) => el.offsetParent !== null).filter((el) => {
+       const r = el.getBoundingClientRect();
+       return r.right < -4 || r.left > vw + 4 || r.bottom < -4 || r.top > vh + 4;
+     }).slice(0, 5).map((el) => ((el.placeholder || el.textContent) || el.tagName).trim().slice(0, 40));
+   const coveredControls = Array.from(document.querySelectorAll('input, button'))
+     .filter((el) => el.offsetParent !== null && !el.disabled).filter((el) => {
+       const r = el.getBoundingClientRect();
+       if (r.width === 0 || r.height === 0) return false;
+       const cx = Math.min(Math.max(r.left + r.width / 2, 1), vw - 1);
+       const cy = Math.min(Math.max(r.top + r.height / 2, 1), vh - 1);
+       const top = document.elementFromPoint(cx, cy);
+       return top && top !== el && !el.contains(top) && !top.contains(el);
+     }).slice(0, 5).map((el) => ((el.placeholder || el.textContent) || '').trim().slice(0, 40));
+   const deadControls = Array.from(document.querySelectorAll('button, input, a'))
+     .filter((el) => {
+       const cs = getComputedStyle(el);
+       return el.offsetParent !== null && cs.pointerEvents === 'none' && cs.opacity !== '0' && !el.disabled;
+     }).slice(0, 5).map((el) => ((el.placeholder || el.textContent) || '').trim().slice(0, 40));
+   const scrollers = Array.from(document.querySelectorAll('div, section, main'))
+     .filter((el) => { const cs = getComputedStyle(el); return (cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 4; });
+   const nestedScrolls = scrollers.filter((el) => scrollers.some((p) => p !== el && p.contains(el)))
+     .slice(0, 4).map((el) => (el.className || el.tagName).toString().slice(0, 50));
+   const lum = (c) => { const m = c.match(/\\d+(\\.\\d+)?/g); if (!m) return -1;
+     const v = [m[0] / 255, m[1] / 255, m[2] / 255].map((x) => x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4));
+     return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+   const lowContrastTexts = Array.from(document.querySelectorAll('td, th, p, span'))
+     .filter((el) => el.offsetParent !== null && (el.textContent || '').trim().length > 3).filter((el) => {
+       const cs = getComputedStyle(el);
+       const fg = lum(cs.color), bg = lum(cs.backgroundColor);
+       if (fg < 0 || bg < 0) return false;
+       const [l1, l2] = fg > bg ? [fg, bg] : [bg, fg];
+       return (l1 + 0.05) / (l2 + 0.05) < 2.5;
+     }).slice(0, 5).map((el) => (el.textContent || '').trim().slice(0, 40));
+   return { anchor: anchor ? rect(anchor) : null, panel: panel ? rect(panel) : null,
+     panelItemCount: items.length, items, overlappedControls, truncatedGlobal,
+     docOverX: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+     tableScrollable: tbl ? (wrap ? wrap.scrollWidth > wrap.clientWidth + 2 || window.innerWidth >= 768 : window.innerWidth >= 768) : null,
+     cutToolbarButtons, dialog, clippedControls, coveredControls, deadControls, nestedScrolls, lowContrastTexts, viewportWidth: vw };
 }`;
