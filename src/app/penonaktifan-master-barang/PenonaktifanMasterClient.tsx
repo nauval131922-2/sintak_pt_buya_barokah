@@ -2,10 +2,9 @@
 
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Download, Loader2, Play, AlertCircle, Settings2, X, Plus, Trash2, Save, RefreshCw, Share2, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Download, Loader2, Play, AlertCircle, Settings2, X, Plus, Trash2, Save, RefreshCw, Share2, Check, ThumbsUp, ThumbsDown, Search } from 'lucide-react';
 import Portal from '@/components/Portal';
 import TableFooter from '@/components/TableFooter';
-import SearchAndReload from '@/components/SearchAndReload';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { DataTable } from '@/components/ui/DataTable';
 import DatePicker from '@/components/DatePicker';
@@ -37,11 +36,12 @@ import { formatLastUpdate } from '@/lib/date-utils';
    error?: string;
  }
 
- interface Settings {
-   routine_codes: string[];
-   routine_keywords: string[];
-   idle_days: number;
- }
+interface Settings {
+  routine_codes: string[];
+  routine_keywords: string[];
+  routine_exclude_keywords: string[];
+  idle_days: number;
+}
 
 function todayIso(): string {
   const now = new Date();
@@ -95,7 +95,8 @@ export default function PenonaktifanMasterClient() {
   const [isMounted, setIsMounted] = useState(false);
   const [cutoff, setCutoff] = useState(() => searchParams.get('cutoff') || todayIso());
    const [data, setData] = useState<PreviewResult | null>(null);
-   const [showDitolak, setShowDitolak] = useState(false);
+  const [showDitolak, setShowDitolak] = useState(false);
+  const [ditolakSearch, setDitolakSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState('');
@@ -118,6 +119,7 @@ export default function PenonaktifanMasterClient() {
   const [codeSearching, setCodeSearching] = useState(false);
    const [idleInput, setIdleInput] = useState('7');
    const [keywordInput, setKeywordInput] = useState('');
+  const [excludeInput, setExcludeInput] = useState('');
   const [routineItems, setRoutineItems] = useState<Array<{ kode: string; nama: string }>>([]);
    const [lastGenerate, setLastGenerate] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_lastGenerate') : null));
    const [lastSyncAll, setLastSyncAll] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_lastSyncAll') : null));
@@ -130,6 +132,11 @@ export default function PenonaktifanMasterClient() {
   const [manualNama, setManualNama] = useState('');
   const [manualAlasan, setManualAlasan] = useState('');
   const [manualError, setManualError] = useState('');
+  const [manualHits, setManualHits] = useState<Array<{ kode: string; nama: string }>>([]);
+  const [manualSearching, setManualSearching] = useState(false);
+  const [manualDropdownOpen, setManualDropdownOpen] = useState(false);
+  const [manualSearchActiveField, setManualSearchActiveField] = useState<'kode' | 'nama' | null>(null);
+  const manualSearchContainerRef = useRef<HTMLDivElement>(null);
 
   const rows = useMemo(() => data?.rows ?? [], [data]);
   const { selectedIds, handleRowClick, clearSelection } = useTableSelection(rows);
@@ -234,6 +241,39 @@ export default function PenonaktifanMasterClient() {
     }, 300);
     return () => clearTimeout(t);
   }, [codeSearch]);
+  useEffect(() => {
+    const q = (manualSearchActiveField === 'kode' ? manualKode : manualNama).trim();
+    if (q.length < 2) {
+      setManualHits([]);
+      setManualSearching(false);
+      return;
+    }
+    setManualSearching(true);
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/penonaktifan-master-barang/search?q=${encodeURIComponent(q)}&limit=10`);
+        const json = await res.json();
+        if (mountedRef.current && json.success) {
+          setManualHits(json.rows ?? []);
+        }
+      } catch {
+        /* abaikan, dropdown kosong */
+      } finally {
+        if (mountedRef.current) setManualSearching(false);
+      }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [manualKode, manualNama, manualSearchActiveField]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (manualSearchContainerRef.current && !manualSearchContainerRef.current.contains(e.target as Node)) {
+        setManualDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleGenerate = useCallback(async () => {
     setLoading(true);
@@ -437,6 +477,9 @@ export default function PenonaktifanMasterClient() {
     setManualNama('');
     setManualAlasan('');
     setManualError('');
+    setManualHits([]);
+    setManualDropdownOpen(false);
+    setManualSearchActiveField(null);
   };
   const handleSaveSettings = async () => {
     if (!settings) return;
@@ -445,7 +488,7 @@ export default function PenonaktifanMasterClient() {
       const res = await fetch('/api/penonaktifan-master-barang/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...settings, idle_days: Number(idleInput) }),
+        body: JSON.stringify({ ...settings, routine_exclude_keywords: settings.routine_exclude_keywords ?? [], idle_days: Number(idleInput) }),
       });
       const json = await res.json();
       if (!json.success) throw new Error(json.error || 'Gagal simpan');
@@ -536,15 +579,22 @@ export default function PenonaktifanMasterClient() {
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px] flex-wrap">
-             <div className="flex flex-col gap-1 shrink-0">
-               <div className="flex items-baseline gap-2 whitespace-nowrap">
-                 <label className="block text-[11px] font-bold text-gray-400 shrink-0">Tanggal cutoff</label>
-                 {(lastGenerate || lastSyncAll) && <span className="text-[10px] font-semibold text-gray-300 leading-none">{lastGenerate ? `Generate: ${formatLastUpdate(lastGenerate.split('|')[0])}` : ''}{lastGenerate && lastSyncAll ? ' • ' : ''}{lastSyncAll ? `Sync: ${formatLastUpdate(lastSyncAll.split('|')[0])}` : ''}</span>}
-               </div>
-               <div className="flex items-end gap-2 flex-wrap">
-                 <div className="w-44 shrink-0">
-                   <DatePicker name="cutoff" value={isoToDate(cutoff)} onChange={(d) => setCutoff(dateToIso(d))} />
-                 </div>
+            <div className="flex flex-col gap-1 shrink-0">
+              <div className="flex items-baseline gap-2 whitespace-nowrap">
+                <label className="block text-[11px] font-bold text-gray-400 shrink-0">Tanggal cutoff</label>
+                {(lastGenerate || lastSyncAll) && <span className="text-[10px] font-semibold text-gray-300 leading-none">{lastGenerate ? `Generate: ${formatLastUpdate(lastGenerate.split('|')[0])}` : ''}{lastGenerate && lastSyncAll ? ' • ' : ''}{lastSyncAll ? `Sync: ${formatLastUpdate(lastSyncAll.split('|')[0])}` : ''}</span>}
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => setShowSettings(true)}
+                  className="shrink-0 w-10 h-10 bg-white border border-gray-100 rounded-lg text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 flex items-center justify-center transition-all shadow-sm"
+                  title="Pengaturan penonaktifan"
+                >
+                  <Settings2 size={18} />
+                </button>
+                <div className="w-44 shrink-0">
+                  <DatePicker name="cutoff" value={isoToDate(cutoff)} onChange={(d) => setCutoff(dateToIso(d))} />
+                </div>
                 <button
                   onClick={handleGenerate}
                   disabled={loading}
@@ -564,14 +614,6 @@ export default function PenonaktifanMasterClient() {
                 >
                   {syncing ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
                   Sync semua & Generate
-                </button>
-                <button
-                  onClick={handleExport}
-                  disabled={!data || exporting}
-                  className="shrink-0 px-5 py-2.5 bg-white border border-gray-100 rounded-xl text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 text-[12px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-                >
-                  {exporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-                  Unduh Excel usulan
                 </button>
                 <button
                   onClick={handleShare}
@@ -598,18 +640,52 @@ export default function PenonaktifanMasterClient() {
                 >
                   Rekap koreksi {rekap.length > 0 ? `(${rekap.length})` : ''}
                 </button>
-                 <button
-                   onClick={() => setShowSettings(true)}
-                   className="shrink-0 w-10 h-10 bg-white border border-gray-100 rounded-lg text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 flex items-center justify-center transition-all shadow-sm"
-                   title="Pengaturan penonaktifan"
-                 >
-                   <Settings2 size={18} />
-                 </button>
+                {data && (
+                  <button
+                    type="button"
+                    onClick={() => setShowDitolak(true)}
+                    title="Lihat daftar kode yang ditolak pilar 2 + alasannya"
+                    className="shrink-0 px-3 py-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 rounded-xl text-[12px] font-bold transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  >
+                    <span>Ditolak Pilar 2</span>
+                    <span className="px-1.5 py-0.5 rounded-full bg-amber-200/80 text-amber-900 text-[10px] font-mono tabular-nums">
+                      {data.ditolakCount.toLocaleString('id-ID')}
+                    </span>
+                    <span>▸</span>
+                  </button>
+                )}
+                <button
+                  onClick={handleExport}
+                  disabled={!data || exporting}
+                  className="shrink-0 px-5 py-2.5 bg-white border border-gray-100 rounded-xl text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 text-[12px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                >
+                  {exporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                  Unduh Excel usulan
+                </button>
               </div>
             </div>
             {data && (
-              <div className="w-full sm:w-auto sm:min-w-[220px]">
-                <SearchAndReload searchQuery={searchQuery} setSearchQuery={setSearchQuery} onReload={handleGenerate} loading={loading} placeholder="Cari kode / nama…" />
+              <div className="w-full sm:w-auto sm:min-w-[260px] flex items-center gap-2">
+                <div className="relative flex-1 min-w-0">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Cari kode / nama…"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-4 h-9 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleGenerate}
+                  disabled={loading}
+                  className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
+                  title="Reload data usulan"
+                >
+                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-emerald-600' : ''}`} />
+                  <span className="hidden sm:inline">Reload</span>
+                </button>
               </div>
             )}
           </div>
@@ -617,27 +693,6 @@ export default function PenonaktifanMasterClient() {
 
         {data && (
           <>
-             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 shrink-0">
-               {[
-                 { label: 'Kandidat aktif saldo 0', value: data.kandidat },
-                 { label: 'Layak diusulkan', value: data.bolehCount },
-               ].map((s) => (
-                 <div key={s.label} className="bg-white rounded-2xl border border-gray-100/80 shadow-sm px-4 py-3">
-                   <div className="text-[11px] font-bold text-gray-400">{s.label}</div>
-                   <div className="text-xl font-bold text-gray-800 tabular-nums">
-                     {typeof s.value === 'number' ? s.value.toLocaleString('id-ID') : s.value}
-                   </div>
-                 </div>
-               ))}
-              <button type="button" onClick={() => setShowDitolak((v) => !v)} title={showDitolak ? 'Sembunyikan daftar' : 'Tampilkan daftar + alasan'} className={`text-left bg-white rounded-2xl border shadow-sm px-4 py-3 transition-all cursor-pointer ${showDitolak ? 'border-amber-300 ring-2 ring-amber-200' : 'border-gray-100/80 hover:border-amber-300'}`}>
-                <div className="text-[11px] font-bold text-gray-400">Ditolak Pilar 2 {showDitolak ? '▾' : '▸'}</div>
-                <div className="text-xl font-bold text-amber-600 tabular-nums">{data.ditolakCount.toLocaleString('id-ID')}</div>
-              </button>
-              <div className="bg-white rounded-2xl border border-gray-100/80 shadow-sm px-4 py-3">
-                <div className="text-[11px] font-bold text-gray-400">Cutoff</div>
-                <div className="text-base font-bold text-gray-800">{formatCutoff(data.cutoff)}</div>
-              </div>
-            </div>
 
             {rekapOpen && (
               <div className="shrink-0 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
@@ -760,73 +815,100 @@ export default function PenonaktifanMasterClient() {
                 <span className="text-xs font-bold text-slate-700">Tambah Usulan Manual</span>
                 {manualError && <span className="text-[11px] font-bold text-rose-600">{manualError}</span>}
               </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <div className="w-32 shrink-0">
-                  <input
-                    type="text"
-                    value={manualKode}
-                    onChange={(e) => {
-                      setManualKode(e.target.value.replace(/\D/g, ''));
-                      if (manualError) setManualError('');
-                    }}
-                    placeholder="Kode (angka)…"
-                    className="w-full px-3 py-1.5 text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:outline-none"
-                  />
+              <div ref={manualSearchContainerRef} className="relative">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="w-32 shrink-0">
+                    <input
+                      type="text"
+                      value={manualKode}
+                      onChange={(e) => {
+                        setManualKode(e.target.value.replace(/\D/g, ''));
+                        setManualSearchActiveField('kode');
+                        setManualDropdownOpen(true);
+                        if (manualError) setManualError('');
+                      }}
+                      onFocus={() => {
+                        setManualSearchActiveField('kode');
+                        if (manualKode.trim().length >= 2) setManualDropdownOpen(true);
+                      }}
+                      placeholder="Kode (angka)…"
+                      className="w-full px-3 py-1.5 text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:outline-none"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-[180px]">
+                    <input
+                      type="text"
+                      value={manualNama}
+                      onChange={(e) => {
+                        setManualNama(e.target.value);
+                        setManualSearchActiveField('nama');
+                        setManualDropdownOpen(true);
+                        if (manualError) setManualError('');
+                      }}
+                      onFocus={() => {
+                        setManualSearchActiveField('nama');
+                        if (manualNama.trim().length >= 2) setManualDropdownOpen(true);
+                      }}
+                      placeholder="Nama barang…"
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:outline-none"
+                    />
+                  </div>
+                  <div className="flex-[2] min-w-[200px]">
+                    <input
+                      type="text"
+                      value={manualAlasan}
+                      onChange={(e) => {
+                        setManualAlasan(e.target.value);
+                        if (manualError) setManualError('');
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddManual();
+                        }
+                      }}
+                      placeholder="Alasan penonaktifan manual…"
+                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddManual}
+                    className="shrink-0 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+                  >
+                    <Plus size={14} />
+                    Tambah manual
+                  </button>
                 </div>
-                <div className="flex-1 min-w-[180px]">
-                  <input
-                    type="text"
-                    value={manualNama}
-                    onChange={(e) => {
-                      setManualNama(e.target.value);
-                      if (manualError) setManualError('');
-                    }}
-                    placeholder="Nama barang…"
-                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:outline-none"
-                  />
-                </div>
-                <div className="flex-[2] min-w-[200px]">
-                  <input
-                    type="text"
-                    value={manualAlasan}
-                    onChange={(e) => {
-                      setManualAlasan(e.target.value);
-                      if (manualError) setManualError('');
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddManual();
-                      }
-                    }}
-                    placeholder="Alasan penonaktifan manual…"
-                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:outline-none"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={handleAddManual}
-                  className="shrink-0 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
-                >
-                  <Plus size={14} />
-                  Tambah manual
-                </button>
+
+                {manualDropdownOpen && (manualSearchActiveField === 'kode' ? manualKode.trim().length >= 2 : manualNama.trim().length >= 2) && (
+                  <div className="absolute left-0 top-full mt-1.5 w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-lg z-30 max-h-52 overflow-y-auto divide-y divide-slate-100">
+                    {manualSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari barang…</div>}
+                    {!manualSearching && manualHits.length === 0 && (
+                      <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada barang yang cocok.</div>
+                    )}
+                    {!manualSearching && manualHits.map((item) => (
+                      <button
+                        key={item.kode}
+                        type="button"
+                        onClick={() => {
+                          setManualKode(item.kode);
+                          setManualNama(item.nama);
+                          setManualDropdownOpen(false);
+                          setManualHits([]);
+                          if (manualError) setManualError('');
+                        }}
+                        className="w-full text-left px-3 py-2 hover:bg-emerald-50 transition-colors flex items-center justify-between gap-3"
+                        title={item.nama}
+                      >
+                        <span className="text-xs font-mono font-bold text-slate-700 shrink-0">{item.kode}</span>
+                        <span className="text-xs text-slate-600 truncate flex-1">{item.nama}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-
-             {showDitolak && (
-               <div className="shrink-0 max-h-56 overflow-y-auto custom-scrollbar border border-amber-200 rounded-2xl divide-y divide-amber-50 bg-amber-50/40">
-                 <div className="px-4 py-2 text-[11px] font-bold text-amber-700 sticky top-0 bg-amber-50">Ditolak Pilar 2 — {data.ditolak?.length ?? data.ditolakCount} kode + alasan</div>
-                 {(data.ditolak ?? []).map((d) => (
-                   <div key={d.kode} className="px-4 py-2 flex items-start gap-3 text-xs">
-                     <span className="font-mono font-bold text-slate-700 shrink-0">{d.kode}</span>
-                     <span className="text-slate-600 flex-1 min-w-0 truncate" title={d.nama}>{d.nama}</span>
-                     <span className="text-amber-700 flex-[2]">{d.alasan}</span>
-                   </div>
-                 ))}
-                 {(!data.ditolak || data.ditolak.length === 0) && <div className="px-4 py-3 text-[11px] text-amber-600">Generate ulang untuk memuat daftar (butuh includeDitolak).</div>}
-               </div>
-             )}
              <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
                <DataTable
                 columns={columns}
@@ -932,6 +1014,27 @@ export default function PenonaktifanMasterClient() {
                      </div>
                      <p className="text-[11px] text-slate-400 mt-1">Cocok sebagian nama, tanpa peduli huruf besar/kecil. Hati-hati: keyword pendek melindungi banyak barang.</p>
                    </div>
+                  <div>
+                    <div className="text-xs font-bold text-slate-700 mb-1.5">Keyword pengecualian — JANGAN lindungi</div>
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {(settings.routine_exclude_keywords ?? []).map((k) => (
+                        <span key={k} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold">
+                          “{k}”
+                          <button onClick={() => setSettings({ ...settings, routine_exclude_keywords: (settings.routine_exclude_keywords ?? []).filter((x) => x !== k) })} className="hover:text-amber-950 shrink-0">
+                            <Trash2 size={12} />
+                          </button>
+                        </span>
+                      ))}
+                      {(settings.routine_exclude_keywords ?? []).length === 0 && <span className="text-xs text-gray-400">Belum ada pengecualian — mis. non-standar, afkir.</span>}
+                    </div>
+                    <div className="flex gap-2">
+                      <input value={excludeInput} onChange={(e) => setExcludeInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const v = excludeInput.trim().toLowerCase(); if (v.length >= 3 && !(settings.routine_exclude_keywords ?? []).includes(v)) setSettings({ ...settings, routine_exclude_keywords: [...(settings.routine_exclude_keywords ?? []), v] }); setExcludeInput(''); } }} placeholder="Ketik keyword pengecualian + Enter…" className="flex-1 px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 focus:outline-none transition-all" />
+                      <button onClick={() => { const v = excludeInput.trim().toLowerCase(); if (v.length >= 3 && !(settings.routine_exclude_keywords ?? []).includes(v)) setSettings({ ...settings, routine_exclude_keywords: [...(settings.routine_exclude_keywords ?? []), v] }); setExcludeInput(''); }} className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors flex items-center gap-1">
+                        <Plus size={13} /> Tambah
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-1">Barang yang cocok dengan keyword ini akan tetap bisa diusulkan untuk dinonaktifkan meski cocok kode/keyword rutin.</p>
+                  </div>
                    <div>
                      <div className="text-xs font-bold text-slate-700 mb-1.5">Batas idle penawaran batal (hari)</div>
                      <input value={idleInput} onChange={(e) => setIdleInput(e.target.value.replace(/\D/g, ''))} inputMode="numeric" className="px-3 py-2 w-28 text-xs tabular-nums bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all" />
@@ -943,6 +1046,105 @@ export default function PenonaktifanMasterClient() {
                    </button>
                 </div>
               )}
+            </div>
+          </div>
+        </Portal>
+      )}
+      {showDitolak && (
+        <Portal>
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => {
+              setShowDitolak(false);
+              setDitolakSearch('');
+            }}
+          >
+            <div
+              className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-800">
+                    Ditolak Pilar 2 {data ? `(${data.ditolak?.length ?? data.ditolakCount})` : ''}
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Daftar barang yang ditolak oleh Pilar 2 (penawaran/transaksi aktif) beserta alasannya
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDitolak(false);
+                    setDitolakSearch('');
+                  }}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="p-4 border-b border-slate-100 bg-white shrink-0">
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={ditolakSearch}
+                    onChange={(e) => setDitolakSearch(e.target.value)}
+                    placeholder="Cari kode, nama, atau alasan ditolak…"
+                    className="w-full pl-9 pr-4 h-9 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
+                  />
+                </div>
+              </div>
+              <div className="overflow-y-auto custom-scrollbar flex-1 min-h-0 divide-y divide-slate-100">
+                {(() => {
+                  const list = data?.ditolak ?? [];
+                  const q = ditolakSearch.trim().toLowerCase();
+                  const filteredList = q
+                    ? list.filter(
+                        (d) =>
+                          d.kode.toLowerCase().includes(q) ||
+                          d.nama.toLowerCase().includes(q) ||
+                          d.alasan.toLowerCase().includes(q)
+                      )
+                    : list;
+
+                  if (list.length === 0) {
+                    return (
+                      <div className="py-12 text-center text-slate-400 text-xs">
+                        Tidak ada data ditolak pilar 2. Generate ulang untuk memuat daftar.
+                      </div>
+                    );
+                  }
+                  if (filteredList.length === 0) {
+                    return (
+                      <div className="py-12 text-center text-slate-400 text-xs">
+                        Tidak ada hasil yang cocok dengan &ldquo;{ditolakSearch}&rdquo;
+                      </div>
+                    );
+                  }
+                  return filteredList.map((d) => (
+                    <div key={d.kode} className="px-5 py-3 hover:bg-slate-50/60 transition-colors flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4 text-xs">
+                      <div className="font-mono font-bold text-slate-700 shrink-0 w-28">{d.kode}</div>
+                      <div className="text-slate-800 font-medium flex-1 min-w-0">{d.nama}</div>
+                      <div className="text-amber-700 sm:flex-1 text-[11px] sm:text-xs bg-amber-50/60 sm:bg-transparent p-1.5 sm:p-0 rounded-lg sm:rounded-none">
+                        {d.alasan}
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+              <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50 flex justify-end shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDitolak(false);
+                    setDitolakSearch('');
+                  }}
+                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
             </div>
           </div>
         </Portal>
