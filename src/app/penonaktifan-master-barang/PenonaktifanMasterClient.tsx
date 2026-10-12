@@ -137,25 +137,8 @@ export default function PenonaktifanMasterClient() {
   const [manualDropdownOpen, setManualDropdownOpen] = useState(false);
   const [manualSearchActiveField, setManualSearchActiveField] = useState<'kode' | 'nama' | null>(null);
    const manualSearchContainerRef = useRef<HTMLDivElement>(null);
-   const [manualDropPos, setManualDropPos] = useState<{ left: number; top: number; width: number } | null>(null);
-
-   // Posisikan dropdown manual via Portal — lolos dari parent overflow-hidden + thead sticky z-[40].
-   useEffect(() => {
-     if (!manualDropdownOpen) { setManualDropPos(null); return; }
-     const place = () => {
-       const el = manualSearchContainerRef.current;
-       if (!el) return;
-       const r = el.getBoundingClientRect();
-       setManualDropPos({ left: r.left, top: r.bottom + 6, width: Math.min(r.width, 480) });
-     };
-     place();
-     window.addEventListener('resize', place);
-     window.addEventListener('scroll', place, true);
-     return () => {
-       window.removeEventListener('resize', place);
-       window.removeEventListener('scroll', place, true);
-     };
-   }, [manualDropdownOpen]);
+   const manualShowDropdown = manualDropdownOpen
+     && (manualSearchActiveField === 'kode' ? manualKode.trim().length >= 2 : manualNama.trim().length >= 2);
 
   const rows = useMemo(() => data?.rows ?? [], [data]);
   const { selectedIds, handleRowClick, clearSelection } = useTableSelection(rows);
@@ -838,7 +821,7 @@ export default function PenonaktifanMasterClient() {
               </div>
               <div ref={manualSearchContainerRef} className="relative">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <div className="w-32 shrink-0">
+                  <div className="w-32 shrink-0 relative">
                     <input
                       type="text"
                       value={manualKode}
@@ -855,8 +838,35 @@ export default function PenonaktifanMasterClient() {
                       placeholder="Kode (angka)…"
                       className="w-full px-3 py-1.5 text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:outline-none"
                     />
+                    {manualShowDropdown && manualSearchActiveField === 'kode' && (
+                      <div className="absolute top-full left-0 mt-1 w-80 max-w-[80vw] bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-52 overflow-y-auto divide-y divide-slate-100">
+                        {manualSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari barang…</div>}
+                        {!manualSearching && manualHits.length === 0 && (
+                          <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada barang yang cocok.</div>
+                        )}
+                        {!manualSearching && manualHits.map((item) => (
+                          <button
+                            key={item.kode}
+                            type="button"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setManualKode(item.kode);
+                              setManualNama(item.nama);
+                              setManualDropdownOpen(false);
+                              setManualHits([]);
+                              if (manualError) setManualError('');
+                            }}
+                            className="w-full text-left px-3 py-2 hover:bg-emerald-50 bg-white transition-colors block"
+                            title={`${item.kode} — ${item.nama}`}
+                          >
+                            <span className="block text-xs font-mono font-bold text-slate-700">{item.kode}</span>
+                            <span className="block text-xs text-slate-600 whitespace-normal break-words leading-snug">{item.nama}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <div className="flex-1 min-w-[180px]">
+                  <div className="flex-1 min-w-[180px] relative">
                     <input
                       type="text"
                       value={manualNama}
@@ -873,6 +883,33 @@ export default function PenonaktifanMasterClient() {
                       placeholder="Nama barang…"
                       className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:outline-none"
                     />
+                    {manualShowDropdown && manualSearchActiveField === 'nama' && (
+                      <div className="absolute top-full left-0 mt-1 w-full min-w-72 max-w-[80vw] bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-52 overflow-y-auto divide-y divide-slate-100">
+                        {manualSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari barang…</div>}
+                        {!manualSearching && manualHits.length === 0 && (
+                          <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada barang yang cocok.</div>
+                        )}
+                        {!manualSearching && manualHits.map((item) => (
+                          <button
+                            key={item.kode}
+                            type="button"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setManualKode(item.kode);
+                              setManualNama(item.nama);
+                              setManualDropdownOpen(false);
+                              setManualHits([]);
+                              if (manualError) setManualError('');
+                            }}
+                            className="w-full text-left px-3 py-2 hover:bg-emerald-50 bg-white transition-colors block"
+                            title={`${item.kode} — ${item.nama}`}
+                          >
+                            <span className="block text-xs font-mono font-bold text-slate-700">{item.kode}</span>
+                            <span className="block text-xs text-slate-600 whitespace-normal break-words leading-snug">{item.nama}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="flex-[2] min-w-[200px]">
                     <input
@@ -902,38 +939,6 @@ export default function PenonaktifanMasterClient() {
                   </button>
                 </div>
 
-                 {manualDropdownOpen && manualDropPos && (manualSearchActiveField === 'kode' ? manualKode.trim().length >= 2 : manualNama.trim().length >= 2) && (
-                   <Portal>
-                     <div
-                       className="fixed bg-white border border-slate-200 rounded-xl shadow-xl z-[9999] max-h-52 overflow-y-auto divide-y divide-slate-100"
-                       style={{ left: manualDropPos.left, top: manualDropPos.top, width: manualDropPos.width }}
-                     >
-                       {manualSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari barang…</div>}
-                       {!manualSearching && manualHits.length === 0 && (
-                         <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada barang yang cocok.</div>
-                       )}
-                       {!manualSearching && manualHits.map((item) => (
-                         <button
-                           key={item.kode}
-                           type="button"
-                           onMouseDown={(e) => {
-                             e.preventDefault();
-                             setManualKode(item.kode);
-                             setManualNama(item.nama);
-                             setManualDropdownOpen(false);
-                             setManualHits([]);
-                             if (manualError) setManualError('');
-                           }}
-                           className="w-full text-left px-3 py-2 hover:bg-emerald-50 bg-white transition-colors block"
-                           title={`${item.kode} — ${item.nama}`}
-                         >
-                           <span className="block text-xs font-mono font-bold text-slate-700">{item.kode}</span>
-                           <span className="block text-xs text-slate-600 whitespace-normal break-words leading-snug">{item.nama}</span>
-                         </button>
-                       ))}
-                     </div>
-                   </Portal>
-                 )}
                </div>
              </div>
              <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
