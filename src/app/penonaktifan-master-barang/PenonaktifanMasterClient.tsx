@@ -497,9 +497,8 @@ export default function PenonaktifanMasterClient() {
        if (!json.success) throw new Error(json.error || 'Gagal simpan');
        setSettings(json.settings);
        setIdleInput(String(json.settings.idle_days));
-       setShowSettings(false);
-       setDialog({ isOpen: true, type: 'success', title: 'Tersimpan', message: 'Pengaturan penonaktifan berhasil disimpan. Menghitung ulang usulan…' });
-       await handleGenerate();
+      setShowSettings(false);
+      setDialog({ isOpen: true, type: 'success', title: 'Tersimpan', message: 'Pengaturan penonaktifan berhasil disimpan. Klik Generate usulan untuk menerapkan.' });
      } catch (e) {
        setError(e instanceof Error ? e.message : String(e));
      } finally {
