@@ -669,17 +669,6 @@ export default function PenonaktifanMasterClient() {
                 </button>
               </div>
             </div>
-             {data && (
-               <button
-                 type="button"
-                 onClick={() => { setManualError(''); setShowManual(true); }}
-                 title="Tambah usulan manual"
-                 className="w-full sm:w-auto shrink-0 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 hover:border-emerald-200 text-[12px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all"
-               >
-                 <Plus size={16} />
-                 Tambah manual
-               </button>
-             )}
           </div>
         </div>
 
