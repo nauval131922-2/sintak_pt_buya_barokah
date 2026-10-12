@@ -369,11 +369,31 @@ export async function initSchema(db: any) {
       last_seq INTEGER NOT NULL DEFAULT 0,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`,
-    `CREATE TABLE IF NOT EXISTS system_settings (
-      key TEXT PRIMARY KEY,
-      value TEXT,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );`,
+     `CREATE TABLE IF NOT EXISTS system_settings (
+       key TEXT PRIMARY KEY,
+       value TEXT,
+       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+     );`,
+     `CREATE TABLE IF NOT EXISTS penonaktifan_reviews (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       token TEXT UNIQUE NOT NULL,
+       cutoff TEXT NOT NULL,
+       created_by TEXT,
+       snapshot TEXT NOT NULL DEFAULT '[]',
+       status TEXT NOT NULL DEFAULT 'open',
+       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+     );`,
+     `CREATE TABLE IF NOT EXISTS penonaktifan_review_items (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       review_id INTEGER NOT NULL,
+       kode TEXT NOT NULL,
+       nama TEXT DEFAULT '',
+       aksi TEXT NOT NULL,
+       alasan TEXT DEFAULT '',
+       reviewer TEXT DEFAULT '',
+       keputusan TEXT NOT NULL DEFAULT 'pending',
+       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+     );`,
     `CREATE TABLE IF NOT EXISTS personal_tasks (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       task TEXT NOT NULL,

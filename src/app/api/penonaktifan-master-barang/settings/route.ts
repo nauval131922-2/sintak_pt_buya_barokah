@@ -42,11 +42,12 @@ export async function POST(req: NextRequest) {
       if (typeof v === 'string') return v.split(',');
       return [];
     };
-     const saved = await savePenonaktifanSettings({
-       routine_codes: toStrList(b.routine_codes),
-       routine_keywords: toStrList(b.routine_keywords),
-       idle_days: typeof b.idle_days === 'number' ? b.idle_days : Number(b.idle_days ?? 7),
-     });
+    const saved = await savePenonaktifanSettings({
+      routine_codes: toStrList(b.routine_codes),
+      routine_keywords: toStrList(b.routine_keywords),
+      routine_exclude_keywords: toStrList(b.routine_exclude_keywords),
+      idle_days: typeof b.idle_days === 'number' ? b.idle_days : Number(b.idle_days ?? 7),
+    });
     return NextResponse.json({ success: true, settings: saved });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);

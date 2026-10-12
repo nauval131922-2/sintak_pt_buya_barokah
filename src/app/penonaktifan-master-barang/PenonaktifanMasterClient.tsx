@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Download, Loader2, Play, AlertCircle, Settings2, X, Plus, Trash2, Save, RefreshCw } from 'lucide-react';
+import { Download, Loader2, Play, AlertCircle, Settings2, X, Plus, Trash2, Save, RefreshCw, Share2, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
 import Portal from '@/components/Portal';
 import TableFooter from '@/components/TableFooter';
 import SearchAndReload from '@/components/SearchAndReload';
@@ -19,7 +19,7 @@ interface PreviewRow {
   nama: string;
   satuan: string;
   kelompok: string;
-  kategori: 'A_LUDES' | 'B_BATAL';
+  kategori: 'A_LUDES' | 'B_BATAL' | 'MANUAL';
   alasan: string;
 }
 
@@ -81,10 +81,11 @@ function isoToDdMmYyyy(iso: string): string {
    return `${m[3]} ${BULAN_SHORT[Number(m[2]) - 1] ?? m[2]} ${m[1]}`;
  }
 
- const KAT_LABEL: Record<string, string> = {
-   A_LUDES: 'A — Ludes Pesanan',
-   B_BATAL: 'B — Penawaran Batal',
- };
+const KAT_LABEL: Record<string, string> = {
+  A_LUDES: 'A — Ludes Pesanan',
+  B_BATAL: 'B — Penawaran Batal',
+  MANUAL: 'Manual',
+};
 
 export default function PenonaktifanMasterClient() {
   const router = useRouter();
@@ -116,8 +117,16 @@ export default function PenonaktifanMasterClient() {
    const [idleInput, setIdleInput] = useState('7');
    const [keywordInput, setKeywordInput] = useState('');
   const [routineItems, setRoutineItems] = useState<Array<{ kode: string; nama: string }>>([]);
-  const [lastGenerate, setLastGenerate] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_lastGenerate') : null));
-  const [lastSyncAll, setLastSyncAll] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_lastSyncAll') : null));
+   const [lastGenerate, setLastGenerate] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_lastGenerate') : null));
+   const [lastSyncAll, setLastSyncAll] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_lastSyncAll') : null));
+   const [sharing, setSharing] = useState(false);
+   const [shareToken, setShareToken] = useState<string | null>(null);
+   const [rekap, setRekap] = useState<Array<{ id: number; kode: string; nama: string; aksi: string; alasan: string; reviewer: string; keputusan: string }>>([]);
+  const [rekapOpen, setRekapOpen] = useState(false);
+  const [manualKode, setManualKode] = useState('');
+  const [manualNama, setManualNama] = useState('');
+  const [manualAlasan, setManualAlasan] = useState('');
+  const [manualError, setManualError] = useState('');
 
   const rows = useMemo(() => data?.rows ?? [], [data]);
   const { selectedIds, handleRowClick, clearSelection } = useTableSelection(rows);
@@ -308,6 +317,99 @@ export default function PenonaktifanMasterClient() {
     }
   };
 
+  const handleShare = async () => {
+    if (!data) return;
+    setSharing(true);
+    try {
+      const res = await fetch('/api/penonaktifan-master-barang/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cutoff,
+          snapshot: rows.map((r) => ({ kode: r.kode, nama: r.nama, kategori: r.kategori, alasan: r.alasan })),
+        }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'Gagal buat link');
+      setShareToken(json.token);
+      try { await navigator.clipboard.writeText(`${window.location.origin}/penonaktifan-review/${json.token}`); } catch { /* clipboard diblokir */ }
+      setDialog({ isOpen: true, type: 'success', title: 'Link review dibuat', message: `Link disalin: ${window.location.origin}/penonaktifan-review/${json.token}` });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  const loadRekap = async (token: string) => {
+    try {
+      const res = await fetch(`/api/penonaktifan-master-barang/review?token=${encodeURIComponent(token)}`);
+      const json = await res.json();
+      if (json.success) setRekap(json.review.items ?? []);
+    } catch { /* abaikan */ }
+  };
+
+  const decide = async (id: number, keputusan: 'setuju' | 'tolak', item: { kode: string; aksi: string }) => {
+    try {
+      const res = await fetch('/api/penonaktifan-master-barang/review', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, keputusan }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'Gagal');
+      setRekap((prev) => prev.map((x) => (x.id === id ? { ...x, keputusan } : x)));
+      if (keputusan === 'setuju' && data) {
+        if (item.aksi === 'usul_hapus') {
+          setData({ ...data, rows: data.rows.filter((r) => r.kode !== item.kode), bolehCount: data.bolehCount - 1 });
+        }
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  };
+
+  const handleAddManual = () => {
+    const k = manualKode.trim();
+    const nm = manualNama.trim();
+    const reason = manualAlasan.trim();
+    if (!k) {
+      setManualError('Kode barang wajib diisi.');
+      return;
+    }
+    if (!/^\d+$/.test(k)) {
+      setManualError('Kode barang harus numerik (angka saja).');
+      return;
+    }
+    if (!reason) {
+      setManualError('Alasan penambahan manual wajib diisi.');
+      return;
+    }
+    if (data && data.rows.some((r) => r.kode === k)) {
+      setManualError('Kode sudah ada dalam daftar usulan.');
+      return;
+    }
+    const newRow: PreviewRow = {
+      id: `manual-${k}`,
+      kode: k,
+      nama: nm || k,
+      satuan: 'PCS',
+      kelompok: 'MANUAL',
+      kategori: 'MANUAL',
+      alasan: reason,
+    };
+    if (data) {
+      setData({
+        ...data,
+        rows: [newRow, ...data.rows],
+        bolehCount: data.bolehCount + 1,
+      });
+    }
+    setManualKode('');
+    setManualNama('');
+    setManualAlasan('');
+    setManualError('');
+  };
   const handleSaveSettings = async () => {
     if (!settings) return;
     setSettingsSaving(true);
@@ -407,10 +509,9 @@ export default function PenonaktifanMasterClient() {
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px] flex-wrap">
             <div className="flex items-end gap-2 flex-wrap">
-               <div className="w-44 shrink-0">
+               <div className="w-44 shrink-0" title={(lastGenerate ? `Generate: ${formatLastUpdate(lastGenerate.split('|')[0])}` : '') + (lastGenerate && lastSyncAll ? ' • ' : '') + (lastSyncAll ? `Sync: ${formatLastUpdate(lastSyncAll.split('|')[0])}` : '')}>
                  <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal cutoff</label>
                  <DatePicker name="cutoff" value={isoToDate(cutoff)} onChange={(d) => setCutoff(dateToIso(d))} />
-                 {(lastGenerate || lastSyncAll) && <div className="mt-1 text-[10px] font-semibold text-gray-300 leading-tight">{lastGenerate ? <span>Generate: {formatLastUpdate(lastGenerate.split('|')[0])}</span> : null}{lastGenerate && lastSyncAll ? <span> • </span> : null}{lastSyncAll ? <span>Sync: {formatLastUpdate(lastSyncAll.split('|')[0])}</span> : null}</div>}
                </div>
               <div className="flex items-end gap-2">
                 <button
@@ -442,12 +543,37 @@ export default function PenonaktifanMasterClient() {
                   Unduh Excel usulan
                 </button>
                 <button
-                  onClick={() => setShowSettings(true)}
-                  className="shrink-0 w-10 h-10 bg-white border border-gray-100 rounded-lg text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 flex items-center justify-center transition-all shadow-sm"
-                  title="Pengaturan penonaktifan"
+                  onClick={handleShare}
+                  disabled={!data || sharing}
+                  title="Buat link review untuk pengecek"
+                  className="shrink-0 px-4 py-2.5 bg-white border border-gray-100 rounded-xl text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 text-[12px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
                 >
-                  <Settings2 size={18} />
+                  {sharing ? <Loader2 size={16} className="animate-spin" /> : <Share2 size={16} />}
+                  Bagikan
                 </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !rekapOpen;
+                    setRekapOpen(next);
+                    if (next && shareToken) loadRekap(shareToken);
+                  }}
+                  title={rekapOpen ? 'Tutup panel rekap koreksi' : 'Buka panel rekap koreksi review'}
+                  className={`shrink-0 px-4 py-2.5 bg-white border rounded-xl text-[12px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all ${
+                    rekapOpen
+                      ? 'border-emerald-500 text-emerald-700 bg-emerald-50/50'
+                      : 'border-gray-100 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50'
+                  }`}
+                >
+                  Rekap koreksi {rekap.length > 0 ? `(${rekap.length})` : ''}
+                </button>
+                 <button
+                   onClick={() => setShowSettings(true)}
+                   className="shrink-0 w-10 h-10 bg-white border border-gray-100 rounded-lg text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 flex items-center justify-center transition-all shadow-sm"
+                   title="Pengaturan penonaktifan"
+                 >
+                   <Settings2 size={18} />
+                 </button>
               </div>
             </div>
             {data && (
@@ -472,15 +598,190 @@ export default function PenonaktifanMasterClient() {
                    </div>
                  </div>
                ))}
-               <button type="button" onClick={() => setShowDitolak((v) => !v)} title={showDitolak ? 'Sembunyikan daftar' : 'Tampilkan daftar + alasan'} className={`text-left bg-white rounded-2xl border shadow-sm px-4 py-3 transition-all cursor-pointer ${showDitolak ? 'border-amber-300 ring-2 ring-amber-200' : 'border-gray-100/80 hover:border-amber-300'}`}>
-                 <div className="text-[11px] font-bold text-gray-400">Ditolak Pilar 2 {showDitolak ? '▾' : '▸'}</div>
-                 <div className="text-xl font-bold text-amber-600 tabular-nums">{data.ditolakCount.toLocaleString('id-ID')}</div>
-               </button>
-               <div className="bg-white rounded-2xl border border-gray-100/80 shadow-sm px-4 py-3">
-                 <div className="text-[11px] font-bold text-gray-400">Cutoff</div>
-                 <div className="text-base font-bold text-gray-800">{formatCutoff(data.cutoff)}</div>
-               </div>
-             </div>
+              <button type="button" onClick={() => setShowDitolak((v) => !v)} title={showDitolak ? 'Sembunyikan daftar' : 'Tampilkan daftar + alasan'} className={`text-left bg-white rounded-2xl border shadow-sm px-4 py-3 transition-all cursor-pointer ${showDitolak ? 'border-amber-300 ring-2 ring-amber-200' : 'border-gray-100/80 hover:border-amber-300'}`}>
+                <div className="text-[11px] font-bold text-gray-400">Ditolak Pilar 2 {showDitolak ? '▾' : '▸'}</div>
+                <div className="text-xl font-bold text-amber-600 tabular-nums">{data.ditolakCount.toLocaleString('id-ID')}</div>
+              </button>
+              <div className="bg-white rounded-2xl border border-gray-100/80 shadow-sm px-4 py-3">
+                <div className="text-[11px] font-bold text-gray-400">Cutoff</div>
+                <div className="text-base font-bold text-gray-800">{formatCutoff(data.cutoff)}</div>
+              </div>
+            </div>
+
+            {rekapOpen && (
+              <div className="shrink-0 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-800">Rekap Koreksi Review</span>
+                    <span className="text-[11px] text-slate-400">({rekap.length} usulan masuk)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {shareToken && (
+                      <button
+                        type="button"
+                        onClick={() => loadRekap(shareToken)}
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors"
+                        title={`Muat ulang rekap dari token: ${shareToken}`}
+                      >
+                        <RefreshCw size={13} />
+                        Muat rekap
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setRekapOpen(false)}
+                      className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
+                </div>
+
+                {!shareToken && rekap.length === 0 && (
+                  <p className="text-xs text-slate-400">
+                    Belum ada sesi share. Klik tombol <b>Bagikan</b> terlebih dahulu untuk membuat link review.
+                  </p>
+                )}
+
+                {shareToken && rekap.length === 0 && (
+                  <div className="flex items-center justify-between text-xs text-slate-500 py-1">
+                    <span>Belum ada usulan dari reviewer atau belum dimuat.</span>
+                    <button
+                      type="button"
+                      onClick={() => loadRekap(shareToken)}
+                      className="text-emerald-600 font-bold hover:underline"
+                    >
+                      Muat sekarang
+                    </button>
+                  </div>
+                )}
+
+                {rekap.length > 0 && (
+                  <div className="max-h-56 overflow-y-auto custom-scrollbar divide-y divide-slate-100 border border-slate-100 rounded-xl">
+                    {rekap.map((item) => (
+                      <div key={item.id} className="p-2.5 flex items-center justify-between gap-3 text-xs hover:bg-slate-50/60">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                              item.aksi === 'usul_hapus'
+                                ? 'bg-amber-100 text-amber-700'
+                                : 'bg-emerald-100 text-emerald-700'
+                            }`}
+                          >
+                            {item.aksi === 'usul_hapus' ? 'Usul Hapus' : 'Usul Tambah'}
+                          </span>
+                          <span className="font-mono font-bold text-slate-700 shrink-0">{item.kode}</span>
+                          <span className="text-slate-600 truncate max-w-[200px]" title={item.nama || item.kode}>
+                            {item.nama || '—'}
+                          </span>
+                          <span className="text-slate-400 truncate flex-1" title={item.alasan}>
+                            “{item.alasan}”
+                          </span>
+                          <span className="text-[11px] text-slate-400 shrink-0 font-medium">
+                            oleh {item.reviewer || 'reviewer'}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {item.keputusan === 'pending' || !item.keputusan ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => decide(item.id, 'setuju', item)}
+                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold flex items-center gap-1 transition-colors"
+                                title="Setujui usulan"
+                              >
+                                <ThumbsUp size={12} />
+                                Setuju
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => decide(item.id, 'tolak', item)}
+                                className="px-2.5 py-1 bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-700 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-colors"
+                                title="Tolak usulan"
+                              >
+                                <ThumbsDown size={12} />
+                                Tolak
+                              </button>
+                            </>
+                          ) : (
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1 ${
+                                item.keputusan === 'setuju'
+                                  ? 'bg-emerald-100 text-emerald-700'
+                                  : 'bg-slate-100 text-slate-500 line-through'
+                              }`}
+                            >
+                              {item.keputusan === 'setuju' && <Check size={11} />}
+                              {item.keputusan}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="shrink-0 bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-700">Tambah Usulan Manual</span>
+                {manualError && <span className="text-[11px] font-bold text-rose-600">{manualError}</span>}
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="w-32 shrink-0">
+                  <input
+                    type="text"
+                    value={manualKode}
+                    onChange={(e) => {
+                      setManualKode(e.target.value.replace(/\D/g, ''));
+                      if (manualError) setManualError('');
+                    }}
+                    placeholder="Kode (angka)…"
+                    className="w-full px-3 py-1.5 text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
+                <div className="flex-1 min-w-[180px]">
+                  <input
+                    type="text"
+                    value={manualNama}
+                    onChange={(e) => {
+                      setManualNama(e.target.value);
+                      if (manualError) setManualError('');
+                    }}
+                    placeholder="Nama barang…"
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
+                <div className="flex-[2] min-w-[200px]">
+                  <input
+                    type="text"
+                    value={manualAlasan}
+                    onChange={(e) => {
+                      setManualAlasan(e.target.value);
+                      if (manualError) setManualError('');
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddManual();
+                      }
+                    }}
+                    placeholder="Alasan penonaktifan manual…"
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:outline-none"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddManual}
+                  className="shrink-0 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+                >
+                  <Plus size={14} />
+                  Tambah manual
+                </button>
+              </div>
+            </div>
 
              {showDitolak && (
                <div className="shrink-0 max-h-56 overflow-y-auto custom-scrollbar border border-amber-200 rounded-2xl divide-y divide-amber-50 bg-amber-50/40">
