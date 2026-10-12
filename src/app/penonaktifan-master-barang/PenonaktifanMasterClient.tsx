@@ -13,15 +13,17 @@ import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import { highlightText } from '@/lib/highlight';
 import { formatLastUpdate } from '@/lib/date-utils';
 
-interface PreviewRow {
-  id: string;
-  kode: string;
-  nama: string;
-  satuan: string;
-  kelompok: string;
-  kategori: 'A_LUDES' | 'B_BATAL' | 'MANUAL';
-  alasan: string;
-}
+ interface PreviewRow {
+   id: string;
+   kode: string;
+   nama: string;
+   satuan: string;
+   golongan: string;
+   kelompok: string;
+   saldo: string;
+   kategori: 'A_LUDES' | 'B_BATAL' | 'MANUAL';
+   alasan: string;
+ }
 
  interface PreviewResult {
    success: boolean;
@@ -298,24 +300,32 @@ export default function PenonaktifanMasterClient() {
     }
   }, [cutoff, handleGenerate]);
 
-  const handleExport = async () => {
-    setExporting(true);
-    try {
-      const res = await fetch(`/api/export-penonaktifan-master-barang?cutoff=${cutoff}`);
-      if (!res.ok) throw new Error('Gagal export Excel');
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `USULAN NONAKTIF ${cutoff}.xlsx`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setExporting(false);
-    }
-  };
+   const handleExport = async () => {
+     if (!data) return;
+     setExporting(true);
+     try {
+       const res = await fetch('/api/export-penonaktifan-master-barang', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({
+           cutoff,
+           rows: rows.map((r) => ({ kode: r.kode, nama: r.nama, satuan: r.satuan, golongan: r.golongan, kelompok: r.kelompok, saldo: r.saldo, alasan: r.alasan })),
+         }),
+       });
+       if (!res.ok) throw new Error('Gagal export Excel');
+       const blob = await res.blob();
+       const url = URL.createObjectURL(blob);
+       const a = document.createElement('a');
+       a.href = url;
+       a.download = `USULAN NONAKTIF ${cutoff}.xlsx`;
+       a.click();
+       URL.revokeObjectURL(url);
+     } catch (e) {
+       setError(e instanceof Error ? e.message : String(e));
+     } finally {
+       setExporting(false);
+     }
+   };
 
   const handleShare = async () => {
     if (!data) return;
@@ -389,15 +399,17 @@ export default function PenonaktifanMasterClient() {
       setManualError('Kode sudah ada dalam daftar usulan.');
       return;
     }
-    const newRow: PreviewRow = {
-      id: `manual-${k}`,
-      kode: k,
-      nama: nm || k,
-      satuan: 'PCS',
-      kelompok: 'MANUAL',
-      kategori: 'MANUAL',
-      alasan: reason,
-    };
+     const newRow: PreviewRow = {
+       id: `manual-${k}`,
+       kode: k,
+       nama: nm || k,
+       satuan: 'PCS',
+       golongan: 'Barang Jadi Pesanan',
+       kelompok: 'MANUAL',
+       saldo: '0.00',
+       kategori: 'MANUAL',
+       alasan: reason,
+     };
     if (data) {
       setData({
         ...data,
