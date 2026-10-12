@@ -666,6 +666,15 @@ export default function PenonaktifanMasterClient() {
             </div>
              {data && (
                <div className="w-full sm:w-auto sm:min-w-[280px] flex items-center gap-2 bg-white border border-slate-300 rounded-xl px-2 py-1.5 shadow-sm ring-1 ring-slate-200/60 focus-within:ring-2 focus-within:ring-emerald-500/25 focus-within:border-emerald-500 transition-all">
+                   <button
+                     type="button"
+                     onClick={handleGenerate}
+                     disabled={loading}
+                     className="h-8 w-8 text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center justify-center shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
+                     title="Reload data usulan"
+                   >
+                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                   </button>
                  <div className="relative flex-1 min-w-0">
                    <Search className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
                    <input
@@ -676,16 +685,6 @@ export default function PenonaktifanMasterClient() {
                      className="w-full pl-8 pr-3 h-8 text-xs font-semibold bg-transparent border-0 text-slate-800 placeholder-slate-500 focus:outline-none"
                    />
                  </div>
-                 <button
-                   type="button"
-                   onClick={handleGenerate}
-                   disabled={loading}
-                   className="h-8 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
-                   title="Reload data usulan"
-                 >
-                   <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-                   <span className="hidden sm:inline">Reload</span>
-                 </button>
                </div>
              )}
           </div>
@@ -882,7 +881,7 @@ export default function PenonaktifanMasterClient() {
                 </div>
 
                 {manualDropdownOpen && (manualSearchActiveField === 'kode' ? manualKode.trim().length >= 2 : manualNama.trim().length >= 2) && (
-                  <div className="absolute left-0 top-full mt-1.5 w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-lg z-30 max-h-52 overflow-y-auto divide-y divide-slate-100">
+                  <div className="absolute left-0 top-full mt-1.5 w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-52 overflow-y-auto divide-y divide-slate-100">
                     {manualSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari barang…</div>}
                     {!manualSearching && manualHits.length === 0 && (
                       <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada barang yang cocok.</div>
@@ -898,7 +897,7 @@ export default function PenonaktifanMasterClient() {
                           setManualHits([]);
                           if (manualError) setManualError('');
                         }}
-                        className="w-full text-left px-3 py-2 hover:bg-emerald-50 transition-colors flex items-center justify-between gap-3"
+                        className="w-full text-left px-3 py-2 hover:bg-emerald-50 bg-white transition-colors flex items-center justify-between gap-3"
                         title={item.nama}
                       >
                         <span className="text-xs font-mono font-bold text-slate-700 shrink-0">{item.kode}</span>
