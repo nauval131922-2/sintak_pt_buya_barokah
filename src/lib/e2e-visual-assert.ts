@@ -1,29 +1,60 @@
-// e2e-visual-assert.ts — matrix baku E2E visual (fungsi + visual, tanpa yang terlewat).
-// Pakai di tiap E2E halaman: panggil collectVisualMetrics di browser context,
-// lalu assertVisualMetrics di Node/CI. Semua cek terukur via getBoundingClientRect,
-// BUKAN dari style inline (style bisa meleset dari render bila ada ancestor transform/zoom).
+// e2e-visual-assert.ts — matrix baku E2E visual: fungsi + visual, tanpa yang terlewat.
+// Dipakai di TIAP E2E halaman, bukan cuma kasus dropdown kemarin.
 //
-// 5 cek baku:
-//  1. alignment — panel (dropdown/popover) sejajar anchor (textbox pemicu)
-//  2. overlap    — panel tidak menutupi textbox/tombol lain selain anchor-nya
-//  3. truncation — teks item tidak kepotong (scroll > client)
-//  4. overflow   — dokumen tidak scroll-X liar
-//  5. viewport   — ulangi 1-4 di desktop + mobile (390px)
+// Prinsip:
+//  - Semua cek terukur via getBoundingClientRect HASIL RENDER, bukan style inline
+//    (style bisa meleset bila ada ancestor transform/zoom — pelajaran bug dropdown Portal).
+//  - Setiap E2E halaman WAJIB mengisi PageVisualReport (fungsi + 8 cek visual)
+//    di DUA viewport (desktop + 390px). Gate lolos = semua hijau.
+//
+// 8 cek visual baku (umum, berlaku untuk komponen apa pun):
+//  1. alignment  — panel/dropdown/modal sejajar anchor-nya (kiri + di bawah, tidak menimpa)
+//  2. overlap    — tidak ada kontrol (input/button) tertutup elemen lain, kecuali anchor
+//  3. truncation — tidak ada teks kepotong (scroll > client) di tabel/saran/kartu,
+//                  KECUALI yang by-design ber-tooltip (wajib cantumkan di allowTruncate)
+//  4. overflow   — dokumen tidak scroll-X liar (docOverX = 0)
+//  5. scrollwrap — tabel lebar terbungkus container overflow-auto (scroll di dalam, bukan halaman)
+//  6. toolbar    — tidak ada tombol toolbar kepotong (scrollWidth > clientWidth)
+//  7. dialog     — modal terpusat di viewport, backdrop menutup seluruh layar, tombol X terlihat
+//  8. responsive — ulangi 1-7 di desktop DAN mobile 390px
 
 export interface RectLike { left: number; top: number; width: number; height: number }
 export interface VisualItemMetric {
   text: string;
   truncatedX: boolean;
   truncatedY: boolean;
+  hasTooltip: boolean;
+}
+export interface DialogMetric {
+  found: boolean;
+  centeredX: boolean;
+  backdropCovers: boolean;
+  closeVisible: boolean;
 }
 export interface VisualMetrics {
+  // 1-2. anchor/panel (dropdown, popover, tooltip). null bila halaman ini tak menguji panel.
   anchor: RectLike | null;
   panel: RectLike | null;
   panelItemCount: number;
   items: VisualItemMetric[];
   overlappedControls: string[]; // label kontrol tertutup panel (selain anchor)
+  // 3. truncation global: semua sel/item terpotong di halaman (td, kartu, saran).
+  truncatedGlobal: string[];
+  // 4-5. overflow + scrollwrap tabel.
   docOverX: number;
+  tableScrollable: boolean | null; // null = tak ada tabel di halaman
+  // 6. toolbar buttons kepotong.
+  cutToolbarButtons: string[];
+  // 7. dialog/modal bila terbuka.
+  dialog: DialogMetric | null;
   viewportWidth: number;
+}
+
+export interface PageVisualReport {
+  label: string;
+  functional: { apiOk: boolean; dbOk: boolean; note: string };
+  desktop: VisualAssertionResult;
+  mobile: VisualAssertionResult;
 }
 
 export interface VisualAssertionResult {
@@ -31,84 +62,118 @@ export interface VisualAssertionResult {
   failures: string[];
 }
 
-// Toleransi piksel untuk alignment (sub-pixel rendering).
+// Toleransi piksel alignment (sub-pixel rendering).
 const ALIGN_TOL = 4;
 
-export function assertVisualMetrics(m: VisualMetrics, label: string): VisualAssertionResult {
+export function assertVisualMetrics(
+  m: VisualMetrics,
+  label: string,
+  opts?: { allowTruncate?: string[]; expectPanel?: boolean; expectTable?: boolean },
+): VisualAssertionResult {
   const failures: string[] = [];
-  if (!m.anchor) failures.push(`[${label}] anchor tidak ditemukan`);
-  if (!m.panel) failures.push(`[${label}] panel tidak ditemukan`);
-  if (m.anchor && m.panel) {
-    if (Math.abs(m.panel.left - m.anchor.left) > ALIGN_TOL) {
-      failures.push(
-        `[${label}] alignment: panel.left=${Math.round(m.panel.left)} vs anchor.left=${Math.round(m.anchor.left)} (selisih > ${ALIGN_TOL}px)`,
-      );
-    }
-    if (m.panel.top < m.anchor.top + m.anchor.height - 2) {
-      failures.push(
-        `[${label}] overlap-anchor: panel.top=${Math.round(m.panel.top)} menutupi anchor.bottom=${Math.round(m.anchor.top + m.anchor.height)}`,
-      );
+  const allow = opts?.allowTruncate ?? [];
+
+  // 1. alignment + 2. overlap anchor.
+  if (opts?.expectPanel !== false && (m.anchor || m.panel)) {
+    if (!m.anchor) failures.push(`[${label}] alignment: anchor tidak ditemukan`);
+    if (!m.panel) failures.push(`[${label}] alignment: panel tidak ditemukan`);
+    if (m.anchor && m.panel) {
+      if (Math.abs(m.panel.left - m.anchor.left) > ALIGN_TOL) {
+        failures.push(
+          `[${label}] alignment: panel.left=${Math.round(m.panel.left)} vs anchor.left=${Math.round(m.anchor.left)} (toleransi ${ALIGN_TOL}px)`,
+        );
+      }
+      if (m.panel.top < m.anchor.top + m.anchor.height - 2) {
+        failures.push(
+          `[${label}] overlap-anchor: panel.top=${Math.round(m.panel.top)} menimpa anchor.bottom=${Math.round(m.anchor.top + m.anchor.height)}`,
+        );
+      }
     }
   }
+  // 2. overlap kontrol lain.
   if (m.overlappedControls.length > 0) {
-    failures.push(`[${label}] overlap: panel menutupi kontrol [${m.overlappedControls.join(', ')}]`);
+    failures.push(`[${label}] overlap: tertutup [${m.overlappedControls.join(', ')}]`);
   }
-  const trunc = m.items.filter((i) => i.truncatedX || i.truncatedY);
-  if (trunc.length > 0) {
+  // 3. truncation item panel + global (kecuali allowlist + yang ber-tooltip).
+  const truncItem = m.items.filter((i) => (i.truncatedX || i.truncatedY) && !i.hasTooltip);
+  if (truncItem.length > 0) {
     failures.push(
-      `[${label}] truncation: ${trunc.length}/${m.items.length} item kepotong (contoh: "${trunc[0].text.slice(0, 50)}")`,
+      `[${label}] truncation-panel: ${truncItem.length}/${m.items.length} kepotong tanpa tooltip ("${truncItem[0].text.slice(0, 50)}")`,
     );
   }
-  if (m.docOverX > 0) failures.push(`[${label}] overflow-X dokumen: ${m.docOverX}px`);
+  const truncGlobal = m.truncatedGlobal.filter((t) => !allow.some((a) => t.includes(a)));
+  if (truncGlobal.length > 0) {
+    failures.push(`[${label}] truncation-global: ${truncGlobal.length} sel kepotong ("${truncGlobal[0].slice(0, 50)}")`);
+  }
+  // 4. overflow dokumen.
+  if (m.docOverX > 0) failures.push(`[${label}] overflow-X: ${m.docOverX}px keluar viewport ${m.viewportWidth}px`);
+  // 5. scrollwrap tabel.
+  if (opts?.expectTable !== false && m.tableScrollable === false && m.viewportWidth < 768) {
+    failures.push(`[${label}] scrollwrap: tabel tidak bisa scroll horizontal di mobile`);
+  }
+  // 6. toolbar.
+  if (m.cutToolbarButtons.length > 0) {
+    failures.push(`[${label}] toolbar: tombol kepotong [${m.cutToolbarButtons.join(', ')}]`);
+  }
+  // 7. dialog (hanya bila ada yang terbuka).
+  if (m.dialog?.found) {
+    if (!m.dialog.centeredX) failures.push(`[${label}] dialog: tidak terpusat horizontal`);
+    if (!m.dialog.backdropCovers) failures.push(`[${label}] dialog: backdrop tidak menutup layar`);
+    if (!m.dialog.closeVisible) failures.push(`[${label}] dialog: tombol tutup tidak terlihat`);
+  }
   return { ok: failures.length === 0, failures };
 }
 
-// Kolektor — jalankan dalam browser context (page.evaluate).
-// anchorSel: textbox pemicu; panelSel: dropdown/panel; controlSel: kontrol yang tidak boleh tertutup.
+// Kolektor umum — jalankan dalam browser context (page.evaluate).
+// Set window.__visualAnchorSel / window.__visualPanelSel / window.__visualAllowTruncate
+// sebelum memanggil; kosongkan bila halaman tak menguji panel.
 export const COLLECT_VISUAL_METRICS_FN = `() => {
-  const q = (sel) => document.querySelector(sel);
-  const anchorSel = window.__visualAnchorSel;
-  const panelSel = window.__visualPanelSel;
-  const anchor = q(anchorSel);
-  const panel = q(panelSel);
-  const rect = (el) => {
-    const r = el.getBoundingClientRect();
-    return { left: r.left, top: r.top, width: r.width, height: r.height };
-  };
-  const items = panel
-    ? Array.from(panel.querySelectorAll('button')).slice(0, 12).map((b) => {
-        const last = b.querySelector('span:last-child');
-        const target = last ?? b;
-        return {
-          text: (b.textContent || '').trim().slice(0, 80),
-          truncatedX: target.scrollWidth > target.clientWidth + 2,
-          truncatedY: target.scrollHeight > target.clientHeight + 2,
-        };
-      })
-    : [];
-  // Kontrol yang intersect panel tapi bukan anchor maupun isi panel.
+  const anchor = window.__visualAnchorSel ? document.querySelector(window.__visualAnchorSel) : null;
+  const panel = window.__visualPanelSel ? document.querySelector(window.__visualPanelSel) : null;
+  const rect = (el) => { const r = el.getBoundingClientRect(); return { left: r.left, top: r.top, width: r.width, height: r.height }; };
+  const items = panel ? Array.from(panel.querySelectorAll('button')).slice(0, 12).map((b) => {
+    const t = b.querySelector('span:last-child') ?? b;
+    return { text: (b.textContent || '').trim().slice(0, 80),
+      truncatedX: t.scrollWidth > t.clientWidth + 2, truncatedY: t.scrollHeight > t.clientHeight + 2,
+      hasTooltip: !!(b.title || b.querySelector('[title]')) };
+  }) : [];
   const overlappedControls = [];
   if (panel) {
     const pr = panel.getBoundingClientRect();
     const hit = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
-    const pBox = { left: pr.left, top: pr.top, right: pr.right, bottom: pr.bottom };
+    const pb = { left: pr.left, top: pr.top, right: pr.right, bottom: pr.bottom };
     for (const el of document.querySelectorAll('input, button')) {
       if (el === anchor || panel.contains(el) || el.offsetParent === null) continue;
       const r = el.getBoundingClientRect();
       if (r.width === 0 || r.height === 0) continue;
-      if (hit(pBox, { left: r.left, top: r.top, right: r.right, bottom: r.bottom })) {
-        overlappedControls.push(((el.placeholder || el.textContent) || el.tagName).trim().slice(0, 40));
+      if (hit(pb, { left: r.left, top: r.top, right: r.right, bottom: r.bottom })) {
+        overlappedControls.push(((el.placeholder || el.textContent) || '').trim().slice(0, 40));
         if (overlappedControls.length >= 5) break;
       }
     }
   }
-  return {
-    anchor: anchor ? rect(anchor) : null,
-    panel: panel ? rect(panel) : null,
-    panelItemCount: items.length,
-    items,
-    overlappedControls,
+  const truncatedGlobal = Array.from(document.querySelectorAll('table td, [data-card]'))
+    .filter((el) => el.scrollWidth > el.clientWidth + 2 && !(el.title || el.querySelector('[title]')))
+    .slice(0, 8).map((el) => (el.textContent || '').trim().slice(0, 60));
+  const tbl = document.querySelector('table');
+  const wrap = tbl ? tbl.closest('div.overflow-auto, div.overflow-x-auto') : null;
+  const cutToolbarButtons = Array.from(document.querySelectorAll('header button, [role="toolbar"] button'))
+    .filter((b) => b.offsetParent !== null && b.scrollWidth > b.clientWidth + 4)
+    .slice(0, 5).map((b) => (b.textContent || '').trim().slice(0, 40));
+  const dlgEl = document.querySelector('div.fixed.inset-0.z-\\[9999\\], [role="dialog"]');
+  let dialog = null;
+  if (dlgEl && dlgEl.offsetParent !== null) {
+    const dr = dlgEl.getBoundingClientRect();
+    const card = dlgEl.querySelector('div[class*="max-w"], div[class*="rounded"]');
+    const cr = card ? card.getBoundingClientRect() : dr;
+    dialog = { found: true,
+      centeredX: Math.abs((cr.left + cr.width / 2) - window.innerWidth / 2) < 60,
+      backdropCovers: dr.width >= window.innerWidth - 2 && dr.height >= window.innerHeight - 2,
+      closeVisible: !!Array.from(dlgEl.querySelectorAll('button')).find((b) => b.offsetParent !== null) };
+  }
+  return { anchor: anchor ? rect(anchor) : null, panel: panel ? rect(panel) : null,
+    panelItemCount: items.length, items, overlappedControls, truncatedGlobal,
     docOverX: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    viewportWidth: window.innerWidth,
-  };
+    tableScrollable: tbl ? (wrap ? wrap.scrollWidth > wrap.clientWidth + 2 || window.innerWidth >= 768 : window.innerWidth >= 768) : null,
+    cutToolbarButtons, dialog, viewportWidth: window.innerWidth };
 }`;
