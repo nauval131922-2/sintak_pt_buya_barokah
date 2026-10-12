@@ -537,9 +537,12 @@ export default function PenonaktifanMasterClient() {
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-center justify-between gap-4 min-h-[32px] flex-wrap">
             <div className="flex items-end gap-2 flex-wrap">
-               <div className="w-44 shrink-0" title={(lastGenerate ? `Generate: ${formatLastUpdate(lastGenerate.split('|')[0])}` : '') + (lastGenerate && lastSyncAll ? ' • ' : '') + (lastSyncAll ? `Sync: ${formatLastUpdate(lastSyncAll.split('|')[0])}` : '')}>
-                 <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal cutoff</label>
-                 <DatePicker name="cutoff" value={isoToDate(cutoff)} onChange={(d) => setCutoff(dateToIso(d))} />
+               <div className="shrink-0">
+                 <div className="mb-1 flex items-baseline gap-2">
+                   <label className="block text-[11px] font-bold text-gray-400">Tanggal cutoff</label>
+                   {(lastGenerate || lastSyncAll) && <span className="text-[10px] font-semibold text-gray-300 leading-none whitespace-nowrap">{lastGenerate ? `Gen: ${formatLastUpdate(lastGenerate.split('|')[0])}` : ''}{lastGenerate && lastSyncAll ? ' • ' : ''}{lastSyncAll ? `Sync: ${formatLastUpdate(lastSyncAll.split('|')[0])}` : ''}</span>}
+                 </div>
+                 <div className="w-44"><DatePicker name="cutoff" value={isoToDate(cutoff)} onChange={(d) => setCutoff(dateToIso(d))} /></div>
                </div>
               <div className="flex items-end gap-2">
                 <button
