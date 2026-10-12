@@ -538,9 +538,9 @@ export default function PenonaktifanMasterClient() {
           <div className="flex items-center justify-between gap-4 min-h-[32px] flex-wrap">
             <div className="flex items-end gap-2 flex-wrap">
                <div className="w-44 shrink-0">
-                 <div className="mb-1 flex items-baseline gap-2 min-w-0">
+                 <div className="mb-1 flex items-baseline gap-2 w-max whitespace-nowrap">
                    <label className="block text-[11px] font-bold text-gray-400 shrink-0">Tanggal cutoff</label>
-                   {(lastGenerate || lastSyncAll) && <span className="text-[10px] font-semibold text-gray-300 leading-none whitespace-nowrap truncate min-w-0" title={`${lastGenerate ? `Generate: ${formatLastUpdate(lastGenerate.split('|')[0])}` : ''}${lastGenerate && lastSyncAll ? ' • ' : ''}${lastSyncAll ? `Sync: ${formatLastUpdate(lastSyncAll.split('|')[0])}` : ''}`}>{lastGenerate ? `Generate: ${formatLastUpdate(lastGenerate.split('|')[0])}` : ''}{lastGenerate && lastSyncAll ? ' • ' : ''}{lastSyncAll ? `Sync: ${formatLastUpdate(lastSyncAll.split('|')[0])}` : ''}</span>}
+                   {(lastGenerate || lastSyncAll) && <span className="text-[10px] font-semibold text-gray-300 leading-none">{lastGenerate ? `Generate: ${formatLastUpdate(lastGenerate.split('|')[0])}` : ''}{lastGenerate && lastSyncAll ? ' • ' : ''}{lastSyncAll ? `Sync: ${formatLastUpdate(lastSyncAll.split('|')[0])}` : ''}</span>}
                  </div>
                  <DatePicker name="cutoff" value={isoToDate(cutoff)} onChange={(d) => setCutoff(dateToIso(d))} />
                </div>
