@@ -124,7 +124,8 @@ export default function PenonaktifanMasterClient() {
    const [sharing, setSharing] = useState(false);
    const [shareToken, setShareToken] = useState<string | null>(null);
    const [rekap, setRekap] = useState<Array<{ id: number; kode: string; nama: string; aksi: string; alasan: string; reviewer: string; keputusan: string }>>([]);
-  const [rekapOpen, setRekapOpen] = useState(false);
+   const [rekapOpen, setRekapOpen] = useState(false);
+   const [rekapAt, setRekapAt] = useState<string | null>(null);
   const [manualKode, setManualKode] = useState('');
   const [manualNama, setManualNama] = useState('');
   const [manualAlasan, setManualAlasan] = useState('');
@@ -157,6 +158,15 @@ export default function PenonaktifanMasterClient() {
      return () => { mountedRef.current = false; };
    // eslint-disable-next-line react-hooks/exhaustive-deps
    }, []);
+ 
+   // Polling rekap tiap 30 detik saat panel terbuka — putaran bolak-balik tanpa aksi user.
+   useEffect(() => {
+     if (!rekapOpen || !shareToken) return;
+     loadRekap(shareToken);
+     const t = setInterval(() => loadRekap(shareToken), 30000);
+     return () => clearInterval(t);
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [rekapOpen, shareToken]);
 
   useEffect(() => {
     const urlSearch = searchParams.get('search');
@@ -351,13 +361,16 @@ export default function PenonaktifanMasterClient() {
     }
   };
 
-  const loadRekap = async (token: string) => {
-    try {
-      const res = await fetch(`/api/penonaktifan-master-barang/review?token=${encodeURIComponent(token)}`);
-      const json = await res.json();
-      if (json.success) setRekap(json.review.items ?? []);
-    } catch { /* abaikan */ }
-  };
+   const loadRekap = async (token: string) => {
+     try {
+       const res = await fetch(`/api/penonaktifan-master-barang/review?token=${encodeURIComponent(token)}`);
+       const json = await res.json();
+       if (json.success) {
+         setRekap(json.review.items ?? []);
+         setRekapAt(new Date().toISOString());
+       }
+     } catch { /* abaikan */ }
+   };
 
   const decide = async (id: number, keputusan: 'setuju' | 'tolak', item: { kode: string; aksi: string }) => {
     try {
@@ -623,10 +636,10 @@ export default function PenonaktifanMasterClient() {
             {rekapOpen && (
               <div className="shrink-0 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-800">Rekap Koreksi Review</span>
-                    <span className="text-[11px] text-slate-400">({rekap.length} usulan masuk)</span>
-                  </div>
+                   <div className="flex items-center gap-2">
+                     <span className="text-xs font-bold text-slate-800">Rekap Koreksi Review</span>
+                     <span className="text-[11px] text-slate-400">({rekap.length} usulan masuk{rekapAt ? ` • ${formatLastUpdate(rekapAt)}` : ''} • auto 30 dtk)</span>
+                   </div>
                   <div className="flex items-center gap-2">
                     {shareToken && (
                       <button
