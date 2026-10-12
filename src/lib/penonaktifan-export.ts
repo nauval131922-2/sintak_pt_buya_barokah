@@ -51,7 +51,7 @@ export async function buildPenonaktifanWorkbook(cutoff: string, rows: Penonaktif
     ];
      ws.mergeCells('A1:J1');
     const t1 = ws.getCell('A1');
-    t1.value = 'MASTER BARANG JADI';
+     t1.value = 'PENONAKTIFAN MASTER BARANG JADI';
     t1.font = { name: 'Calibri', size: 15, bold: true, color: { argb: 'FF1F4E78' } };
     t1.alignment = { horizontal: 'center', vertical: 'middle' };
     ws.getRow(1).height = 26;
