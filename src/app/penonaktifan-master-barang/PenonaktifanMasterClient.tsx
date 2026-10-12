@@ -809,7 +809,7 @@ export default function PenonaktifanMasterClient() {
               </div>
             )}
 
-            <div className="shrink-0 bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex flex-col gap-2">
+             <div className="shrink-0 bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex flex-col gap-2 relative z-30">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-700">Tambah Usulan Manual</span>
                 {manualError && <span className="text-[11px] font-bold text-rose-600">{manualError}</span>}
