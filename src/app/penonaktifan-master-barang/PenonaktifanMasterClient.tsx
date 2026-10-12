@@ -110,6 +110,7 @@ export default function PenonaktifanMasterClient() {
   const mountedRef = useRef(true);
 
   const [showSettings, setShowSettings] = useState(false);
+  const [showManual, setShowManual] = useState(false);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
@@ -482,6 +483,7 @@ export default function PenonaktifanMasterClient() {
     setManualHits([]);
     setManualDropdownOpen(false);
     setManualSearchActiveField(null);
+    setShowManual(false);
   };
    const handleSaveSettings = async () => {
      if (!settings) return;
@@ -668,27 +670,15 @@ export default function PenonaktifanMasterClient() {
               </div>
             </div>
              {data && (
-               <div className="w-full sm:w-auto sm:min-w-[280px] flex items-center gap-2 bg-white border border-slate-300 rounded-xl px-2 py-1.5 shadow-sm ring-1 ring-slate-200/60 focus-within:ring-2 focus-within:ring-emerald-500/25 focus-within:border-emerald-500 transition-all">
-                   <button
-                     type="button"
-                     onClick={handleGenerate}
-                     disabled={loading}
-                     className="h-8 w-8 text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-all flex items-center justify-center shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
-                     title="Reload data usulan"
-                   >
-                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                   </button>
-                 <div className="relative flex-1 min-w-0">
-                   <Search className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500" />
-                   <input
-                     type="text"
-                     placeholder="Cari kode / nama…"
-                     value={searchQuery}
-                     onChange={(e) => setSearchQuery(e.target.value)}
-                     className="w-full pl-8 pr-3 h-8 text-xs font-semibold bg-transparent border-0 text-slate-800 placeholder-slate-500 focus:outline-none"
-                   />
-                 </div>
-               </div>
+               <button
+                 type="button"
+                 onClick={() => { setManualError(''); setShowManual(true); }}
+                 title="Tambah usulan manual"
+                 className="w-full sm:w-auto shrink-0 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-600 hover:text-emerald-700 hover:bg-emerald-50 hover:border-emerald-200 text-[12px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all"
+               >
+                 <Plus size={16} />
+                 Tambah manual
+               </button>
              )}
           </div>
         </div>
@@ -812,132 +802,36 @@ export default function PenonaktifanMasterClient() {
               </div>
             )}
 
-             <div className="shrink-0 bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex flex-col gap-2 relative z-50">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-700">Tambah Usulan Manual</span>
-                {manualError && <span className="text-[11px] font-bold text-rose-600">{manualError}</span>}
-              </div>
-              <div ref={manualSearchContainerRef} className="relative">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="w-32 shrink-0 relative">
-                    <input
-                      type="text"
-                      value={manualKode}
-                      onChange={(e) => {
-                        setManualKode(e.target.value.replace(/\D/g, ''));
-                        setManualSearchActiveField('kode');
-                        setManualDropdownOpen(true);
-                        if (manualError) setManualError('');
-                      }}
-                      onFocus={() => {
-                        setManualSearchActiveField('kode');
-                        if (manualKode.trim().length >= 2) setManualDropdownOpen(true);
-                      }}
-                      placeholder="Kode (angka)…"
-                      className="w-full px-3 py-1.5 text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:outline-none"
-                    />
-                    {manualShowDropdown && manualSearchActiveField === 'kode' && (
-                      <div className="absolute top-full left-0 mt-1 w-80 max-w-[80vw] bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-52 overflow-y-auto divide-y divide-slate-100">
-                        {manualSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari barang…</div>}
-                        {!manualSearching && manualHits.length === 0 && (
-                          <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada barang yang cocok.</div>
-                        )}
-                        {!manualSearching && manualHits.map((item) => (
-                          <button
-                            key={item.kode}
-                            type="button"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setManualKode(item.kode);
-                              setManualNama(item.nama);
-                              setManualDropdownOpen(false);
-                              setManualHits([]);
-                              if (manualError) setManualError('');
-                            }}
-                            className="w-full text-left px-3 py-2 hover:bg-emerald-50 bg-white transition-colors block"
-                            title={`${item.kode} — ${item.nama}`}
-                          >
-                            <span className="block text-xs font-mono font-bold text-slate-700">{item.kode}</span>
-                            <span className="block text-xs text-slate-600 whitespace-normal break-words leading-snug">{item.nama}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-[180px] relative">
-                    <input
-                      type="text"
-                      value={manualNama}
-                      onChange={(e) => {
-                        setManualNama(e.target.value);
-                        setManualSearchActiveField('nama');
-                        setManualDropdownOpen(true);
-                        if (manualError) setManualError('');
-                      }}
-                      onFocus={() => {
-                        setManualSearchActiveField('nama');
-                        if (manualNama.trim().length >= 2) setManualDropdownOpen(true);
-                      }}
-                      placeholder="Nama barang…"
-                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:outline-none"
-                    />
-                    {manualShowDropdown && manualSearchActiveField === 'nama' && (
-                      <div className="absolute top-full left-0 mt-1 w-full min-w-72 max-w-[80vw] bg-white border border-slate-200 rounded-xl shadow-xl z-[100] max-h-52 overflow-y-auto divide-y divide-slate-100">
-                        {manualSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari barang…</div>}
-                        {!manualSearching && manualHits.length === 0 && (
-                          <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada barang yang cocok.</div>
-                        )}
-                        {!manualSearching && manualHits.map((item) => (
-                          <button
-                            key={item.kode}
-                            type="button"
-                            onMouseDown={(e) => {
-                              e.preventDefault();
-                              setManualKode(item.kode);
-                              setManualNama(item.nama);
-                              setManualDropdownOpen(false);
-                              setManualHits([]);
-                              if (manualError) setManualError('');
-                            }}
-                            className="w-full text-left px-3 py-2 hover:bg-emerald-50 bg-white transition-colors block"
-                            title={`${item.kode} — ${item.nama}`}
-                          >
-                            <span className="block text-xs font-mono font-bold text-slate-700">{item.kode}</span>
-                            <span className="block text-xs text-slate-600 whitespace-normal break-words leading-snug">{item.nama}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-[2] min-w-[200px]">
-                    <input
-                      type="text"
-                      value={manualAlasan}
-                      onChange={(e) => {
-                        setManualAlasan(e.target.value);
-                        if (manualError) setManualError('');
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddManual();
-                        }
-                      }}
-                      placeholder="Alasan penonaktifan manual…"
-                      className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:outline-none"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleAddManual}
-                    className="shrink-0 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
-                  >
-                    <Plus size={14} />
-                    Tambah manual
-                  </button>
-                </div>
-
+             <div className="shrink-0 flex items-center gap-2 w-full">
+               <button
+                 type="button"
+                 onClick={handleGenerate}
+                 disabled={loading}
+                 className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
+                 title="Reload data usulan"
+               >
+                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-emerald-600' : ''}`} />
+                 <span className="hidden sm:inline">Reload</span>
+               </button>
+               <div className="relative flex-1 min-w-0">
+                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                 <input
+                   type="text"
+                   placeholder="Cari kode / nama…"
+                   value={searchQuery}
+                   onChange={(e) => setSearchQuery(e.target.value)}
+                   className="w-full pl-9 pr-4 h-9 text-xs bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all shadow-sm"
+                 />
                </div>
+               <button
+                 type="button"
+                 onClick={() => { setManualError(''); setShowManual(true); }}
+                 title="Tambah usulan manual"
+                 className="h-9 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
+               >
+                 <Plus size={15} />
+                 <span className="hidden sm:inline">Tambah manual</span>
+               </button>
              </div>
              <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
                <DataTable
@@ -1177,8 +1071,158 @@ export default function PenonaktifanMasterClient() {
               </div>
             </div>
           </div>
-        </Portal>
-      )}
+         </Portal>
+       )}
+       {showManual && (
+         <Portal>
+           <div
+             className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+             onClick={() => setShowManual(false)}
+           >
+             <div
+               className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] overflow-hidden"
+               onClick={(e) => e.stopPropagation()}
+             >
+               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0">
+                 <div>
+                   <h3 className="text-sm font-bold text-slate-800">Tambah Usulan Manual</h3>
+                   <p className="text-[11px] text-slate-500">Cari kode/nama barang, isi alasan, lalu simpan ke daftar usulan</p>
+                 </div>
+                 <button type="button" onClick={() => setShowManual(false)} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all cursor-pointer">
+                   <X size={16} />
+                 </button>
+               </div>
+               <div ref={manualSearchContainerRef} className="p-5 flex flex-col gap-3 overflow-y-auto custom-scrollbar flex-1 min-h-0">
+                 {manualError && <span className="text-[11px] font-bold text-rose-600">{manualError}</span>}
+                 <div>
+                   <div className="text-xs font-bold text-slate-700 mb-1.5">Kode barang</div>
+                   <div className="relative">
+                     <input
+                       type="text"
+                       value={manualKode}
+                       onChange={(e) => {
+                         setManualKode(e.target.value.replace(/\D/g, ''));
+                         setManualSearchActiveField('kode');
+                         setManualDropdownOpen(true);
+                         if (manualError) setManualError('');
+                       }}
+                       onFocus={() => {
+                         setManualSearchActiveField('kode');
+                         if (manualKode.trim().length >= 2) setManualDropdownOpen(true);
+                       }}
+                       placeholder="Kode (angka)…"
+                       className="w-full px-3 py-2 text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
+                     />
+                     {manualShowDropdown && manualSearchActiveField === 'kode' && (
+                       <div className="mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-sm max-h-52 overflow-y-auto divide-y divide-slate-100">
+                         {manualSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari barang…</div>}
+                         {!manualSearching && manualHits.length === 0 && (
+                           <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada barang yang cocok.</div>
+                         )}
+                         {!manualSearching && manualHits.map((item) => (
+                           <button
+                             key={item.kode}
+                             type="button"
+                             onMouseDown={(e) => {
+                               e.preventDefault();
+                               setManualKode(item.kode);
+                               setManualNama(item.nama);
+                               setManualDropdownOpen(false);
+                               setManualHits([]);
+                               if (manualError) setManualError('');
+                             }}
+                             className="w-full text-left px-3 py-2 hover:bg-emerald-50 bg-white transition-colors block"
+                             title={`${item.kode} — ${item.nama}`}
+                           >
+                             <span className="block text-xs font-mono font-bold text-slate-700">{item.kode}</span>
+                             <span className="block text-xs text-slate-600 whitespace-normal break-words leading-snug">{item.nama}</span>
+                           </button>
+                         ))}
+                       </div>
+                     )}
+                   </div>
+                 </div>
+                 <div>
+                   <div className="text-xs font-bold text-slate-700 mb-1.5">Nama barang</div>
+                   <div className="relative">
+                     <input
+                       type="text"
+                       value={manualNama}
+                       onChange={(e) => {
+                         setManualNama(e.target.value);
+                         setManualSearchActiveField('nama');
+                         setManualDropdownOpen(true);
+                         if (manualError) setManualError('');
+                       }}
+                       onFocus={() => {
+                         setManualSearchActiveField('nama');
+                         if (manualNama.trim().length >= 2) setManualDropdownOpen(true);
+                       }}
+                       placeholder="Nama barang…"
+                       className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
+                     />
+                     {manualShowDropdown && manualSearchActiveField === 'nama' && (
+                       <div className="mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-sm max-h-52 overflow-y-auto divide-y divide-slate-100">
+                         {manualSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari barang…</div>}
+                         {!manualSearching && manualHits.length === 0 && (
+                           <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada barang yang cocok.</div>
+                         )}
+                         {!manualSearching && manualHits.map((item) => (
+                           <button
+                             key={item.kode}
+                             type="button"
+                             onMouseDown={(e) => {
+                               e.preventDefault();
+                               setManualKode(item.kode);
+                               setManualNama(item.nama);
+                               setManualDropdownOpen(false);
+                               setManualHits([]);
+                               if (manualError) setManualError('');
+                             }}
+                             className="w-full text-left px-3 py-2 hover:bg-emerald-50 bg-white transition-colors block"
+                             title={`${item.kode} — ${item.nama}`}
+                           >
+                             <span className="block text-xs font-mono font-bold text-slate-700">{item.kode}</span>
+                             <span className="block text-xs text-slate-600 whitespace-normal break-words leading-snug">{item.nama}</span>
+                           </button>
+                         ))}
+                       </div>
+                     )}
+                   </div>
+                 </div>
+                 <div>
+                   <div className="text-xs font-bold text-slate-700 mb-1.5">Alasan penonaktifan</div>
+                   <input
+                     type="text"
+                     value={manualAlasan}
+                     onChange={(e) => {
+                       setManualAlasan(e.target.value);
+                       if (manualError) setManualError('');
+                     }}
+                     onKeyDown={(e) => {
+                       if (e.key === 'Enter') {
+                         e.preventDefault();
+                         handleAddManual();
+                       }
+                     }}
+                     placeholder="Alasan penonaktifan manual…"
+                     className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
+                   />
+                 </div>
+               </div>
+               <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50 flex justify-end gap-2 shrink-0">
+                 <button type="button" onClick={() => setShowManual(false)} className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer">
+                   Batal
+                 </button>
+                 <button type="button" onClick={handleAddManual} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer">
+                   <Plus size={14} />
+                   Tambah ke usulan
+                 </button>
+               </div>
+             </div>
+           </div>
+         </Portal>
+       )}
 
       <ConfirmDialog
         isOpen={dialog.isOpen}
