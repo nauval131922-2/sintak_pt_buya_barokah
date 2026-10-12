@@ -373,25 +373,27 @@ export default function PenonaktifanMasterClient() {
      } catch { /* abaikan */ }
    };
 
-  const decide = async (id: number, keputusan: 'setuju' | 'tolak', item: { kode: string; aksi: string }) => {
-    try {
-      const res = await fetch('/api/penonaktifan-master-barang/review', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, keputusan }),
-      });
-      const json = await res.json();
-      if (!json.success) throw new Error(json.error || 'Gagal');
-      setRekap((prev) => prev.map((x) => (x.id === id ? { ...x, keputusan } : x)));
-      if (keputusan === 'setuju' && data) {
-        if (item.aksi === 'usul_hapus') {
-          setData({ ...data, rows: data.rows.filter((r) => r.kode !== item.kode), bolehCount: data.bolehCount - 1 });
-        }
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    }
-  };
+   const decide = async (id: number, keputusan: 'setuju' | 'tolak', item: { kode: string; aksi: string }) => {
+     try {
+       const res = await fetch('/api/penonaktifan-master-barang/review', {
+         method: 'PATCH',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ id, keputusan }),
+       });
+       const json = await res.json();
+       if (!json.success) throw new Error(json.error || 'Gagal');
+       if (!mountedRef.current) return;
+       setRekap((prev) => prev.map((x) => (x.id === id ? { ...x, keputusan } : x)));
+       if (keputusan === 'setuju' && data) {
+         if (item.aksi === 'usul_hapus') {
+           setData({ ...data, rows: data.rows.filter((r) => r.kode !== item.kode), bolehCount: data.bolehCount - 1 });
+         }
+       }
+     } catch (e) {
+       if (!mountedRef.current) return;
+       setError(e instanceof Error ? e.message : String(e));
+     }
+   };
 
   const handleAddManual = () => {
     const k = manualKode.trim();
