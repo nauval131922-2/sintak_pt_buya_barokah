@@ -575,7 +575,7 @@ export default function PenonaktifanMasterClient() {
              onClick={(e) => { e.stopPropagation(); void protectCodes([kode]); }}
              disabled={inList || protecting}
              title={inList ? 'Sudah dilindungi' : 'Lindungi kode ini sebagai rutin'}
-             className={`p-1.5 rounded-lg border transition-colors ${inList ? 'bg-emerald-100 border-emerald-200 text-emerald-600' : 'bg-white border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-300'}`}
+             className={`p-1.5 rounded-lg border transition-colors ${inList ? 'bg-emerald-100 border-emerald-200 text-emerald-600' : 'bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-100 hover:border-emerald-300'}`}
            >
              <ShieldCheck size={14} />
            </button>

@@ -224,7 +224,7 @@ export default function ReviewTokenClient({ token }: { token: string }) {
                    type="button"
                    onClick={() => toggleTrash(s.kode)}
                    title={marked ? 'Batalkan usul hapus' : 'Usul hapus kode ini'}
-                   className={`p-1.5 rounded-lg border transition-colors shrink-0 ${marked ? 'bg-red-500 border-red-500 text-white hover:bg-red-600' : 'bg-white border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-300'}`}
+                   className={`p-1.5 rounded-lg border transition-colors shrink-0 ${marked ? 'bg-red-500 border-red-500 text-white hover:bg-red-600' : 'bg-red-50 border-red-200 text-red-500 hover:bg-red-100 hover:border-red-300'}`}
                  >
                    <Trash2 size={14} />
                  </button>
