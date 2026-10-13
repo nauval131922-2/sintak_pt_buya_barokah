@@ -323,11 +323,23 @@ export default function PenonaktifanMasterClient() {
      const syncStart = performance.now();
      let doneCount = 0;
      try {
-       // Paralel: 8 tahap independen jalan bersamaan, progress per tahap selesai.
-       const runStep = async (i: number) => {
+       const waitRetry = () => {
+         const { promise, resolve } = Promise.withResolvers<void>();
+         setTimeout(resolve, 3000);
+         return promise;
+       };
+       // Saldo paling berat + butuh sesi Digit segar: jalan duluan sendirian sebagai pemanasan login.
+       // Retry 1x khusus 401/login agar gagal sesaat tidak langsung merah.
+       const runStep = async (i: number, attempt = 1): Promise<void> => {
          const stepStart = performance.now();
          const res = await fetch(steps[i].url);
          const json = await res.json().catch(() => ({})) as { success?: boolean; error?: string; details?: string };
+         const msg = json.error || json.details || '';
+         const retryable = res.status === 401 || /failed to login|no cookies|unauthorized/i.test(msg);
+         if ((!res.ok || json.success === false || json.error) && retryable && attempt < 2) {
+           await waitRetry();
+           return runStep(i, attempt + 1);
+         }
          if (!res.ok || json.success === false || json.error) {
            throw new Error(`Tahap ${i + 1}/${total} (${steps[i].label}) gagal: ${json.error || json.details || `HTTP ${res.status}`}`);
          }
@@ -336,8 +348,11 @@ export default function PenonaktifanMasterClient() {
          doneCount += 1;
          if (mountedRef.current) setSyncProgress({ done: doneCount, total, label: steps[i].label, elapsed: (performance.now() - syncStart) / 1000, history: history.filter(Boolean) });
        };
-       setSyncProgress({ done: 0, total, label: 'Menarik 8 data paralel…', elapsed: 0, history: [] });
-       const settled = await Promise.allSettled(steps.map((_, i) => runStep(i)));
+       setSyncProgress({ done: 0, total, label: 'Menarik saldo (tahap 1)…', elapsed: 0, history: [] });
+       await runStep(0);
+       setSyncProgress({ done: doneCount, total, label: 'Menarik 7 data paralel…', elapsed: (performance.now() - syncStart) / 1000, history: history.filter(Boolean) });
+       const rest = steps.map((_, i) => i).filter((i) => i > 0);
+       const settled = await Promise.allSettled(rest.map((i) => runStep(i)));
        const failed = settled.find((s) => s.status === 'rejected');
        if (failed) throw (failed as PromiseRejectedResult).reason;
        if (!mountedRef.current) return;
