@@ -190,20 +190,19 @@ export default function ReviewTokenClient({ token }: { token: string }) {
   if (loading) return <p className="text-sm text-slate-400 p-4"><Loader2 size={16} className="inline animate-spin mr-1" /> Memuat usulan…</p>;
   if (error && snapshot.length === 0) return <p className="text-sm font-semibold text-red-600 p-4">{error}</p>;
 
-  return (
-     <div className="mx-auto w-full max-w-6xl flex flex-col gap-4 p-4 sm:p-6 pb-24">
-      <div className="flex items-end gap-3 flex-wrap bg-white border border-slate-200 rounded-2xl p-4">
-        <div>
-          <label className="block text-[11px] font-bold text-gray-400 mb-1">Nama Anda (pengecek)</label>
-          <input value={reviewer} onChange={(e) => setReviewer(e.target.value)} placeholder="cth. Budi" className="px-3 py-2 w-56 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none" />
-        </div>
-        <div className="text-[11px] text-slate-500 pb-2">Cutoff: <b className="text-slate-700">{formatCutoff(cutoff)}</b> • {snapshot.length} kode • Anda hanya mengusulkan, tidak mengubah apa pun.</div>
-      </div>
-      {error && <p className="text-xs font-semibold text-red-600">{error}</p>}
-      {done && <p className="text-xs font-semibold text-emerald-600">{done}</p>}
-
-      <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white">
-        <div className="px-4 py-2 bg-slate-50 border-b border-slate-100 flex items-center gap-2 flex-wrap">
+   return (
+     <div className="w-full h-[calc(100dvh-76px)] flex flex-col gap-2 p-3 sm:px-6 sm:py-3 overflow-hidden">
+       <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-2xl px-4 py-2 shrink-0">
+         <div className="shrink-0">
+           <label className="block text-[11px] font-bold text-gray-400 mb-0.5">Nama Anda (pengecek)</label>
+           <input value={reviewer} onChange={(e) => setReviewer(e.target.value)} placeholder="cth. Budi" className="px-3 py-1.5 w-48 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none" />
+         </div>
+         <div className="text-[11px] text-slate-500">Cutoff: <b className="text-slate-700">{formatCutoff(cutoff)}</b> • {snapshot.length} kode • Anda hanya mengusulkan, tidak mengubah apa pun.</div>
+       </div>
+       {error && <p className="text-xs font-semibold text-red-600 shrink-0">{error}</p>}
+       {done && <p className="text-xs font-semibold text-emerald-600 shrink-0">{done}</p>}
+       <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white flex-1 min-h-0 flex flex-col shrink">
+        <div className="px-4 py-2 bg-slate-50 border-b border-slate-100 flex items-center gap-2 flex-wrap shrink-0">
           <span className="text-xs font-bold text-slate-700">Daftar usulan — klik tong sampah bila ingin dihapus</span>
           <span className="text-[11px] text-slate-400">({filtered.length}/{snapshot.length})</span>
           <div className="relative ml-auto w-full sm:w-56">
@@ -214,9 +213,9 @@ export default function ReviewTokenClient({ token }: { token: string }) {
               placeholder="Cari kode / nama…"
               className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:border-emerald-400 focus:outline-none"
             />
-          </div>
-        </div>
-        <div className="max-h-96 overflow-y-auto custom-scrollbar divide-y divide-slate-50">
+           </div>
+         </div>
+         <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar divide-y divide-slate-50">
           {filtered.map((s) => {
             const marked = trash.has(s.kode);
             return (
@@ -234,7 +233,7 @@ export default function ReviewTokenClient({ token }: { token: string }) {
                    <span className="block text-slate-700 font-medium truncate" title={s.nama}>{s.nama}</span>
                    <span className="block text-[11px] text-slate-400 truncate" title={s.alasan}>{s.alasan}</span>
                  </span>
-                 <input value={drop[s.kode] ?? ''} onChange={(e) => setDrop((p) => ({ ...p, [s.kode]: e.target.value }))} placeholder="Alasan (opsional)…" className="flex-[2] min-w-[160px] px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder-slate-300 focus:bg-white focus:border-amber-400 focus:outline-none" />
+                 <input value={drop[s.kode] ?? ''} onChange={(e) => setDrop((p) => ({ ...p, [s.kode]: e.target.value }))} placeholder="Alasan (opsional)…" className="w-48 sm:w-56 shrink-0 px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder-slate-300 focus:bg-white focus:border-amber-400 focus:outline-none" />
                </div>
              );
            })}

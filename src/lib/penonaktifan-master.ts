@@ -133,6 +133,6 @@ export function klasifikasiItem(inp: KlasifikasiInput): KlasifikasiResult {
      boleh: true,
      larangan,
      kategori: 'B_BATAL',
-     alasan: `Penawaran batal / tidak lanjut ke Order Produksi (${huluBukti}) (saldo 0.00)`,
+     alasan: `Hanya penawaran / tidak lanjut ke Order Produksi (${huluBukti}) (saldo 0.00)`,
    };
  }

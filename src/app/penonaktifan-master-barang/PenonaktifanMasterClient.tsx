@@ -84,7 +84,7 @@ function isoToDdMmYyyy(iso: string): string {
 
 const KAT_LABEL: Record<string, string> = {
   A_LUDES: 'A — Ludes Pesanan',
-  B_BATAL: 'B — Penawaran Batal',
+   B_BATAL: 'B — Hanya Penawaran',
   MANUAL: 'Manual',
 };
 
@@ -1029,7 +1029,7 @@ export default function PenonaktifanMasterClient() {
                     <p className="text-[11px] text-slate-400 mt-1">Barang yang cocok dengan keyword ini akan tetap bisa diusulkan untuk dinonaktifkan meski cocok kode/keyword rutin.</p>
                   </div>
                    <div>
-                     <div className="text-xs font-bold text-slate-700 mb-1.5">Batas idle penawaran batal (hari)</div>
+                     <div className="text-xs font-bold text-slate-700 mb-1.5">Batas idle hanya penawaran (hari)</div>
                      <input value={idleInput} onChange={(e) => setIdleInput(e.target.value.replace(/\D/g, ''))} inputMode="numeric" className="px-3 py-2 w-28 text-xs tabular-nums bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all" />
                      <p className="text-[11px] text-slate-400 mt-1">Penawaran yang umurnya di bawah ini tidak diusulkan.</p>
                    </div>
