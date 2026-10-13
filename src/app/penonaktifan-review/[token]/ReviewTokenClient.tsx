@@ -220,21 +220,21 @@ export default function ReviewTokenClient({ token }: { token: string }) {
           {filtered.map((s) => {
             const marked = trash.has(s.kode);
             return (
-              <div key={s.kode} className={`px-4 py-2 flex items-center gap-3 text-xs flex-wrap ${marked ? 'bg-amber-50/70' : ''}`}>
-                <span className="font-mono font-bold text-slate-700 shrink-0 w-24">{s.kode}</span>
-                <span className="text-slate-600 flex-1 min-w-[160px] truncate" title={s.nama}>{s.nama}</span>
-                <input value={drop[s.kode] ?? ''} onChange={(e) => setDrop((p) => ({ ...p, [s.kode]: e.target.value }))} placeholder="Alasan (opsional)…" className="flex-[2] min-w-[160px] px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder-slate-300 focus:bg-white focus:border-amber-400 focus:outline-none" />
-                <button
-                  type="button"
-                  onClick={() => toggleTrash(s.kode)}
-                  title={marked ? 'Batalkan usul hapus' : 'Usul hapus kode ini'}
-                  className={`p-1.5 rounded-lg border transition-colors shrink-0 ${marked ? 'bg-red-500 border-red-500 text-white hover:bg-red-600' : 'bg-white border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-300'}`}
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            );
-          })}
+               <div key={s.kode} className={`px-4 py-2 flex items-center gap-3 text-xs flex-wrap ${marked ? 'bg-amber-50/70' : ''}`}>
+                 <button
+                   type="button"
+                   onClick={() => toggleTrash(s.kode)}
+                   title={marked ? 'Batalkan usul hapus' : 'Usul hapus kode ini'}
+                   className={`p-1.5 rounded-lg border transition-colors shrink-0 ${marked ? 'bg-red-500 border-red-500 text-white hover:bg-red-600' : 'bg-white border-slate-200 text-slate-400 hover:text-red-500 hover:border-red-300'}`}
+                 >
+                   <Trash2 size={14} />
+                 </button>
+                 <span className="font-mono font-bold text-slate-700 shrink-0 w-24">{s.kode}</span>
+                 <span className="text-slate-600 flex-1 min-w-[160px] truncate" title={s.nama}>{s.nama}</span>
+                 <input value={drop[s.kode] ?? ''} onChange={(e) => setDrop((p) => ({ ...p, [s.kode]: e.target.value }))} placeholder="Alasan (opsional)…" className="flex-[2] min-w-[160px] px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder-slate-300 focus:bg-white focus:border-amber-400 focus:outline-none" />
+               </div>
+             );
+           })}
           {filtered.length === 0 && (
             <p className="px-4 py-6 text-center text-xs text-slate-400">Tidak ada kode yang cocok dengan pencarian.</p>
           )}

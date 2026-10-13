@@ -561,42 +561,11 @@ export default function PenonaktifanMasterClient() {
     return rows.filter((r) => r.kode.toLowerCase().includes(s) || r.nama.toLowerCase().includes(s));
   }, [rows, debouncedQuery]);
 
-  const columns = useMemo(() => [
-    {
-      accessorKey: 'kode',
-      header: 'Kode',
-      size: 130,
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight font-mono transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
-    },
-    {
-      accessorKey: 'nama',
-      header: 'Nama Barang',
-      size: 350,
-      cell: ({ getValue, row }: any) => <span className={`font-bold tracking-tight block truncate ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`} title={String(getValue())}>{highlightText(String(getValue()), highlightQuery)}</span>
-    },
-    {
-      accessorKey: 'kategori',
-      header: 'Kategori',
-      size: 180,
-      cell: ({ getValue, row }: any) => {
-        const val = String(getValue());
-        return (
-          <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-bold ${val === 'A_LUDES' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-            {KAT_LABEL[val] ?? val}
-          </span>
-        );
-      }
-    },
-     {
-       accessorKey: 'alasan',
-       header: 'Alasan',
-       size: 360,
-       cell: ({ getValue, row }: any) => <span className={`text-[12px] block truncate ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-600'}`} title={String(getValue())}>{highlightText(String(getValue()), highlightQuery)}</span>
-     },
+   const columns = useMemo(() => [
      {
        id: 'lindungi',
-       header: 'Rutin',
-       size: 70,
+       header: '',
+       size: 50,
        cell: ({ row }: { row: { original?: PreviewRow; getIsSelected: () => boolean } }) => {
          const kode = String(row.original?.kode ?? '');
          const inList = (settings?.routine_codes ?? []).includes(kode);
@@ -612,6 +581,37 @@ export default function PenonaktifanMasterClient() {
            </button>
          );
        }
+     },
+     {
+       accessorKey: 'kode',
+       header: 'Kode',
+       size: 130,
+       cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight font-mono transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>{highlightText(String(getValue()), highlightQuery)}</span>
+     },
+     {
+       accessorKey: 'nama',
+       header: 'Nama Barang',
+       size: 350,
+       cell: ({ getValue, row }: any) => <span className={`font-bold tracking-tight block truncate ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`} title={String(getValue())}>{highlightText(String(getValue()), highlightQuery)}</span>
+     },
+     {
+       accessorKey: 'kategori',
+       header: 'Kategori',
+       size: 180,
+       cell: ({ getValue, row }: any) => {
+         const val = String(getValue());
+         return (
+           <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-bold ${val === 'A_LUDES' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+             {KAT_LABEL[val] ?? val}
+           </span>
+         );
+       }
+     },
+     {
+       accessorKey: 'alasan',
+       header: 'Alasan',
+       size: 360,
+       cell: ({ getValue, row }: any) => <span className={`text-[12px] block truncate ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-600'}`} title={String(getValue())}>{highlightText(String(getValue()), highlightQuery)}</span>
      },
    ], [highlightQuery, settings, protecting]);
 
