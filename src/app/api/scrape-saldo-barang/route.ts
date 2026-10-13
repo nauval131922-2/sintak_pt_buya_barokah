@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import db from "@/lib/db";
 import { getErrorMessage } from "@/lib/api-utils";
 import { requireApiPermission } from "@/lib/api-guard";
+import { verifyBearerToken } from "@/lib/crypto-compare";
 import { getCachedSession, setCachedSession, clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
 import { getSession } from "@/lib/session";
 import { logActivity } from "@/lib/activity";
@@ -56,16 +57,20 @@ export async function GET(request: NextRequest) {
       try { prog = raw ? JSON.parse(String(raw)) : null; } catch { prog = null; }
       return NextResponse.json({ success: true, progress: prog }, { headers: { "Cache-Control": "no-store" } });
     }
-    let tglParam = searchParams.get("tgl");
-    if (!tglParam) tglParam = new Date().toISOString().split("T")[0];
+
+    const isCron = verifyBearerToken(request.headers.get('authorization'), process.env.CRON_SECRET);
+    if (!isCron) {
+      const gate = await requireApiPermission('stok_saldo_barang');
+      if (gate.error) return gate.error;
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+    const tglParam = searchParams.get('tgl') ?? searchParams.get('end') ?? today;
 
     const tglDate = new Date(tglParam);
     if (isNaN(tglDate.getTime())) {
       return NextResponse.json({ error: "Invalid date format. Use YYYY-MM-DD" }, { status: 400 });
     }
-
-    const gate = await requireApiPermission('stok_saldo_barang');
-    if (gate.error) return gate.error;
     const cookies = await getScraperSession(async () => {
       const loginReqUrl = BASE_URL + "v1/auth/login";
       const loginBody = JSON.stringify({ username: API_EMAIL, password: API_PASSWORD });

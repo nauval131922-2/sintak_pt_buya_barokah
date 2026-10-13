@@ -5,7 +5,7 @@ import { getSession } from '@/lib/session';
 import { getMergedPermissions } from '@/lib/permissions';
 import { getScrapedPeriodSettingKey, encodeScrapedPeriod } from '@/lib/server-scraped-period';
 import { logActivity } from '@/lib/activity';
-
+import { verifyBearerToken } from '@/lib/crypto-compare';
 export const dynamic = 'force-dynamic';
 
 const BASE_URL = 'https://buyapercetakan.mdthoster.com/il/';
@@ -35,18 +35,30 @@ function toIso(ddmmyyyy: string) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+// YYYY-MM-DD → DD-MM-YYYY
+function convertToDDMMYYYY(iso?: string | null): string {
+  if (!iso) return '';
+  const parts = iso.split('-');
+  if (parts.length !== 3) return '';
+  const [yyyy, mm, dd] = parts;
+  return `${dd}-${mm}-${yyyy}`;
+}
+
 export async function GET(request: NextRequest) {
-  const session = await getSession();
-  if (!session?.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const roles = Array.isArray(session.roles) && session.roles.length > 0 ? session.roles : [session.role];
-  if (!roles.includes('Super Admin')) {
-    const perms = await getMergedPermissions(roles);
-    if (!perms.usr_log_view) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  const isCron = verifyBearerToken(request.headers.get('authorization'), process.env.CRON_SECRET);
+  if (!isCron) {
+    const session = await getSession();
+    if (!session?.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const roles = Array.isArray(session.roles) && session.roles.length > 0 ? session.roles : [session.role];
+    if (!roles.includes('Super Admin')) {
+      const perms = await getMergedPermissions(roles);
+      if (!perms.usr_log_view) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
   }
 
   const { searchParams } = request.nextUrl;
-  const stglAwal = searchParams.get('stgl_awal') || '';
-  const stglAkhir = searchParams.get('stgl_akhir') || '';
+  const stglAwal = searchParams.get('stgl_awal') || convertToDDMMYYYY(searchParams.get('start'));
+  const stglAkhir = searchParams.get('stgl_akhir') || convertToDDMMYYYY(searchParams.get('end'));
   if (!stglAwal || !stglAkhir) return NextResponse.json({ error: 'stgl_awal dan stgl_akhir wajib' }, { status: 400 });
 
   try {
