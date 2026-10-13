@@ -46,9 +46,8 @@ export function formatLastUpdate(dateInput: Date | string | null | undefined): s
   if (!dateInput) return '';
   
   let date: Date;
-  if (typeof dateInput === 'string') {
-    let validStr = dateInput;
-    // Handle cases where SQLite/libsql might return space instead of T, and lack timezone
+   if (typeof dateInput === 'string') {
+     let validStr = dateInput.split('|')[0].trim();
     // Libsql/SQLite CURRENT_TIMESTAMP is UTC.
     if (!validStr.includes('Z') && !validStr.includes('+')) {
       validStr = validStr.replace(' ', 'T') + 'Z';
