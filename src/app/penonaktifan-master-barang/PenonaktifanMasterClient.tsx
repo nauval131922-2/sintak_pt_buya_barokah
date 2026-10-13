@@ -302,27 +302,47 @@ export default function PenonaktifanMasterClient() {
     }
   }, [cutoff]);
  
-   const handleSyncAll = useCallback(async () => {
-     const yearStart = `${cutoff.slice(0, 4)}-01-01`;
-     const endPlus7 = addDaysIso(cutoff, 7);
-     const steps = [
-       { label: 'Saldo barang', url: `/api/scrape-saldo-barang?tgl=${cutoff}` },
-       { label: 'Master barang', url: `/api/scrape-master-barang` },
-       { label: 'Order Produksi', url: `/api/scrape-orders?start=${yearStart}&end=${endPlus7}&silent=true` },
-       { label: 'Hasil produksi', url: `/api/scrape-barang-jadi?start=${yearStart}&end=${endPlus7}&silent=true` },
-       { label: 'SPH Keluar', url: `/api/scrape-sph-out?start=${yearStart}&end=${endPlus7}&silent=true` },
-       { label: 'BOM', url: `/api/scrape-bom?start=${yearStart}&end=${endPlus7}&silent=true` },
-       { label: 'Sales Order', url: `/api/scrape-sales-orders?start=${yearStart}&end=${endPlus7}&silent=true` },
-       { label: 'Log aktivitas', url: `/api/scrape-usr-log?stgl_awal=${isoToDdMmYyyy(yearStart)}&stgl_akhir=${isoToDdMmYyyy(endPlus7)}` },
-     ];
-     const total = steps.length + 1;
+   const handleSyncAll = useCallback(async (options?: { forceFull?: boolean }) => {
+     const defaultStart = `${cutoff.slice(0, 4)}-01-01`;
+     const defaultEnd = addDaysIso(cutoff, 7);
+     let startDate = defaultStart;
+     let endDate = defaultEnd;
+     let syncMode: 'incremental' | 'full' = options?.forceFull ? 'full' : 'incremental';
+ 
      setSyncing(true);
      setLoading(true);
      setError('');
      const history: { label: string; secs: number }[] = [];
      const syncStart = performance.now();
      let doneCount = 0;
+ 
      try {
+       if (!options?.forceFull) {
+         try {
+           const rangeRes = await fetch(`/api/penonaktifan-master-barang/sync-range?cutoff=${cutoff}`);
+           const rangeJson = (await rangeRes.json()) as { success?: boolean; startDate?: string; endDate?: string; mode?: 'incremental' | 'full' };
+           if (rangeJson.success && rangeJson.startDate) {
+             startDate = rangeJson.startDate;
+             endDate = rangeJson.endDate || defaultEnd;
+             if (rangeJson.mode) syncMode = rangeJson.mode;
+           }
+         } catch {
+           // Fallback ke awal tahun jika pengecekan range gagal
+         }
+       }
+ 
+       const steps = [
+         { label: 'Saldo barang', url: `/api/scrape-saldo-barang?tgl=${cutoff}` },
+         { label: 'Master barang', url: `/api/scrape-master-barang` },
+         { label: 'Order Produksi', url: `/api/scrape-orders?start=${startDate}&end=${endDate}&silent=true` },
+         { label: 'Hasil produksi', url: `/api/scrape-barang-jadi?start=${startDate}&end=${endDate}&silent=true` },
+         { label: 'SPH Keluar', url: `/api/scrape-sph-out?start=${startDate}&end=${endDate}&silent=true` },
+         { label: 'BOM', url: `/api/scrape-bom?start=${startDate}&end=${endDate}&silent=true` },
+         { label: 'Sales Order', url: `/api/scrape-sales-orders?start=${startDate}&end=${endDate}&silent=true` },
+         { label: 'Log aktivitas', url: `/api/scrape-usr-log?stgl_awal=${isoToDdMmYyyy(startDate)}&stgl_akhir=${isoToDdMmYyyy(endDate)}` },
+       ];
+       const total = steps.length + 1;
+ 
        const waitRetry = () => {
          const { promise, resolve } = Promise.withResolvers<void>();
          setTimeout(resolve, 3000);
@@ -348,32 +368,36 @@ export default function PenonaktifanMasterClient() {
          doneCount += 1;
          if (mountedRef.current) setSyncProgress({ done: doneCount, total, label: steps[i].label, elapsed: (performance.now() - syncStart) / 1000, history: history.filter(Boolean) });
        };
-       setSyncProgress({ done: 0, total, label: 'Menarik saldo (tahap 1)…', elapsed: 0, history: [] });
+ 
+       const saldoLabel = syncMode === 'incremental' ? 'Menarik saldo (tahap 1, inkremental 30h)…' : 'Menarik saldo (tahap 1, penuh awal tahun)…';
+       setSyncProgress({ done: 0, total, label: saldoLabel, elapsed: 0, history: [] });
        await runStep(0);
-       setSyncProgress({ done: doneCount, total, label: 'Menarik 7 data paralel…', elapsed: (performance.now() - syncStart) / 1000, history: history.filter(Boolean) });
+       const restLabel = syncMode === 'incremental' ? 'Menarik 7 data paralel (inkremental 30h)…' : 'Menarik 7 data paralel (penuh awal tahun)…';
+       setSyncProgress({ done: doneCount, total, label: restLabel, elapsed: (performance.now() - syncStart) / 1000, history: history.filter(Boolean) });
        const rest = steps.map((_, i) => i).filter((i) => i > 0);
        const settled = await Promise.allSettled(rest.map((i) => runStep(i)));
        const failed = settled.find((s) => s.status === 'rejected');
        if (failed) throw (failed as PromiseRejectedResult).reason;
        if (!mountedRef.current) return;
        setSyncProgress({ done: steps.length, total, label: 'Generate usulan', elapsed: (performance.now() - syncStart) / 1000, history: [...history] });
-      setData(null);
-      const genStart = performance.now();
-      await handleGenerate();
-      history.push({ label: 'Generate usulan', secs: Math.round(((performance.now() - genStart) / 1000) * 10) / 10 });
-      if (!mountedRef.current) return;
-      const syncStamp = `${new Date().toISOString()}|${cutoff}`;
-      setLastSyncAll(syncStamp);
-      try { localStorage.setItem('penonaktifan_lastSyncAll', syncStamp); } catch { /* abaikan */ }
-      const totalSecs = Math.round((performance.now() - syncStart) / 1000);
-      const rincian = history.map((h) => `${h.label}: ${h.secs}s`).join(' • ');
-      setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Semua data Digit ditarik (${steps.length} tahap, total ${totalSecs}s) dan usulan cutoff ${cutoff} digenerate ulang. Rincian: ${rincian}.` });
-    } catch (e) {
-      if (mountedRef.current) setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      if (mountedRef.current) { setSyncing(false); setLoading(false); setSyncProgress(null); }
-    }
-  }, [cutoff, handleGenerate]);
+       setData(null);
+       const genStart = performance.now();
+       await handleGenerate();
+       history.push({ label: 'Generate usulan', secs: Math.round(((performance.now() - genStart) / 1000) * 10) / 10 });
+       if (!mountedRef.current) return;
+       const syncStamp = `${new Date().toISOString()}|${cutoff}`;
+       setLastSyncAll(syncStamp);
+       try { localStorage.setItem('penonaktifan_lastSyncAll', syncStamp); } catch { /* abaikan */ }
+       const totalSecs = Math.round((performance.now() - syncStart) / 1000);
+       const rincian = history.map((h) => `${h.label}: ${h.secs}s`).join(' • ');
+       const modeText = syncMode === 'incremental' ? 'inkremental 30 hari' : 'penuh';
+       setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Semua data Digit ditarik (${modeText}, ${steps.length} tahap, total ${totalSecs}s) dan usulan cutoff ${cutoff} digenerate ulang. Rincian: ${rincian}.` });
+     } catch (e) {
+       if (mountedRef.current) setError(e instanceof Error ? e.message : String(e));
+     } finally {
+       if (mountedRef.current) { setSyncing(false); setLoading(false); setSyncProgress(null); }
+     }
+   }, [cutoff, handleGenerate]);
 
    const handleExport = async () => {
      if (!data) return;
@@ -684,10 +708,10 @@ export default function PenonaktifanMasterClient() {
                   <DatePicker name="cutoff" value={isoToDate(cutoff)} onChange={(d) => setCutoff(dateToIso(d))} />
                 </div>
                  <button
-                   onClick={handleSyncAll}
+                   onClick={(e) => handleSyncAll({ forceFull: e.shiftKey })}
                    disabled={syncing || loading}
-                   title="Tarik semua data Digit (saldo, master, transaksi, log) lalu generate ulang"
-                   className="shrink-0 px-5 py-2.5 bg-white border border-gray-100 rounded-xl text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 text-[12px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                   title="Tarik data Digit & Generate usulan (inkremental 30 hari; tahan Shift untuk sync penuh sejak awal tahun)"
+                   className="shrink-0 px-5 py-2.5 bg-white border border-gray-100 rounded-xl text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 text-[12px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
                  >
                    {syncing ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
                    Sync semua & Generate
