@@ -191,7 +191,7 @@ export default function ReviewTokenClient({ token }: { token: string }) {
   if (error && snapshot.length === 0) return <p className="text-sm font-semibold text-red-600 p-4">{error}</p>;
 
    return (
-     <div className="w-full h-[calc(100dvh-76px)] flex flex-col gap-2 p-3 sm:px-6 sm:py-3 overflow-hidden">
+     <div className="w-full h-[100dvh] flex flex-col gap-2 p-3 sm:px-6 sm:py-3 overflow-hidden">
        <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-2xl px-4 py-2 shrink-0">
          <div className="shrink-0">
            <label className="block text-[11px] font-bold text-gray-400 mb-0.5">Nama Anda (pengecek)</label>
@@ -231,7 +231,7 @@ export default function ReviewTokenClient({ token }: { token: string }) {
                  <span className="font-mono font-bold text-slate-700 shrink-0 w-24">{s.kode}</span>
                  <span className="flex-1 min-w-[200px]">
                    <span className="block text-slate-700 font-medium truncate" title={s.nama}>{s.nama}</span>
-                   <span className="block text-[11px] text-slate-400 truncate" title={s.alasan}>{s.alasan}</span>
+                   <span className="block text-[11px] text-slate-400 truncate" title={String(s.alasan ?? '').replace(/penawaran batal/gi, 'Hanya penawaran')}>{String(s.alasan ?? '').replace(/penawaran batal/gi, 'Hanya penawaran')}</span>
                  </span>
                  <input value={drop[s.kode] ?? ''} onChange={(e) => setDrop((p) => ({ ...p, [s.kode]: e.target.value }))} placeholder="Alasan (opsional)…" className="w-48 sm:w-56 shrink-0 px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder-slate-300 focus:bg-white focus:border-amber-400 focus:outline-none" />
                </div>
