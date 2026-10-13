@@ -230,7 +230,10 @@ export default function ReviewTokenClient({ token }: { token: string }) {
                    <Trash2 size={14} />
                  </button>
                  <span className="font-mono font-bold text-slate-700 shrink-0 w-24">{s.kode}</span>
-                 <span className="text-slate-600 flex-1 min-w-[160px] truncate" title={s.nama}>{s.nama}</span>
+                 <span className="flex-1 min-w-[200px]">
+                   <span className="block text-slate-700 font-medium truncate" title={s.nama}>{s.nama}</span>
+                   <span className="block text-[11px] text-slate-400 truncate" title={s.alasan}>{s.alasan}</span>
+                 </span>
                  <input value={drop[s.kode] ?? ''} onChange={(e) => setDrop((p) => ({ ...p, [s.kode]: e.target.value }))} placeholder="Alasan (opsional)…" className="flex-[2] min-w-[160px] px-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-700 placeholder-slate-300 focus:bg-white focus:border-amber-400 focus:outline-none" />
                </div>
              );
