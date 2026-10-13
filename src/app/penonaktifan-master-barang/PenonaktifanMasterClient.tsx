@@ -1,7 +1,7 @@
  'use client';
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Download, Loader2, Play, AlertCircle, Settings2, X, Plus, Trash2, Save, RefreshCw, Share2, Check, ThumbsUp, ThumbsDown, Search } from 'lucide-react';
+ import { Download, Loader2, Play, AlertCircle, Settings2, X, Plus, Trash2, Save, RefreshCw, Share2, Check, ThumbsUp, ThumbsDown, Search, ShieldCheck } from 'lucide-react';
 import Portal from '@/components/Portal';
 import TableFooter from '@/components/TableFooter';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -102,8 +102,9 @@ export default function PenonaktifanMasterClient() {
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
   const [highlightQuery, setHighlightQuery] = useState(() => searchParams.get('search') || '');
-  const [syncing, setSyncing] = useState(false);
-  const [syncProgress, setSyncProgress] = useState<{ done: number; total: number; label: string; elapsed: number; history: { label: string; secs: number }[] } | null>(null);
+   const [syncing, setSyncing] = useState(false);
+   const [syncProgress, setSyncProgress] = useState<{ done: number; total: number; label: string; elapsed: number; history: { label: string; secs: number }[] } | null>(null);
+   const [protecting, setProtecting] = useState(false);
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [dialog, setDialog] = useState({ isOpen: false, type: 'success' as 'success' | 'error', title: '', message: '' });
   const urlSearchRef = useRef<string | null>(null);
@@ -506,6 +507,46 @@ export default function PenonaktifanMasterClient() {
        setSettingsSaving(false);
      }
    };
+   const protectCodes = useCallback(async (kodes: string[]) => {
+     const fresh = [...new Set(kodes.map((k) => String(k).trim()).filter((k) => /^\d+$/.test(k)))];
+     if (fresh.length === 0) return;
+     setProtecting(true);
+     try {
+       let base: Settings;
+       let idle = Number(idleInput);
+       if (settings) {
+         base = settings;
+       } else {
+         const r = await fetch('/api/penonaktifan-master-barang/settings');
+         const j = await r.json();
+         if (!j.success) throw new Error(j.error || 'Gagal muat pengaturan');
+         base = j.settings as Settings;
+         setSettings(base);
+         setIdleInput(String(base.idle_days));
+         idle = base.idle_days;
+       }
+       const merged = [...new Set([...base.routine_codes, ...fresh])];
+       const nameMap = new Map(routineItems.map((x) => [x.kode, x.nama]));
+       for (const r of rows) if (fresh.includes(r.kode) && r.nama) nameMap.set(r.kode, r.nama);
+       const res = await fetch('/api/penonaktifan-master-barang/settings', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ ...base, routine_codes: merged, idle_days: Number.isFinite(idle) ? idle : base.idle_days }),
+       });
+       const json = await res.json();
+       if (!json.success) throw new Error(json.error || 'Gagal simpan');
+       setSettings(json.settings as Settings);
+       setRoutineItems(merged.map((kode) => ({ kode, nama: nameMap.get(kode) ?? '' })));
+       if (!mountedRef.current) return;
+       setData((prev) => prev ? { ...prev, rows: prev.rows.filter((r) => !merged.includes(r.kode)), bolehCount: prev.bolehCount - prev.rows.filter((r) => merged.includes(r.kode)).length } : prev);
+       clearSelection();
+       setDialog({ isOpen: true, type: 'success', title: 'Dilindungi', message: `${fresh.length} kode masuk Kode rutin dan hilang dari usulan.` });
+     } catch (e) {
+       if (mountedRef.current) setError(e instanceof Error ? e.message : String(e));
+     } finally {
+       if (mountedRef.current) setProtecting(false);
+     }
+   }, [settings, idleInput, routineItems, rows, clearSelection]);
 
   const filtered = useMemo(() => {
     const s = debouncedQuery.trim().toLowerCase();
@@ -539,13 +580,33 @@ export default function PenonaktifanMasterClient() {
         );
       }
     },
-    {
-      accessorKey: 'alasan',
-      header: 'Alasan',
-      size: 400,
-      cell: ({ getValue, row }: any) => <span className={`text-[12px] block truncate ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-600'}`} title={String(getValue())}>{highlightText(String(getValue()), highlightQuery)}</span>
-    },
-  ], [highlightQuery]);
+     {
+       accessorKey: 'alasan',
+       header: 'Alasan',
+       size: 360,
+       cell: ({ getValue, row }: any) => <span className={`text-[12px] block truncate ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-600'}`} title={String(getValue())}>{highlightText(String(getValue()), highlightQuery)}</span>
+     },
+     {
+       id: 'lindungi',
+       header: 'Rutin',
+       size: 70,
+       cell: ({ row }: { row: { original?: PreviewRow; getIsSelected: () => boolean } }) => {
+         const kode = String(row.original?.kode ?? '');
+         const inList = (settings?.routine_codes ?? []).includes(kode);
+         return (
+           <button
+             type="button"
+             onClick={(e) => { e.stopPropagation(); void protectCodes([kode]); }}
+             disabled={inList || protecting}
+             title={inList ? 'Sudah dilindungi' : 'Lindungi kode ini sebagai rutin'}
+             className={`p-1.5 rounded-lg border transition-colors ${inList ? 'bg-emerald-100 border-emerald-200 text-emerald-600' : 'bg-white border-slate-200 text-slate-400 hover:text-emerald-600 hover:border-emerald-300'}`}
+           >
+             <ShieldCheck size={14} />
+           </button>
+         );
+       }
+     },
+   ], [highlightQuery, settings, protecting]);
 
   if (!isMounted) return null;
 
@@ -812,6 +873,18 @@ export default function PenonaktifanMasterClient() {
                    className="w-full pl-9 pr-4 h-9 text-xs bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all shadow-sm"
                  />
                </div>
+               {selectedIds.size > 0 && (
+                 <button
+                   type="button"
+                   onClick={() => void protectCodes(filtered.filter((r) => selectedIds.has(r.id)).map((r) => r.kode))}
+                   disabled={protecting}
+                   title="Lindungi kode terpilih sebagai rutin"
+                   className="h-9 px-3 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm disabled:opacity-50"
+                 >
+                   {protecting ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}
+                   <span className="hidden sm:inline">Lindungi {selectedIds.size} rutin</span>
+                 </button>
+               )}
                <button
                  type="button"
                  onClick={() => { setManualError(''); setShowManual(true); }}
