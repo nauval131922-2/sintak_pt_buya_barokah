@@ -199,9 +199,9 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
                 }
               }
 
-              if (lastUpdatedTimestamp) {
-                const date = new Date(lastUpdatedTimestamp);
-                const formattedNow = formatLastUpdate(date);
+               if (lastUpdatedTimestamp) {
+                 const date = new Date(String(lastUpdatedTimestamp).split('|')[0]);
+                 const formattedNow = formatLastUpdate(date);
 
                 newState[modId] = {
                   ...newState[modId],

@@ -302,39 +302,46 @@ export default function PenonaktifanMasterClient() {
     }
   }, [cutoff]);
  
-  const handleSyncAll = useCallback(async () => {
-    const yearStart = `${cutoff.slice(0, 4)}-01-01`;
-    const endPlus7 = addDaysIso(cutoff, 7);
-    const steps = [
-      { label: 'Saldo barang', url: `/api/scrape-saldo-barang?tgl=${cutoff}` },
-      { label: 'Master barang', url: `/api/scrape-master-barang` },
-      { label: 'Order Produksi', url: `/api/scrape-orders?start=${yearStart}&end=${endPlus7}&silent=true` },
-      { label: 'Hasil produksi', url: `/api/scrape-barang-jadi?start=${yearStart}&end=${endPlus7}&silent=true` },
-      { label: 'SPH Keluar', url: `/api/scrape-sph-out?start=${yearStart}&end=${endPlus7}&silent=true` },
-      { label: 'BOM', url: `/api/scrape-bom?start=${yearStart}&end=${endPlus7}&silent=true` },
-      { label: 'Sales Order', url: `/api/scrape-sales-orders?start=${yearStart}&end=${endPlus7}&silent=true` },
-      { label: 'Log aktivitas', url: `/api/scrape-usr-log?stgl_awal=${isoToDdMmYyyy(yearStart)}&stgl_akhir=${isoToDdMmYyyy(endPlus7)}` },
-    ];
-    const total = steps.length + 1;
-    setSyncing(true);
-    setLoading(true);
-    setError('');
-    const history: { label: string; secs: number }[] = [];
-    const syncStart = performance.now();
-    try {
-      for (let i = 0; i < steps.length; i++) {
-        if (!mountedRef.current) return;
-        setSyncProgress({ done: i, total, label: steps[i].label, elapsed: (performance.now() - syncStart) / 1000, history: [...history] });
-        const stepStart = performance.now();
-        const res = await fetch(steps[i].url);
-        const json = await res.json().catch(() => ({})) as { success?: boolean; error?: string; details?: string };
-        if (!res.ok || json.success === false || json.error) {
-          throw new Error(`Tahap ${i + 1}/${total} (${steps[i].label}) gagal: ${json.error || json.details || `HTTP ${res.status}`}`);
-        }
-        history.push({ label: steps[i].label, secs: Math.round(((performance.now() - stepStart) / 1000) * 10) / 10 });
-      }
-      if (!mountedRef.current) return;
-      setSyncProgress({ done: steps.length, total, label: 'Generate usulan', elapsed: (performance.now() - syncStart) / 1000, history: [...history] });
+   const handleSyncAll = useCallback(async () => {
+     const yearStart = `${cutoff.slice(0, 4)}-01-01`;
+     const endPlus7 = addDaysIso(cutoff, 7);
+     const steps = [
+       { label: 'Saldo barang', url: `/api/scrape-saldo-barang?tgl=${cutoff}` },
+       { label: 'Master barang', url: `/api/scrape-master-barang` },
+       { label: 'Order Produksi', url: `/api/scrape-orders?start=${yearStart}&end=${endPlus7}&silent=true` },
+       { label: 'Hasil produksi', url: `/api/scrape-barang-jadi?start=${yearStart}&end=${endPlus7}&silent=true` },
+       { label: 'SPH Keluar', url: `/api/scrape-sph-out?start=${yearStart}&end=${endPlus7}&silent=true` },
+       { label: 'BOM', url: `/api/scrape-bom?start=${yearStart}&end=${endPlus7}&silent=true` },
+       { label: 'Sales Order', url: `/api/scrape-sales-orders?start=${yearStart}&end=${endPlus7}&silent=true` },
+       { label: 'Log aktivitas', url: `/api/scrape-usr-log?stgl_awal=${isoToDdMmYyyy(yearStart)}&stgl_akhir=${isoToDdMmYyyy(endPlus7)}` },
+     ];
+     const total = steps.length + 1;
+     setSyncing(true);
+     setLoading(true);
+     setError('');
+     const history: { label: string; secs: number }[] = [];
+     const syncStart = performance.now();
+     let doneCount = 0;
+     try {
+       // Paralel: 8 tahap independen jalan bersamaan, progress per tahap selesai.
+       const runStep = async (i: number) => {
+         const stepStart = performance.now();
+         const res = await fetch(steps[i].url);
+         const json = await res.json().catch(() => ({})) as { success?: boolean; error?: string; details?: string };
+         if (!res.ok || json.success === false || json.error) {
+           throw new Error(`Tahap ${i + 1}/${total} (${steps[i].label}) gagal: ${json.error || json.details || `HTTP ${res.status}`}`);
+         }
+         const secs = Math.round(((performance.now() - stepStart) / 1000) * 10) / 10;
+         history[i] = { label: steps[i].label, secs };
+         doneCount += 1;
+         if (mountedRef.current) setSyncProgress({ done: doneCount, total, label: steps[i].label, elapsed: (performance.now() - syncStart) / 1000, history: history.filter(Boolean) });
+       };
+       setSyncProgress({ done: 0, total, label: 'Menarik 8 data paralel…', elapsed: 0, history: [] });
+       const settled = await Promise.allSettled(steps.map((_, i) => runStep(i)));
+       const failed = settled.find((s) => s.status === 'rejected');
+       if (failed) throw (failed as PromiseRejectedResult).reason;
+       if (!mountedRef.current) return;
+       setSyncProgress({ done: steps.length, total, label: 'Generate usulan', elapsed: (performance.now() - syncStart) / 1000, history: [...history] });
       setData(null);
       const genStart = performance.now();
       await handleGenerate();
