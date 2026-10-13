@@ -283,7 +283,7 @@ export default function PenonaktifanMasterClient() {
     setError('');
     const startTimer = performance.now();
     try {
-       const res = await fetch(`/api/penonaktifan-master-barang?cutoff=${cutoff}&limit=5000&includeDitolak=1`);
+       const res = await fetch(`/api/penonaktifan-master-barang?cutoff=${cutoff}&limit=20000&includeDitolak=1`);
       const json = (await res.json()) as PreviewResult;
       if (!json.success) throw new Error(json.error || 'Gagal generate');
       if (!mountedRef.current) return;

@@ -24,8 +24,8 @@ export async function GET(req: NextRequest) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(cutoff)) {
       return NextResponse.json({ success: false, error: 'cutoff harus yyyy-mm-dd' }, { status: 400 });
     }
-    const limitRaw = Number(searchParams.get('limit') || '');
-    const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(Math.floor(limitRaw), 5000) : undefined;
+     const limitRaw = Number(searchParams.get('limit') || '');
+     const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(Math.floor(limitRaw), 20000) : undefined;
     const result = await generateUsulan(cutoff, limit);
     const includeDitolak = searchParams.get('includeDitolak') === '1';
     return NextResponse.json({
