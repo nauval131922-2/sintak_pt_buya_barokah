@@ -10,18 +10,20 @@ import { verifyBearerToken } from '@/lib/crypto-compare';
 const SESSION_COOKIE = 'sintak_session';
 
 // Routes that must stay public (no session required)
-const PUBLIC_PATHS = [
-  '/login',
-  '/api/auth/me',
-  '/api/telegram',
-  '/api/cron',
-  '/api/maintenance',
-  '/_next',
-  '/favicon',
-  '/fonts',
-  '/icons',
-  '/manifest',
-];
+ const PUBLIC_PATHS = [
+   '/login',
+   '/penonaktifan-review',
+   '/api/auth/me',
+   '/api/telegram',
+   '/api/cron',
+   '/api/maintenance',
+   '/api/penonaktifan-master-barang/review',
+   '/_next',
+   '/favicon',
+   '/fonts',
+   '/icons',
+   '/manifest',
+ ];
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'));

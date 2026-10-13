@@ -104,7 +104,8 @@ function MainContentInner({
     };
   }, [router]);
 
-  const isLoginPage = pathname ? pathname.startsWith('/login') : false;
+   const isLoginPage = pathname ? pathname.startsWith('/login') : false;
+   const isReviewPage = pathname ? pathname.startsWith('/penonaktifan-review') : false;
 
   const isLaporanPekerjaanPage = pathname === '/laporan-pekerjaan';
 
@@ -165,8 +166,8 @@ function MainContentInner({
     </div>
   );
 
-  if (isLoginPage) {
-    return <>{children}</>;
+   if (isLoginPage || isReviewPage) {
+     return <>{children}</>;
   }
 
   return (
