@@ -185,6 +185,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
   const [dialog, setDialog] = useState({ isOpen: false, title: '', message: '' });
   const [searchQuery, setSearchQuery] = useState('');
   const [activeGroup, setActiveGroup] = useState<string>('all');
+  const [isRefreshingStatus, setIsRefreshingStatus] = useState(false);
 
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => ({
     modul: 300,
@@ -206,64 +207,68 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
   }, []);
 
   // Restore sync status on mount directly from server
-  useEffect(() => {
-    async function restoreStatus() {
-      try {
-        const response = await fetch('/api/sync-status');
-        const data = (await response.json()) as {
-          success?: boolean;
-          statuses?: Record<string, string>;
-          periods?: Record<string, { start?: string; end?: string }>;
-        };
-        
-        if (data.success && data.statuses) {
-          setSyncStates(prev => {
-            const newState = { ...prev };
-            for (const modId of Object.keys(newState)) {
-              const lastUpdatedTimestamp = data.statuses?.[modId];
-              const apiPeriod = data.periods?.[modId];
-              
-              let period: { start: string; end: string } | null = null;
-              
-              if (apiPeriod && apiPeriod.start && apiPeriod.end) {
-                period = {
-                  start: apiPeriod.start,
-                  end: apiPeriod.end
-                };
-              } else {
-                const keys = PERSISTENCE_KEYS[modId];
-                if (keys) {
-                  const hydrated = hydrateScraperPeriod(keys);
-                  if (hydrated.scrapedPeriod) {
-                    period = {
-                      start: hydrated.scrapedPeriod.start,
-                      end: hydrated.scrapedPeriod.end
-                    };
-                  }
+  const refreshStatus = useCallback(async () => {
+    setIsRefreshingStatus(true);
+    try {
+      const response = await fetch('/api/sync-status');
+      const data = (await response.json()) as {
+        success?: boolean;
+        statuses?: Record<string, string>;
+        periods?: Record<string, { start?: string; end?: string }>;
+      };
+      
+      if (data.success && data.statuses) {
+        setSyncStates(prev => {
+          const newState = { ...prev };
+          for (const modId of Object.keys(newState)) {
+            const lastUpdatedTimestamp = data.statuses?.[modId];
+            const apiPeriod = data.periods?.[modId];
+            
+            let period: { start: string; end: string } | null = null;
+            
+            if (apiPeriod && apiPeriod.start && apiPeriod.end) {
+              period = {
+                start: apiPeriod.start,
+                end: apiPeriod.end
+              };
+            } else {
+              const keys = PERSISTENCE_KEYS[modId];
+              if (keys) {
+                const hydrated = hydrateScraperPeriod(keys);
+                if (hydrated.scrapedPeriod) {
+                  period = {
+                    start: hydrated.scrapedPeriod.start,
+                    end: hydrated.scrapedPeriod.end
+                  };
                 }
               }
-
-              if (lastUpdatedTimestamp) {
-                const date = new Date(String(lastUpdatedTimestamp).split('|')[0]);
-                const formattedNow = formatLastUpdate(date);
-
-                newState[modId] = {
-                  ...newState[modId],
-                  status: 'success',
-                  lastUpdate: formattedNow,
-                  period: period
-                };
-              }
             }
-            return newState;
-          });
-        }
-      } catch (err) {
-        console.error("Failed to restore sync status:", err);
+
+            if (lastUpdatedTimestamp) {
+              const date = new Date(String(lastUpdatedTimestamp).split('|')[0]);
+              const formattedNow = formatLastUpdate(date);
+
+              newState[modId] = {
+                ...newState[modId],
+                status: 'success',
+                lastUpdate: formattedNow,
+                period: period
+              };
+            }
+          }
+          return newState;
+        });
       }
+    } catch (err) {
+      console.error("Failed to restore sync status:", err);
+    } finally {
+      setIsRefreshingStatus(false);
     }
-    restoreStatus();
   }, []);
+
+  useEffect(() => {
+    refreshStatus();
+  }, [refreshStatus]);
 
   const runSync = useCallback(async (modId: string) => {
     const mod = MODULES.find(m => m.id === modId);
@@ -640,16 +645,27 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
             </div>
           </div>
 
-          {/* Search Bar Standar SINTAK */}
-          <div className="relative w-full">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Cari berdasarkan nama modul, deskripsi, atau kategori…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 h-9 text-xs bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all shadow-sm"
-            />
+          {/* Search Bar Standar SINTAK dengan Tombol Reload di Kiri */}
+          <div className="flex items-center gap-2 w-full">
+            <button
+              type="button"
+              onClick={refreshStatus}
+              disabled={isRefreshingStatus || isBatchProcessing}
+              className="h-9 w-9 text-slate-700 hover:text-emerald-800 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 transition-all flex items-center justify-center shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
+              title="Muat ulang status sinkronisasi"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshingStatus ? 'animate-spin text-emerald-600' : ''}`} />
+            </button>
+            <div className="relative flex-1 min-w-0">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Cari berdasarkan nama modul, deskripsi, atau kategori…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 h-9 text-xs bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all shadow-sm"
+              />
+            </div>
           </div>
         </div>
 
