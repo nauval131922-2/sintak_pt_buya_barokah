@@ -617,7 +617,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
                   <button
                     key={g.group}
                     type="button"
-                    onClick={() => setActiveGroup(g.group)}
+                    onClick={() => setActiveGroup(isActive ? 'all' : g.group)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
                       isActive
                         ? 'bg-emerald-600 text-white shadow-sm'
