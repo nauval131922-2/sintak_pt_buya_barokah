@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import type { ColumnDef } from '@tanstack/react-table';
 import { 
   RefreshCw, 
   CheckCircle2, 
@@ -10,44 +11,38 @@ import {
   Clock, 
   ShieldCheck,
   Search,
-  Check,
   Calendar,
-  Layers,
-  ArrowUpDown
 } from 'lucide-react';
 import DatePicker from '@/components/DatePicker';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { DataTable } from '@/components/ui/DataTable';
+import TableFooter from '@/components/TableFooter';
 
 import { formatLastUpdate } from '@/lib/date-utils';
 import { formatScrapedPeriodDate, getDefaultScraperDateRange, persistScraperPeriod, hydrateScraperPeriod } from '@/lib/scraper-period';
 
- interface ModuleItem {
-   id: string;
-   name: string;
-   endpoint: string;
-   description: string;
-   noDateRange?: boolean;
-   saldoTgl?: boolean;
-   usrLogRange?: boolean;
- }
- 
- interface ModuleGroup {
-   group: string;
-   color: string;
-   badgeClass: string;
-   modules: ModuleItem[];
- }
- 
- interface FlattenedModule extends ModuleItem {
-   groupName: string;
-   badgeClass: string;
- }
- 
- const MODULE_GROUPS: ModuleGroup[] = [
+interface ModuleItem {
+  id: string;
+  name: string;
+  endpoint: string;
+  description: string;
+  noDateRange?: boolean;
+  saldoTgl?: boolean;
+  usrLogRange?: boolean;
+}
+
+interface ModuleGroup {
+  group: string;
+  modules: ModuleItem[];
+}
+
+interface FlattenedModule extends ModuleItem {
+  groupName: string;
+}
+
+const MODULE_GROUPS: ModuleGroup[] = [
   {
     group: 'Stok',
-    color: 'indigo',
-    badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200',
     modules: [
       { id: 'master-barang', name: 'Master Barang', endpoint: '/api/scrape-master-barang', description: 'Data master barang stok', noDateRange: true },
       { id: 'saldo-barang', name: 'Saldo Barang', endpoint: '/api/scrape-saldo-barang', description: 'Posisi saldo & N persediaan (per tanggal akhir)', saldoTgl: true },
@@ -55,8 +50,6 @@ import { formatScrapedPeriodDate, getDefaultScraperDateRange, persistScraperPeri
   },
   {
     group: 'Pembelian',
-    color: 'blue',
-    badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
     modules: [
       { id: 'pr', name: 'Purchase Request (PR)', endpoint: '/api/scrape-pr', description: 'Permintaan pembelian bahan' },
       { id: 'spph-out', name: 'SPPH Keluar', endpoint: '/api/scrape-spph-out', description: 'Permintaan penawaran supplier' },
@@ -69,8 +62,6 @@ import { formatScrapedPeriodDate, getDefaultScraperDateRange, persistScraperPeri
   },
   {
     group: 'Produksi',
-    color: 'green',
-    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     modules: [
       { id: 'bom', name: 'Bill of Material Produksi', endpoint: '/api/scrape-bom', description: 'Data formula produksi' },
       { id: 'orders', name: 'Order Produksi', endpoint: '/api/scrape-orders', description: 'Surat Perintah Kerja' },
@@ -81,8 +72,6 @@ import { formatScrapedPeriodDate, getDefaultScraperDateRange, persistScraperPeri
   },
   {
     group: 'Penjualan',
-    color: 'purple',
-    badgeClass: 'bg-purple-50 text-purple-700 border-purple-200',
     modules: [
       { id: 'sph-out', name: 'SPH Keluar', endpoint: '/api/scrape-sph-out', description: 'Surat Penawaran Harga Keluar' },
       { id: 'sales-orders', name: 'Sales Order Barang', endpoint: '/api/scrape-sales-orders', description: 'Pesanan dari pelanggan' },
@@ -93,8 +82,6 @@ import { formatScrapedPeriodDate, getDefaultScraperDateRange, persistScraperPeri
   },
   {
     group: 'Akuntansi & Keuangan',
-    color: 'amber',
-    badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
     modules: [
       { id: 'rek-akuntansi', name: 'Rekening Akuntansi', endpoint: '/api/scrape-rek-akuntansi', description: 'Master rekening akuntansi', noDateRange: true },
       { id: 'jurnal-umum', name: 'Jurnal Umum', endpoint: '/api/scrape-jurnal-umum', description: 'Transaksi jurnal akuntansi' },
@@ -102,18 +89,15 @@ import { formatScrapedPeriodDate, getDefaultScraperDateRange, persistScraperPeri
   },
   {
     group: 'Sistem',
-    color: 'slate',
-    badgeClass: 'bg-slate-100 text-slate-700 border-slate-200',
     modules: [
       { id: 'usr-log', name: 'Log Aktivitas User', endpoint: '/api/scrape-usr-log', description: 'Audit trail aktivitas user Digit', usrLogRange: true },
     ]
   },
 ];
 
-// Flat list for processing and mapping
- const MODULES: FlattenedModule[] = MODULE_GROUPS.flatMap(g => 
-   g.modules.map(m => ({ ...m, groupName: g.group, badgeClass: g.badgeClass }))
- );
+const MODULES: FlattenedModule[] = MODULE_GROUPS.flatMap(g => 
+  g.modules.map(m => ({ ...m, groupName: g.group }))
+);
 
 const PERSISTENCE_KEYS: Record<string, { stateKey: string; periodKey: string }> = {
   'master-barang': { stateKey: 'masterBarangState', periodKey: 'MasterBarangClient_scrapedPeriod' },
@@ -191,6 +175,15 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
   const [searchQuery, setSearchQuery] = useState('');
   const [activeGroup, setActiveGroup] = useState<string>('all');
 
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => ({
+    modul: 300,
+    kategori: 130,
+    status: 220,
+    lastUpdate: 170,
+    period: 190,
+    action: 100,
+  }));
+
   // Hydrate global date picker on mount
   useEffect(() => {
     const defaultKeys = PERSISTENCE_KEYS['bom'];
@@ -206,13 +199,17 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
     async function restoreStatus() {
       try {
         const response = await fetch('/api/sync-status');
-        const data = await response.json();
+        const data = (await response.json()) as {
+          success?: boolean;
+          statuses?: Record<string, string>;
+          periods?: Record<string, { start?: string; end?: string }>;
+        };
         
         if (data.success && data.statuses) {
           setSyncStates(prev => {
             const newState = { ...prev };
             for (const modId of Object.keys(newState)) {
-              const lastUpdatedTimestamp = data.statuses[modId];
+              const lastUpdatedTimestamp = data.statuses?.[modId];
               const apiPeriod = data.periods?.[modId];
               
               let period: { start: string; end: string } | null = null;
@@ -268,16 +265,17 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
     }));
 
     try {
-       const pad2 = (n: number) => String(n).padStart(2, '0');
-       const startStr = `${startDate.getFullYear()}-${pad2(startDate.getMonth() + 1)}-${pad2(startDate.getDate())}`;
-       const endStr = `${endDate.getFullYear()}-${pad2(endDate.getMonth() + 1)}-${pad2(endDate.getDate())}`;
-       const url = mod.noDateRange
-         ? mod.endpoint
-         : mod.saldoTgl
-           ? `${mod.endpoint}?tgl=${endStr}`
-           : mod.usrLogRange
-             ? `${mod.endpoint}?stgl_awal=${startStr.split('-').reverse().join('-')}&stgl_akhir=${endStr.split('-').reverse().join('-')}`
-             : `${mod.endpoint}?start=${startStr}&end=${endStr}&metaStart=${startStr}&metaEnd=${endStr}`;
+      const pad2 = (n: number) => String(n).padStart(2, '0');
+      const startStr = `${startDate.getFullYear()}-${pad2(startDate.getMonth() + 1)}-${pad2(startDate.getDate())}`;
+      const endStr = `${endDate.getFullYear()}-${pad2(endDate.getMonth() + 1)}-${pad2(endDate.getDate())}`;
+      const url = mod.noDateRange
+        ? mod.endpoint
+        : mod.saldoTgl
+          ? `${mod.endpoint}?tgl=${endStr}`
+          : mod.usrLogRange
+            ? `${mod.endpoint}?stgl_awal=${startStr.split('-').reverse().join('-')}&stgl_akhir=${endStr.split('-').reverse().join('-')}`
+            : `${mod.endpoint}?start=${startStr}&end=${endStr}&metaStart=${startStr}&metaEnd=${endStr}`;
+
       const response = await fetch(url, { method: 'GET', cache: 'no-store' });
       const data = await response.json();
 
@@ -286,9 +284,9 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
         const formattedNow = formatLastUpdate(now);
 
         const keys = PERSISTENCE_KEYS[modId];
-         if (keys && !mod.noDateRange) {
-           persistScraperPeriod(keys, startDate, endDate);
-         }
+        if (keys && !mod.noDateRange) {
+          persistScraperPeriod(keys, startDate, endDate);
+        }
 
         localStorage.setItem('sintak_data_updated', Date.now().toString());
         localStorage.setItem('sintak_profile_updated', Date.now().toString());
@@ -300,7 +298,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
           [modId]: { 
             status: 'success', 
             lastUpdate: formattedNow, 
-             period: mod.noDateRange ? null : { 
+            period: mod.noDateRange ? null : { 
               start: startDate.toLocaleDateString('en-GB').replace(/\//g, '-'), 
               end: endDate.toLocaleDateString('en-GB').replace(/\//g, '-') 
             },
@@ -312,12 +310,12 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
       } else {
         throw new Error(data.error || 'Server returned error status');
       }
-     } catch (err: unknown) {
-       const errorMsg = err instanceof Error ? err.message : 'Gagal sinkronisasi';
-       setSyncStates(prev => ({
-         ...prev,
-         [modId]: { ...prev[modId], status: 'error', message: errorMsg }
-       }));
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : 'Gagal sinkronisasi';
+      setSyncStates(prev => ({
+        ...prev,
+        [modId]: { ...prev[modId], status: 'error', message: errorMsg }
+      }));
       return { success: false, count: 0 };
     } finally {
       setCurrentModuleId(null);
@@ -328,7 +326,6 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
     if (isBatchProcessing) return;
     setIsBatchProcessing(true);
 
-    // Filter only permitted modules
     const allowedMods = MODULES.filter(mod => {
       const pKey = SYNC_TO_PERM_MAP[mod.id];
       return !pKey || userPermissions[pKey] !== false;
@@ -336,7 +333,6 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
 
     setBatchProgress({ done: 0, total: allowedMods.length });
 
-    // Set all permitted modules to loading state immediately
     setSyncStates(prev => {
       const next = { ...prev };
       for (const mod of allowedMods) {
@@ -349,7 +345,6 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
     let totalModulesSuccess = 0;
     let doneCount = 0;
 
-    // Process in parallel batches of 4 (avoids overloading MDT host)
     const CONCURRENCY = 4;
     for (let i = 0; i < allowedMods.length; i += CONCURRENCY) {
       const batch = allowedMods.slice(i, i + CONCURRENCY);
@@ -360,7 +355,6 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
         currentModName: batch.map(b => b.name).join(', ')
       });
 
-      // Mark batch as active
       setSyncStates(prev => {
         const next = { ...prev };
         for (const mod of batch) {
@@ -391,7 +385,6 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
     });
   };
 
-  // Filter modules by permissions, group, and search query
   const permittedModules = useMemo(() => {
     return MODULES.filter(mod => {
       const pKey = SYNC_TO_PERM_MAP[mod.id];
@@ -408,68 +401,212 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
     });
   }, [permittedModules, activeGroup, searchQuery]);
 
-  // Status counts for summary chips
   const stats = useMemo(() => {
     let success = 0;
     let error = 0;
-    let idle = 0;
     permittedModules.forEach(mod => {
       const st = syncStates[mod.id]?.status;
       if (st === 'success') success++;
       else if (st === 'error') error++;
-      else idle++;
     });
-    return { success, error, idle, total: permittedModules.length };
+    return { success, error, total: permittedModules.length };
   }, [permittedModules, syncStates]);
 
+  const columns = useMemo<ColumnDef<FlattenedModule>[]>(() => [
+    {
+      accessorKey: 'name',
+      id: 'modul',
+      header: 'Modul Operasional',
+      size: 300,
+      cell: ({ row }) => {
+        const mod = row.original;
+        return (
+          <div className="flex flex-col min-w-0 py-0.5">
+            <span className="font-bold text-gray-800 text-[12px] leading-tight block truncate" title={mod.name}>
+              {mod.name}
+            </span>
+            <span className="text-[11px] text-gray-400 font-medium leading-tight truncate mt-0.5" title={mod.description}>
+              {mod.description}
+            </span>
+          </div>
+        );
+      }
+    },
+    {
+      accessorKey: 'groupName',
+      id: 'kategori',
+      header: 'Kategori',
+      size: 130,
+      cell: ({ getValue }) => {
+        const val = String(getValue() ?? '');
+        return (
+          <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+            {val}
+          </span>
+        );
+      }
+    },
+    {
+      id: 'status',
+      header: 'Status Sinkronisasi',
+      size: 220,
+      cell: ({ row }) => {
+        const mod = row.original;
+        const state = syncStates[mod.id];
+        const isLoading = state?.status === 'loading' || currentModuleId === mod.id;
+        const isSuccess = state?.status === 'success';
+        const isError = state?.status === 'error';
+
+        if (isLoading) {
+          return (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-bold">
+              <Loader2 size={12} className="animate-spin text-amber-600" />
+              <span>{state?.message || 'Sedang proses...'}</span>
+            </span>
+          );
+        }
+        if (isSuccess) {
+          return (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold">
+              <CheckCircle2 size={12} className="text-emerald-600" />
+              <span>{state?.message || 'Sinkron'}</span>
+            </span>
+          );
+        }
+        if (isError) {
+          return (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[11px] font-bold" title={state?.message || ''}>
+              <AlertCircle size={12} className="text-rose-600" />
+              <span className="truncate max-w-[150px]">{state?.message || 'Gagal'}</span>
+            </span>
+          );
+        }
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-50 text-slate-500 border border-slate-200 text-[11px] font-bold">
+            <Database size={12} className="text-slate-400" />
+            <span>Belum sinkron</span>
+          </span>
+        );
+      }
+    },
+    {
+      id: 'lastUpdate',
+      header: 'Terakhir Sinkron',
+      size: 170,
+      cell: ({ row }) => {
+        const state = syncStates[row.original.id];
+        return (
+          <div className="flex items-center gap-1.5 text-gray-600 font-medium text-[11px]">
+            <Clock size={12} className="text-gray-400 shrink-0" />
+            <span>{state?.lastUpdate || 'Belum pernah'}</span>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'period',
+      header: 'Rentang Scrape',
+      size: 190,
+      cell: ({ row }) => {
+        const mod = row.original;
+        const state = syncStates[mod.id];
+        if (mod.noDateRange) {
+          return (
+            <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 text-[10px] font-bold">
+              Semua Data
+            </span>
+          );
+        }
+        if (state?.period?.start && state?.period?.end) {
+          return (
+            <span className="text-gray-600 font-medium text-[11px]">
+              {formatScrapedPeriodDate(state.period.start)} - {formatScrapedPeriodDate(state.period.end)}
+            </span>
+          );
+        }
+        if (mod.saldoTgl) {
+          return <span className="text-gray-400 text-[11px]">Posisi akhir cutoff</span>;
+        }
+        return <span className="text-gray-400 text-[11px]">-</span>;
+      }
+    },
+    {
+      id: 'action',
+      header: 'Aksi',
+      size: 100,
+      cell: ({ row }) => {
+        const mod = row.original;
+        const state = syncStates[mod.id];
+        const isLoading = state?.status === 'loading' || currentModuleId === mod.id;
+        return (
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => runSync(mod.id)}
+              disabled={isBatchProcessing || isLoading}
+              className="px-3 py-1 bg-white hover:bg-slate-50 text-slate-700 hover:text-emerald-700 rounded-lg border border-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              <RefreshCw size={12} className={isLoading ? 'animate-spin text-emerald-600' : ''} />
+              <span>Sync</span>
+            </button>
+          </div>
+        );
+      }
+    }
+  ], [syncStates, currentModuleId, isBatchProcessing, runSync]);
+
   return (
-    <div className="w-full flex-1 min-h-0 overflow-hidden flex flex-col gap-3 animate-in fade-in duration-300">
+    <div className="flex-1 min-h-0 flex flex-col gap-4 animate-in fade-in duration-500 overflow-hidden">
       
-      {/* Top Toolbar: Date Range + Search + Batch Button */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-3 sm:px-4 shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 text-xs">
+      {/* Top Toolbar: Date Range + Search + Batch Button (SINTAK Baku) */}
+      <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-3 sm:px-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-2.5 flex-wrap flex-1">
+          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs shrink-0">
             <Calendar size={13} className="text-slate-400 shrink-0" />
-            <span className="text-[11px] font-bold text-slate-500 mr-1">Rentang:</span>
+            <span className="text-[11px] font-bold text-slate-500 mr-0.5">Rentang:</span>
             <DatePicker name="startDate" value={startDate} onChange={setStartDate} />
             <span className="text-slate-300 font-bold px-0.5">-</span>
             <DatePicker name="endDate" value={endDate} onChange={setEndDate} />
           </div>
 
-          <div className="relative w-48 sm:w-60">
-            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <div className="relative flex-1 min-w-[180px] max-w-sm">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari modul operasional..."
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:border-emerald-500 focus:outline-none transition-all"
+              className="w-full pl-9 pr-3 h-9 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 justify-end">
-          <div className="hidden sm:flex items-center gap-2 text-[11px] font-bold mr-2">
-            <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <div className="flex items-center gap-3 shrink-0 justify-end">
+          <div className="hidden lg:flex items-center gap-2 text-[11px] font-bold mr-1">
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
               {stats.success} Siap
             </span>
             {stats.error > 0 && (
-              <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+              <span className="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
                 {stats.error} Gagal
               </span>
             )}
-            <span className="text-slate-400">
-              Total {stats.total} Modul
-            </span>
+            <span className="text-slate-400">Total {stats.total} Modul</span>
           </div>
 
           <button
             onClick={runBatchSync}
             disabled={isBatchProcessing}
-            className="flex items-center justify-center gap-2 px-5 h-9 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-[12px] font-bold rounded-xl transition-all shadow-sm cursor-pointer shrink-0"
+            className="shrink-0 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-xl text-[12px] font-bold shadow-sm shadow-emerald-900/20 hover:shadow-emerald-900/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group/btn relative overflow-hidden cursor-pointer"
           >
-            {isBatchProcessing ? <Loader2 size={15} className="animate-spin" /> : <RefreshCw size={15} />}
-            <span>{isBatchProcessing ? 'Menjalankan Batch...' : 'Scrape Semua Modul'}</span>
+            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
+            <span className="relative z-10 flex items-center gap-2">
+              {isBatchProcessing ? (
+                <><Loader2 size={16} className="animate-spin" /> Sedang Menjalankan...</>
+              ) : (
+                <><RefreshCw size={16} className="group-hover/btn:rotate-180 transition-transform duration-500" /> Scrape Semua Modul</>
+              )}
+            </span>
           </button>
         </div>
       </div>
@@ -500,14 +637,15 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
         </div>
       )}
 
-      {/* Group Navigation Tabs (Pill Filters) */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 shrink-0 custom-scrollbar">
+      {/* Category Navigation Tabs (Pill Filters Netral Ber-aksen Emerald) */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 shrink-0 custom-scrollbar px-0.5">
         <button
+          type="button"
           onClick={() => setActiveGroup('all')}
           className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
             activeGroup === 'all'
-              ? 'bg-slate-800 text-white shadow-sm'
-              : 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'bg-white hover:bg-slate-50 text-slate-600 border border-slate-200'
           }`}
         >
           Semua ({permittedModules.length})
@@ -519,15 +657,16 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
           return (
             <button
               key={g.group}
+              type="button"
               onClick={() => setActiveGroup(g.group)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
                 isActive
-                  ? 'bg-slate-800 text-white shadow-sm'
-                  : 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'bg-white hover:bg-slate-50 text-slate-600 border border-slate-200'
               }`}
             >
               <span>{g.group}</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-500'}`}>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-500'}`}>
                 {count}
               </span>
             </button>
@@ -535,139 +674,21 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
         })}
       </div>
 
-      {/* Main Table View: Compact, High-Density, Non-Card */}
-      <div className="flex-1 min-h-0 bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col overflow-hidden">
-        <div className="overflow-x-auto overflow-y-auto flex-1 custom-scrollbar">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead className="bg-slate-50 sticky top-0 z-10 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
-              <tr>
-                <th className="py-3 px-4 w-[280px]">Modul Operasional</th>
-                <th className="py-3 px-4 w-[130px]">Kategori</th>
-                <th className="py-3 px-4 w-[200px]">Status Sinkronisasi</th>
-                <th className="py-3 px-4 w-[180px]">Terakhir Sinkron</th>
-                <th className="py-3 px-4 w-[200px]">Rentang Data</th>
-                <th className="py-3 px-4 w-[120px] text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredModules.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400">
-                    Tidak ada modul yang cocok dengan pencarian &ldquo;{searchQuery}&rdquo;.
-                  </td>
-                </tr>
-              ) : (
-                filteredModules.map((mod) => {
-                  const state = syncStates[mod.id];
-                  const isLoading = state?.status === 'loading' || currentModuleId === mod.id;
-                  const isSuccess = state?.status === 'success';
-                  const isError = state?.status === 'error';
-
-                  return (
-                    <tr 
-                      key={mod.id} 
-                      className={`hover:bg-slate-50/80 transition-colors ${isLoading ? 'bg-emerald-50/40' : ''}`}
-                    >
-                      {/* Modul Operasional */}
-                      <td className="py-3 px-4">
-                        <div className="flex flex-col min-w-0">
-                          <span className="font-bold text-slate-800 text-[12px] leading-tight">
-                            {mod.name}
-                          </span>
-                          <span className="text-[11px] text-slate-400 font-medium leading-tight mt-0.5 truncate max-w-[260px]">
-                            {mod.description}
-                          </span>
-                        </div>
-                      </td>
-
-                      {/* Kategori Group */}
-                      <td className="py-3 px-4">
-                        <span className={`inline-block text-[11px] font-bold px-2.5 py-0.5 rounded-lg border ${mod.badgeClass}`}>
-                          {mod.groupName}
-                        </span>
-                      </td>
-
-                      {/* Status Sinkronisasi */}
-                      <td className="py-3 px-4">
-                        <div className="flex flex-col gap-0.5">
-                          {isLoading ? (
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-bold w-fit">
-                              <Loader2 size={12} className="animate-spin text-amber-600" />
-                              <span>{state?.message || 'Memproses...'}</span>
-                            </div>
-                          ) : isSuccess ? (
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold w-fit">
-                              <CheckCircle2 size={12} className="text-emerald-600" />
-                              <span>{state?.message || 'Sinkron'}</span>
-                            </div>
-                          ) : isError ? (
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[11px] font-bold w-fit" title={state?.message || ''}>
-                              <AlertCircle size={12} className="text-rose-600" />
-                              <span className="truncate max-w-[150px]">{state?.message || 'Gagal'}</span>
-                            </div>
-                          ) : (
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-50 text-slate-500 border border-slate-200 text-[11px] font-bold w-fit">
-                              <Database size={12} className="text-slate-400" />
-                              <span>Belum sinkron</span>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Terakhir Sinkron */}
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-1.5 text-slate-600 font-medium">
-                          <Clock size={12} className="text-slate-400 shrink-0" />
-                          <span className="text-[11px]">{state?.lastUpdate || 'Belum pernah'}</span>
-                        </div>
-                      </td>
-
-                      {/* Rentang Data */}
-                      <td className="py-3 px-4">
-                        {mod.noDateRange ? (
-                          <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 text-[10px] font-bold">
-                            Semua Data
-                          </span>
-                        ) : state?.period ? (
-                          <span className="text-slate-600 font-medium text-[11px]">
-                            {formatScrapedPeriodDate(state.period.start)} - {formatScrapedPeriodDate(state.period.end)}
-                          </span>
-                        ) : mod.saldoTgl ? (
-                          <span className="text-slate-400 text-[11px]">Posisi akhir cutoff</span>
-                        ) : (
-                          <span className="text-slate-400 text-[11px]">-</span>
-                        )}
-                      </td>
-
-                      {/* Aksi Per Baris */}
-                      <td className="py-3 px-4 text-right">
-                        <button
-                          onClick={() => runSync(mod.id)}
-                          disabled={isBatchProcessing || isLoading}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700 text-slate-700 font-bold text-[11px] transition-all shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                        >
-                          <RefreshCw size={11} className={isLoading ? 'animate-spin' : ''} />
-                          <span>Sinkron</span>
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Footer info strip */}
-        <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3 text-[11px] text-slate-500 shrink-0">
-          <div className="flex items-center gap-2">
-            <ShieldCheck size={14} className="text-emerald-600 shrink-0" />
-            <span>Batch sinkronisasi otomatis membatasi 4 modul paralel untuk menjaga stabilitas host Digit.</span>
-          </div>
-          <span className="font-bold text-slate-600">
-            Menampilkan {filteredModules.length} dari {permittedModules.length} modul
-          </span>
-        </div>
+      {/* Main Table Area: Menggunakan Baku DataTable & TableFooter */}
+      <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
+        <DataTable
+          columns={columns}
+          data={filteredModules}
+          isLoading={false}
+          columnWidths={columnWidths}
+          onColumnWidthChange={setColumnWidths}
+          rowHeight="h-11"
+        />
+        <TableFooter
+          totalCount={permittedModules.length}
+          currentCount={filteredModules.length}
+          label="Modul"
+        />
       </div>
 
       <ConfirmDialog
