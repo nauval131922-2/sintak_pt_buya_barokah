@@ -9,11 +9,9 @@ import {
   Loader2, 
   Database, 
   Clock, 
-  ShieldCheck,
   Search,
-  Calendar,
 } from 'lucide-react';
-import DatePicker from '@/components/DatePicker';
+import DateRangeCard from '@/components/DateRangeCard';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { DataTable } from '@/components/ui/DataTable';
 import TableFooter from '@/components/TableFooter';
@@ -38,6 +36,19 @@ interface ModuleGroup {
 
 interface FlattenedModule extends ModuleItem {
   groupName: string;
+}
+
+type SyncStatus = 'idle' | 'loading' | 'success' | 'error';
+
+interface ModuleSyncState {
+  status: SyncStatus;
+  lastUpdate: string | null;
+  message: string | null;
+  period?: { start: string; end: string } | null;
+}
+
+interface TableRowData extends FlattenedModule {
+  sync: ModuleSyncState;
 }
 
 const MODULE_GROUPS: ModuleGroup[] = [
@@ -123,15 +134,6 @@ const PERSISTENCE_KEYS: Record<string, { stateKey: string; periodKey: string }> 
   'jurnal-umum': { stateKey: 'jurnalUmumState', periodKey: 'JurnalUmumClient_scrapedPeriod' },
 };
 
-type SyncStatus = 'idle' | 'loading' | 'success' | 'error';
-
-interface ModuleSyncState {
-  status: SyncStatus;
-  lastUpdate: string | null;
-  message: string | null;
-  period?: { start: string; end: string } | null;
-}
-
 const SYNC_TO_PERM_MAP: Record<string, string> = {
   'master-barang': 'stok_master_barang',
   'saldo-barang': 'stok_saldo_barang',
@@ -161,7 +163,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
   const [startDate, setStartDate] = useState<Date>(() => getDefaultScraperDateRange().startDate);
   const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange().endDate);
   
-  const [syncStates, setSyncStates] = useState<Record<string, ModuleSyncState>>(
+  const [syncStates, setSyncStates] = useState<Record<string, ModuleSyncState>>(() =>
     MODULES.reduce((acc, mod) => ({
       ...acc,
       [mod.id]: { status: 'idle', lastUpdate: null, message: null, period: null }
@@ -194,7 +196,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
     }
   }, []);
 
-  // Restore sync status on mount
+  // Restore sync status on mount directly from server
   useEffect(() => {
     async function restoreStatus() {
       try {
@@ -401,6 +403,14 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
     });
   }, [permittedModules, activeGroup, searchQuery]);
 
+  // Embed syncStates directly into table row data to guarantee TanStack reactivity
+  const tableData = useMemo<TableRowData[]>(() => {
+    return filteredModules.map(mod => ({
+      ...mod,
+      sync: syncStates[mod.id] ?? { status: 'idle', lastUpdate: null, message: null, period: null },
+    }));
+  }, [filteredModules, syncStates]);
+
   const stats = useMemo(() => {
     let success = 0;
     let error = 0;
@@ -412,7 +422,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
     return { success, error, total: permittedModules.length };
   }, [permittedModules, syncStates]);
 
-  const columns = useMemo<ColumnDef<FlattenedModule>[]>(() => [
+  const columns = useMemo<ColumnDef<TableRowData>[]>(() => [
     {
       accessorKey: 'name',
       id: 'modul',
@@ -452,7 +462,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
       size: 220,
       cell: ({ row }) => {
         const mod = row.original;
-        const state = syncStates[mod.id];
+        const state = row.original.sync;
         const isLoading = state?.status === 'loading' || currentModuleId === mod.id;
         const isSuccess = state?.status === 'success';
         const isError = state?.status === 'error';
@@ -494,7 +504,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
       header: 'Terakhir Sinkron',
       size: 170,
       cell: ({ row }) => {
-        const state = syncStates[row.original.id];
+        const state = row.original.sync;
         return (
           <div className="flex items-center gap-1.5 text-gray-600 font-medium text-[11px]">
             <Clock size={12} className="text-gray-400 shrink-0" />
@@ -509,7 +519,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
       size: 190,
       cell: ({ row }) => {
         const mod = row.original;
-        const state = syncStates[mod.id];
+        const state = row.original.sync;
         if (mod.noDateRange) {
           return (
             <span className="inline-block px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 text-[10px] font-bold">
@@ -536,7 +546,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
       size: 100,
       cell: ({ row }) => {
         const mod = row.original;
-        const state = syncStates[mod.id];
+        const state = row.original.sync;
         const isLoading = state?.status === 'loading' || currentModuleId === mod.id;
         return (
           <div className="flex justify-end">
@@ -553,142 +563,102 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
         );
       }
     }
-  ], [syncStates, currentModuleId, isBatchProcessing, runSync]);
+  ], [currentModuleId, isBatchProcessing, runSync]);
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-4 animate-in fade-in duration-500 overflow-hidden">
+    <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-500 overflow-hidden">
       
-      {/* Top Toolbar: Date Range + Search + Batch Button (SINTAK Baku) */}
-      <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-3 sm:px-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-2.5 flex-wrap flex-1">
-          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs shrink-0">
-            <Calendar size={13} className="text-slate-400 shrink-0" />
-            <span className="text-[11px] font-bold text-slate-500 mr-0.5">Rentang:</span>
-            <DatePicker name="startDate" value={startDate} onChange={setStartDate} />
-            <span className="text-slate-300 font-bold px-0.5">-</span>
-            <DatePicker name="endDate" value={endDate} onChange={setEndDate} />
+      {/* 1. DateRangeCard Baku SINTAK (Atas) */}
+      <DateRangeCard
+        title="Rentang Tanggal"
+        startDate={startDate}
+        endDate={endDate}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
+        onFetch={runBatchSync}
+        isFetching={isBatchProcessing}
+        progress={batchProgress ? Math.round((batchProgress.done / batchProgress.total) * 100) : undefined}
+        statusText={batchProgress?.currentModName ? `Aktif: ${batchProgress.currentModName}` : undefined}
+        fetchText="Scrape Semua Modul"
+      />
+
+      {/* 2. Main Area: Category Filter Tabs + Search Bar + DataTable + TableFooter */}
+      <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
+        <div className="flex flex-col gap-3 shrink-0 px-1">
+          <div className="flex items-center justify-between gap-4 min-h-[32px] flex-wrap">
+            {/* Category Navigation Tabs (Pill Filters SINTAK) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 shrink-0 custom-scrollbar">
+              <button
+                type="button"
+                onClick={() => setActiveGroup('all')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                  activeGroup === 'all'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'bg-white hover:bg-slate-50 text-slate-600 border border-slate-200'
+                }`}
+              >
+                Semua ({permittedModules.length})
+              </button>
+              {MODULE_GROUPS.map(g => {
+                const count = permittedModules.filter(m => m.groupName === g.group).length;
+                if (count === 0) return null;
+                const isActive = activeGroup === g.group;
+                return (
+                  <button
+                    key={g.group}
+                    type="button"
+                    onClick={() => setActiveGroup(g.group)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                      isActive
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'bg-white hover:bg-slate-50 text-slate-600 border border-slate-200'
+                    }`}
+                  >
+                    <span>{g.group}</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="text-[11px] font-bold text-gray-400 shrink-0">
+              <span className="text-emerald-600 mr-2">{stats.success} Siap</span>
+              {stats.error > 0 && <span className="text-rose-600 mr-2">{stats.error} Gagal</span>}
+              <span>Total {stats.total} Modul</span>
+            </div>
           </div>
 
-          <div className="relative flex-1 min-w-[180px] max-w-sm">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          {/* Search Bar Standar SINTAK */}
+          <div className="relative w-full">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
+              placeholder="Cari berdasarkan nama modul, deskripsi, atau kategori…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari modul operasional..."
-              className="w-full pl-9 pr-3 h-9 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
+              className="w-full pl-9 pr-4 h-9 text-xs bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all shadow-sm"
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0 justify-end">
-          <div className="hidden lg:flex items-center gap-2 text-[11px] font-bold mr-1">
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-              {stats.success} Siap
-            </span>
-            {stats.error > 0 && (
-              <span className="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
-                {stats.error} Gagal
-              </span>
-            )}
-            <span className="text-slate-400">Total {stats.total} Modul</span>
-          </div>
-
-          <button
-            onClick={runBatchSync}
-            disabled={isBatchProcessing}
-            className="shrink-0 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-xl text-[12px] font-bold shadow-sm shadow-emerald-900/20 hover:shadow-emerald-900/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group/btn relative overflow-hidden cursor-pointer"
-          >
-            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
-            <span className="relative z-10 flex items-center gap-2">
-              {isBatchProcessing ? (
-                <><Loader2 size={16} className="animate-spin" /> Sedang Menjalankan...</>
-              ) : (
-                <><RefreshCw size={16} className="group-hover/btn:rotate-180 transition-transform duration-500" /> Scrape Semua Modul</>
-              )}
-            </span>
-          </button>
+        {/* DataTable & TableFooter Baku */}
+        <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
+          <DataTable
+            columns={columns}
+            data={tableData}
+            isLoading={false}
+            columnWidths={columnWidths}
+            onColumnWidthChange={setColumnWidths}
+            rowHeight="h-11"
+          />
+          <TableFooter
+            totalCount={permittedModules.length}
+            currentCount={tableData.length}
+            label="Modul"
+          />
         </div>
-      </div>
-
-      {/* Progress Notification Bar (Active during batch sync) */}
-      {batchProgress && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 shrink-0 flex flex-col gap-1.5 animate-in fade-in duration-200">
-          <div className="flex items-center justify-between text-xs font-bold text-emerald-900">
-            <span className="flex items-center gap-2">
-              <Loader2 size={13} className="animate-spin text-emerald-600" />
-              <span>Memproses batch: {batchProgress.done} dari {batchProgress.total} modul selesai</span>
-            </span>
-            <span className="font-mono text-emerald-700">
-              {Math.round((batchProgress.done / batchProgress.total) * 100)}%
-            </span>
-          </div>
-          <div className="w-full bg-emerald-200/60 h-2 rounded-full overflow-hidden">
-            <div 
-              className="bg-emerald-600 h-full rounded-full transition-all duration-300"
-              style={{ width: `${(batchProgress.done / batchProgress.total) * 100}%` }}
-            />
-          </div>
-          {batchProgress.currentModName && (
-            <p className="text-[11px] text-emerald-700 font-medium truncate">
-              Aktif: {batchProgress.currentModName}
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Category Navigation Tabs (Pill Filters Netral Ber-aksen Emerald) */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 shrink-0 custom-scrollbar px-0.5">
-        <button
-          type="button"
-          onClick={() => setActiveGroup('all')}
-          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-            activeGroup === 'all'
-              ? 'bg-emerald-600 text-white shadow-sm'
-              : 'bg-white hover:bg-slate-50 text-slate-600 border border-slate-200'
-          }`}
-        >
-          Semua ({permittedModules.length})
-        </button>
-        {MODULE_GROUPS.map(g => {
-          const count = permittedModules.filter(m => m.groupName === g.group).length;
-          if (count === 0) return null;
-          const isActive = activeGroup === g.group;
-          return (
-            <button
-              key={g.group}
-              type="button"
-              onClick={() => setActiveGroup(g.group)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
-                isActive
-                  ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-white hover:bg-slate-50 text-slate-600 border border-slate-200'
-              }`}
-            >
-              <span>{g.group}</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-500'}`}>
-                {count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Main Table Area: Menggunakan Baku DataTable & TableFooter */}
-      <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
-        <DataTable
-          columns={columns}
-          data={filteredModules}
-          isLoading={false}
-          columnWidths={columnWidths}
-          onColumnWidthChange={setColumnWidths}
-          rowHeight="h-11"
-        />
-        <TableFooter
-          totalCount={permittedModules.length}
-          currentCount={filteredModules.length}
-          label="Modul"
-        />
       </div>
 
       <ConfirmDialog
