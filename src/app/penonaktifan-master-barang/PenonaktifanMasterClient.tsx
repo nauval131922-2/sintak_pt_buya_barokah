@@ -844,6 +844,9 @@ export default function PenonaktifanMasterClient() {
                  )}
               </div>
               <div className="flex items-center gap-2 flex-wrap">
+                <div className="w-44 shrink-0">
+                  <DatePicker name="cutoff" value={isoToDate(cutoff)} onChange={(d) => setCutoff(dateToIso(d))} />
+                </div>
                 <button
                   onClick={() => setShowSettings(true)}
                   className="shrink-0 w-10 h-10 bg-white border border-gray-100 rounded-lg text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 flex items-center justify-center transition-all shadow-sm"
@@ -851,9 +854,6 @@ export default function PenonaktifanMasterClient() {
                 >
                   <Settings2 size={18} />
                 </button>
-                <div className="w-44 shrink-0">
-                  <DatePicker name="cutoff" value={isoToDate(cutoff)} onChange={(d) => setCutoff(dateToIso(d))} />
-                </div>
                  <button
                    onClick={(e) => handleSyncAll({ forceFull: e.shiftKey })}
                    disabled={syncing || loading}
