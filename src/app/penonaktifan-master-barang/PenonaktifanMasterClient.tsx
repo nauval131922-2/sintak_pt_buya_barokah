@@ -135,7 +135,46 @@ export default function PenonaktifanMasterClient() {
    const [rekap, setRekap] = useState<Array<{ id: number; kode: string; nama: string; aksi: string; alasan: string; reviewer: string; keputusan: string }>>([]);
   const [rekapOpen, setRekapOpen] = useState(false);
   const [rekapAt, setRekapAt] = useState<string | null>(null);
+  const [searchRekap, setSearchRekap] = useState('');
   const [selectedRekapIds, setSelectedRekapIds] = useState<Set<number>>(new Set());
+  const lastSelectedRekapIdRef = useRef<number | null>(null);
+
+  const toggleSelectRekap = useCallback((id: number, e?: React.MouseEvent) => {
+    setSelectedRekapIds((prev) => {
+      const next = new Set(prev);
+      if (e?.shiftKey && lastSelectedRekapIdRef.current !== null) {
+        const last = lastSelectedRekapIdRef.current;
+        const cIdx = rekap.findIndex((x) => x.id === id);
+        const lIdx = rekap.findIndex((x) => x.id === last);
+        if (cIdx !== -1 && lIdx !== -1) {
+          const start = Math.min(cIdx, lIdx);
+          const end = Math.max(cIdx, lIdx);
+          for (let i = start; i <= end; i++) {
+            next.add(rekap[i].id);
+          }
+          return next;
+        }
+      }
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      lastSelectedRekapIdRef.current = id;
+      return next;
+    });
+  }, [rekap]);
+  const filteredRekap = useMemo(() => {
+    const q = searchRekap.trim().toLowerCase();
+    if (!q) return rekap;
+    return rekap.filter((item) => {
+      const nama = (item.nama || '').toLowerCase();
+      const alasan = (item.alasan || '').toLowerCase();
+      const reviewer = (item.reviewer || '').toLowerCase();
+      return item.kode.toLowerCase().includes(q) || nama.includes(q) || alasan.includes(q) || reviewer.includes(q);
+    });
+  }, [rekap, searchRekap]);
+
   const [manualKode, setManualKode] = useState('');
   const [manualNama, setManualNama] = useState('');
   const [manualAlasan, setManualAlasan] = useState('');
@@ -1415,25 +1454,37 @@ export default function PenonaktifanMasterClient() {
                      </div>
                    )}
                  </div>
+                 <div className="flex items-center gap-2">
+                   <div className="relative w-44 sm:w-60">
+                     <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                     <input
+                       type="text"
+                       value={searchRekap}
+                       onChange={(e) => setSearchRekap(e.target.value)}
+                       placeholder="Cari usulan koreksi…"
+                       className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 shadow-sm"
+                     />
+                   </div>
 
-                 {pendingRekapCount > 0 && (
-                   <button
-                     type="button"
-                     onClick={() => {
-                       const pendingIds = rekap.filter((x) => !x.keputusan || x.keputusan === 'pending').map((x) => x.id);
-                       decideBatch(pendingIds, 'setuju');
-                     }}
-                     className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-emerald-900/10 cursor-pointer transition-all"
-                   >
-                     <Check size={14} />
-                     <span>Setujui Semua Pending ({pendingRekapCount})</span>
-                   </button>
-                 )}
+                   {pendingRekapCount > 0 && (
+                     <button
+                       type="button"
+                       onClick={() => {
+                         const pendingIds = rekap.filter((x) => !x.keputusan || x.keputusan === 'pending').map((x) => x.id);
+                         decideBatch(pendingIds, 'setuju');
+                       }}
+                       className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-emerald-900/10 cursor-pointer transition-all shrink-0"
+                     >
+                       <Check size={14} />
+                       <span>Setujui Semua ({pendingRekapCount})</span>
+                     </button>
+                   )}
+                 </div>
                </div>
 
                {/* Daftar Item Rekap */}
                <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar divide-y divide-slate-100 p-2">
-                 {rekap.map((item) => {
+                 {filteredRekap.map((item) => {
                    const isSelected = selectedRekapIds.has(item.id);
                    const isPending = !item.keputusan || item.keputusan === 'pending';
                    return (
@@ -1446,15 +1497,10 @@ export default function PenonaktifanMasterClient() {
                        <input
                          type="checkbox"
                          checked={isSelected}
-                         onChange={() => {
-                           setSelectedRekapIds((prev) => {
-                             const next = new Set(prev);
-                             if (next.has(item.id)) next.delete(item.id);
-                             else next.add(item.id);
-                             return next;
-                           });
-                         }}
+                         onChange={() => {}}
+                         onClick={(e) => toggleSelectRekap(item.id, e)}
                          className="mt-1 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500/20 border-slate-300 cursor-pointer shrink-0"
+                         title="Pilih (tahan Shift untuk memilih rentang)"
                        />
 
                        <span
@@ -1524,10 +1570,11 @@ export default function PenonaktifanMasterClient() {
                      </div>
                    );
                  })}
-
-                 {rekap.length === 0 && (
+                 {filteredRekap.length === 0 && (
                    <div className="py-12 text-center text-xs text-slate-400">
-                     Belum ada usulan koreksi yang masuk dari reviewer.
+                     {rekap.length === 0
+                       ? 'Belum ada usulan koreksi yang masuk dari reviewer.'
+                       : 'Tidak ada usulan koreksi yang cocok dengan pencarian.'}
                    </div>
                  )}
                </div>

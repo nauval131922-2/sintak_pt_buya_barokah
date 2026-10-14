@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useRef, useState, useCallback, memo } from 'react';
-import { Loader2, Send, Trash2, Plus, Search, ChevronDown, ChevronUp, CheckSquare, Square, Check } from 'lucide-react';
+import { Loader2, Send, Trash2, Plus, Search, ChevronDown, ChevronUp, CheckSquare, Square } from 'lucide-react';
 
 interface SnapRow {
   kode: string;
@@ -38,7 +38,7 @@ interface ReviewRowProps {
   marked: boolean;
   selected: boolean;
   onToggleMarked: (kode: string) => void;
-  onToggleSelect: (kode: string) => void;
+  onToggleSelect: (kode: string, e?: React.MouseEvent) => void;
   dropReason: string;
   onDropReasonChange: (kode: string, reason: string) => void;
 }
@@ -62,9 +62,10 @@ const ReviewRow = memo(function ReviewRow({
       <input
         type="checkbox"
         checked={selected}
-        onChange={() => onToggleSelect(s.kode)}
+        onChange={() => {}}
+        onClick={(e) => onToggleSelect(s.kode, e)}
         className="mt-1 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500/20 border-slate-300 cursor-pointer shrink-0"
-        title="Pilih untuk aksi massal"
+        title="Pilih (tahan Shift untuk memilih banyak sekaligus)"
       />
 
       <button
@@ -123,6 +124,7 @@ export default function ReviewTokenClient({ token }: { token: string }) {
   const [drop, setDrop] = useState<Record<string, string>>({});
   const [trash, setTrash] = useState<Set<string>>(new Set());
   const [selectedKodes, setSelectedKodes] = useState<Set<string>>(new Set());
+  const lastClickedKodeRef = useRef<string | null>(null);
   const [searchUsulan, setSearchUsulan] = useState('');
 
   // Add Kode State
@@ -139,6 +141,7 @@ export default function ReviewTokenClient({ token }: { token: string }) {
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState('');
   const [showPastItems, setShowPastItems] = useState(true);
+  const [searchPast, setSearchPast] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -221,6 +224,20 @@ export default function ReviewTokenClient({ token }: { token: string }) {
     return map;
   }, [snapshot]);
 
+  const filteredPastItems = useMemo(() => {
+    const q = searchPast.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter((it) => {
+      const nama = (it.nama || snapshotMap.get(it.kode) || '').toLowerCase();
+      return (
+        it.kode.toLowerCase().includes(q) ||
+        nama.includes(q) ||
+        (it.alasan || '').toLowerCase().includes(q) ||
+        (it.reviewer || '').toLowerCase().includes(q)
+      );
+    });
+  }, [items, searchPast, snapshotMap]);
+
   const toggleTrash = useCallback((kode: string) => {
     setTrash((prev) => {
       const next = new Set(prev);
@@ -230,14 +247,32 @@ export default function ReviewTokenClient({ token }: { token: string }) {
     });
   }, []);
 
-  const toggleSelect = useCallback((kode: string) => {
+  // Multi-select with Shift support
+  const toggleSelect = useCallback((kode: string, e?: React.MouseEvent) => {
     setSelectedKodes((prev) => {
       const next = new Set(prev);
-      if (next.has(kode)) next.delete(kode);
-      else next.add(kode);
+      if (e?.shiftKey && lastClickedKodeRef.current) {
+        const last = lastClickedKodeRef.current;
+        const cIdx = filtered.findIndex((x) => x.kode === kode);
+        const lIdx = filtered.findIndex((x) => x.kode === last);
+        if (cIdx !== -1 && lIdx !== -1) {
+          const start = Math.min(cIdx, lIdx);
+          const end = Math.max(cIdx, lIdx);
+          for (let i = start; i <= end; i++) {
+            next.add(filtered[i].kode);
+          }
+          return next;
+        }
+      }
+      if (next.has(kode)) {
+        next.delete(kode);
+      } else {
+        next.add(kode);
+      }
+      lastClickedKodeRef.current = kode;
       return next;
     });
-  }, []);
+  }, [filtered]);
 
   const handleDropReasonChange = useCallback((kode: string, reason: string) => {
     setDrop((prev) => ({ ...prev, [kode]: reason }));
@@ -581,24 +616,34 @@ export default function ReviewTokenClient({ token }: { token: string }) {
         <span>Kirim usulan koreksi</span>
       </button>
 
-      {/* 5. Panel Usulan yang Sudah Masuk (Collapsible + Max Height + Tampilkan Nama Barang Lengkap) */}
+      {/* 5. Panel Usulan yang Sudah Masuk (Collapsible + Search + Tampilkan Nama Barang Lengkap) */}
       {items.length > 0 && (
         <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm shrink-0">
-          <button
-            type="button"
-            onClick={() => setShowPastItems(!showPastItems)}
-            className="w-full px-4 py-2 bg-slate-50 hover:bg-slate-100/80 border-b border-slate-100 flex items-center justify-between text-xs font-bold text-slate-700 transition-colors cursor-pointer"
-          >
-            <div className="flex items-center gap-2">
+          <div className="w-full px-4 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setShowPastItems(!showPastItems)}
+              className="flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-emerald-700 cursor-pointer"
+            >
               <span>Usulan yang sudah masuk ({items.length})</span>
-              <span className="text-[10px] font-normal text-slate-400">• klik untuk sembunyikan/tampilkan</span>
+              {showPastItems ? <ChevronUp size={14} className="text-slate-500" /> : <ChevronDown size={14} className="text-slate-500" />}
+            </button>
+
+            <div className="relative w-44 sm:w-60">
+              <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={searchPast}
+                onChange={(e) => setSearchPast(e.target.value)}
+                placeholder="Cari usulan masuk…"
+                className="w-full pl-7 pr-2.5 py-1 text-xs bg-white border border-slate-200 rounded-lg text-slate-700 placeholder-slate-400 focus:outline-none focus:border-emerald-500 shadow-sm"
+              />
             </div>
-            {showPastItems ? <ChevronUp size={15} className="text-slate-500" /> : <ChevronDown size={15} className="text-slate-500" />}
-          </button>
+          </div>
 
           {showPastItems && (
             <div className="max-h-48 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
-              {items.map((it) => {
+              {filteredPastItems.map((it) => {
                 const namaBarang = it.nama || snapshotMap.get(it.kode) || '—';
                 return (
                   <div key={it.id} className="px-4 py-2 text-xs flex items-center gap-2.5 hover:bg-slate-50/50">
@@ -629,6 +674,10 @@ export default function ReviewTokenClient({ token }: { token: string }) {
                   </div>
                 );
               })}
+
+              {filteredPastItems.length === 0 && (
+                <div className="py-6 text-center text-xs text-slate-400">Tidak ada usulan masuk yang cocok.</div>
+              )}
             </div>
           )}
         </div>
