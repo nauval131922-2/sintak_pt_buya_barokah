@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     const forceFull = searchParams.get('forceFull') === '1';
     const year = cutoff.slice(0, 4);
     const yearStart = `${year}-01-01`;
-     const endDate = addDaysIso(cutoff, 7);
+    const endDate = cutoff;
  
      // Ambil status sinkronisasi riil dari system_settings (cron malam & scrape terakhir)
      let lastSync: { at: string | null; period: { start: string; end: string } | null; saldoTgl: string | null } = {

@@ -158,7 +158,7 @@ export default function ManualModal() {
        'Klik **Unduh Excel usulan** — file siap tanda tangan PPIC, Customer Service, dan Manager (kolom penanda tangan otomatis terisi nama user login).',
        'Serahkan ke PPIC — pastikan sync master terbaru sebelum eksekusi, karena saldo 0 di Sintak diasumsikan N PERSD 0.',
      ],
-     tips: 'Cutoff + 7 hari sengaja ditarik untuk menangkap order susulan: kode yang dipesan lagi setelah cutoff otomatis ditolak dengan alasan SPK/order susulan pasca-cutoff.',
+    tips: 'Transaksi dievaluasi sampai tanggal cutoff: barang jadi yang masih ada transaksi aktif atau memiliki sisa saldo/WIP pada tanggal cutoff otomatis ditahan oleh filter pelindung.',
    },
    '/jurnal-harian-produksi/data/excel-sopd': {
       title: 'SOPd',

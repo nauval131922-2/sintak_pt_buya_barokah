@@ -323,7 +323,7 @@ export default function PenonaktifanMasterClient() {
  
    const handleSyncAll = useCallback(async (options?: { forceFull?: boolean }) => {
      const defaultStart = `${cutoff.slice(0, 4)}-01-01`;
-     const defaultEnd = addDaysIso(cutoff, 7);
+    const defaultEnd = cutoff;
      let startDate = defaultStart;
      let endDate = defaultEnd;
      let syncMode: 'incremental' | 'full' = options?.forceFull ? 'full' : 'incremental';
