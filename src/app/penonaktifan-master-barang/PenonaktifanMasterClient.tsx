@@ -9,7 +9,8 @@ import { DataTable } from '@/components/ui/DataTable';
 import DatePicker from '@/components/DatePicker';
 import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import { highlightText } from '@/lib/highlight';
-import { formatLastUpdate } from '@/lib/date-utils';
+ import { formatLastUpdate } from '@/lib/date-utils';
+ import { formatScrapedPeriodDate } from '@/lib/scraper-period';
 
  interface PreviewRow {
    id: string;
@@ -124,6 +125,11 @@ export default function PenonaktifanMasterClient() {
   const [routineItems, setRoutineItems] = useState<Array<{ kode: string; nama: string }>>([]);
    const [lastGenerate, setLastGenerate] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_lastGenerate') : null));
    const [lastSyncAll, setLastSyncAll] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_lastSyncAll') : null));
+   const [serverSync, setServerSync] = useState<{
+     at: string | null;
+     period: { start: string; end: string } | null;
+     saldoTgl?: string | null;
+   } | null>(null);
    const [sharing, setSharing] = useState(false);
    const [shareToken, setShareToken] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_shareToken') : null));
    const [rekap, setRekap] = useState<Array<{ id: number; kode: string; nama: string; aksi: string; alasan: string; reviewer: string; keputusan: string }>>([]);
@@ -155,9 +161,22 @@ export default function PenonaktifanMasterClient() {
     localStorage.setItem('penonaktifan_columnWidths', JSON.stringify(columnWidths));
   }, [columnWidths]);
 
+   const loadSyncStatus = useCallback(async (targetCutoff?: string) => {
+     try {
+       const res = await fetch(`/api/penonaktifan-master-barang/sync-range?cutoff=${targetCutoff || cutoff}`);
+       const json = await res.json();
+       if (json.success && json.lastSync) {
+         setServerSync(json.lastSync);
+       }
+     } catch {
+       // abaikan kegagalan jaringan
+     }
+   }, [cutoff]);
+ 
    useEffect(() => {
      setIsMounted(true);
      mountedRef.current = true;
+     void loadSyncStatus();
      try {
        const saved = localStorage.getItem('penonaktifan_lastData');
        if (saved) {
@@ -388,6 +407,7 @@ export default function PenonaktifanMasterClient() {
        const syncStamp = `${new Date().toISOString()}|${cutoff}`;
        setLastSyncAll(syncStamp);
        try { localStorage.setItem('penonaktifan_lastSyncAll', syncStamp); } catch { /* abaikan */ }
+       void loadSyncStatus(cutoff);
        const totalSecs = Math.round((performance.now() - syncStart) / 1000);
        const rincian = history.map((h) => `${h.label}: ${h.secs}s`).join(' • ');
        const modeText = syncMode === 'incremental' ? 'inkremental 30 hari' : 'penuh';
@@ -397,7 +417,7 @@ export default function PenonaktifanMasterClient() {
      } finally {
        if (mountedRef.current) { setSyncing(false); setLoading(false); setSyncProgress(null); }
      }
-   }, [cutoff, handleGenerate]);
+   }, [cutoff, handleGenerate, loadSyncStatus]);
 
    const handleExport = async () => {
      if (!data) return;
@@ -654,9 +674,14 @@ export default function PenonaktifanMasterClient() {
      },
    ], [highlightQuery, settings, protecting]);
 
-  if (!isMounted) return null;
-
-  return (
+   if (!isMounted) return null;
+ 
+   const effectiveSyncAt = serverSync?.at || (lastSyncAll ? lastSyncAll.split('|')[0] : null);
+   const periodText = serverSync?.period?.start && serverSync?.period?.end
+     ? `${formatScrapedPeriodDate(serverSync.period.start)} - ${formatScrapedPeriodDate(serverSync.period.end)}`
+     : null;
+ 
+   return (
     <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-500 overflow-hidden">
       {error && (
         <div className="p-4 bg-red-50 text-red-600 border border-red-100 rounded-xl shadow-sm shadow-red-900/5 text-sm font-bold flex items-start gap-3 animate-in fade-in shrink-0">
@@ -694,7 +719,13 @@ export default function PenonaktifanMasterClient() {
             <div className="flex flex-col gap-1 shrink-0">
               <div className="flex items-baseline gap-2 whitespace-nowrap">
                 <label className="block text-[11px] font-bold text-gray-400 shrink-0">Tanggal cutoff</label>
-                {(lastGenerate || lastSyncAll) && <span className="text-[10px] font-semibold text-gray-300 leading-none">{lastGenerate ? `Generate: ${formatLastUpdate(lastGenerate.split('|')[0])}` : ''}{lastGenerate && lastSyncAll ? ' • ' : ''}{lastSyncAll ? `Sync: ${formatLastUpdate(lastSyncAll.split('|')[0])}` : ''}</span>}
+                 {(lastGenerate || effectiveSyncAt) && (
+                   <span className="text-[10px] font-semibold text-gray-400 leading-none">
+                     {lastGenerate ? `Generate: ${formatLastUpdate(lastGenerate.split('|')[0])}` : ''}
+                     {lastGenerate && effectiveSyncAt ? ' • ' : ''}
+                     {effectiveSyncAt ? `Sync: ${formatLastUpdate(effectiveSyncAt)}${periodText ? ` (${periodText})` : ''}` : ''}
+                   </span>
+                 )}
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <button
@@ -731,10 +762,10 @@ export default function PenonaktifanMasterClient() {
                   <button
                     type="button"
                     onClick={() => setShowDitolak(true)}
-                    title="Lihat daftar kode yang ditolak pilar 2 + alasannya"
-                    className="shrink-0 px-3 py-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 rounded-xl text-[12px] font-bold transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
-                  >
-                    <span>Ditolak Pilar 2</span>
+                     title="Lihat daftar kode yang ditolak tahap 2 + alasannya"
+                     className="shrink-0 px-3 py-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 rounded-xl text-[12px] font-bold transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
+                   >
+                     <span>Ditolak Tahap 2</span>
                     <span className="px-1.5 py-0.5 rounded-full bg-amber-200/80 text-amber-900 text-[10px] font-mono tabular-nums">
                       {data.ditolakCount.toLocaleString('id-ID')}
                     </span>
@@ -1104,12 +1135,12 @@ export default function PenonaktifanMasterClient() {
             >
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-800">
-                    Ditolak Pilar 2 {data ? `(${data.ditolak?.length ?? data.ditolakCount})` : ''}
-                  </h3>
-                  <p className="text-[11px] text-slate-500">
-                    Daftar barang yang ditolak oleh Pilar 2 (penawaran/transaksi aktif) beserta alasannya
-                  </p>
+                   <h3 className="text-sm font-bold text-slate-800">
+                     Ditolak Tahap 2 {data ? `(${data.ditolak?.length ?? data.ditolakCount})` : ''}
+                   </h3>
+                   <p className="text-[11px] text-slate-500">
+                     Daftar barang yang ditolak oleh Tahap 2 (penawaran/transaksi aktif) beserta alasannya
+                   </p>
                 </div>
                 <button
                   type="button"
@@ -1150,7 +1181,7 @@ export default function PenonaktifanMasterClient() {
                   if (list.length === 0) {
                     return (
                       <div className="py-12 text-center text-slate-400 text-xs">
-                        Tidak ada data ditolak pilar 2. Generate ulang untuk memuat daftar.
+                         Tidak ada data ditolak tahap 2. Generate ulang untuk memuat daftar.
                       </div>
                     );
                   }

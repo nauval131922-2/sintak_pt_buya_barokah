@@ -23,18 +23,70 @@ export async function GET(req: NextRequest) {
     const forceFull = searchParams.get('forceFull') === '1';
     const year = cutoff.slice(0, 4);
     const yearStart = `${year}-01-01`;
-    const endDate = addDaysIso(cutoff, 7);
-
-    if (forceFull) {
-      return NextResponse.json({
-        success: true,
-        mode: 'full',
-        startDate: yearStart,
-        endDate,
-        historyFound: true,
-        message: 'Sync penuh dipaksa sejak awal tahun.',
-      });
-    }
+     const endDate = addDaysIso(cutoff, 7);
+ 
+     // Ambil status sinkronisasi riil dari system_settings (cron malam & scrape terakhir)
+     let lastSync: { at: string | null; period: { start: string; end: string } | null; saldoTgl: string | null } = {
+       at: null,
+       period: null,
+       saldoTgl: null,
+     };
+     try {
+       const settingsRows = await db.execute({
+         sql: `SELECT key, value FROM system_settings WHERE key IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         args: [
+           'last_scrape_saldo_barang',
+           'last_scrape_master_barang',
+           'last_scrape_orders',
+           'last_scrape_orders_period',
+           'last_scrape_bom',
+           'last_scrape_bom_period',
+           'last_scrape_usr_log',
+           'last_scrape_usr_log_period',
+           'last_scrape_barang_jadi',
+           'last_scrape_barang_jadi_period',
+         ],
+       });
+ 
+       let latestSyncAt: string | null = null;
+       let scrapedPeriod: { start: string; end: string } | null = null;
+       let saldoTgl: string | null = null;
+ 
+       for (const r of settingsRows.rows as unknown as Array<{ key: string; value: string }>) {
+         const k = String(r.key ?? '');
+         const val = String(r.value ?? '');
+         if (k === 'last_scrape_saldo_barang') {
+           const [iso, tgl] = val.split('|');
+           if (iso && (!latestSyncAt || iso > latestSyncAt)) latestSyncAt = iso;
+           if (tgl) saldoTgl = tgl;
+         } else if (k.endsWith('_period')) {
+           if (!scrapedPeriod) {
+             try {
+               const p = JSON.parse(val);
+               if (p && p.start && p.end) scrapedPeriod = { start: String(p.start), end: String(p.end) };
+             } catch {}
+           }
+         } else if (k.startsWith('last_scrape_')) {
+           const iso = val.trim();
+           if (iso && (!latestSyncAt || iso > latestSyncAt)) latestSyncAt = iso;
+         }
+       }
+       lastSync = { at: latestSyncAt, period: scrapedPeriod, saldoTgl };
+     } catch {
+       // abaikan kegagalan baca setting
+     }
+ 
+     if (forceFull) {
+       return NextResponse.json({
+         success: true,
+         mode: 'full',
+         startDate: yearStart,
+         endDate,
+         historyFound: true,
+         lastSync,
+         message: 'Sync penuh dipaksa sejak awal tahun.',
+       });
+     }
 
     // Cek apakah database lokal sudah memiliki data histori tahun berjalan
     const check = await db.execute({
@@ -54,24 +106,26 @@ export async function GET(req: NextRequest) {
       // Inkremental: 30 hari ke belakang dari cutoff
       const startCandidate = addDaysIso(cutoff, -30);
       const startDate = startCandidate < yearStart ? yearStart : startCandidate;
-      return NextResponse.json({
-        success: true,
-        mode: 'incremental',
-        startDate,
-        endDate,
-        historyFound: true,
-        message: 'Data histori lokal tersedia. Menggunakan mode inkremental (30 hari terakhir).',
-      });
-    }
-
-    return NextResponse.json({
-      success: true,
-      mode: 'full',
-      startDate: yearStart,
-      endDate,
-      historyFound: false,
-      message: 'Data tahun ini belum lengkap di database lokal. Menggunakan sync penuh sejak awal tahun.',
-    });
+       return NextResponse.json({
+         success: true,
+         mode: 'incremental',
+         startDate,
+         endDate,
+         historyFound: true,
+         lastSync,
+         message: 'Data histori lokal tersedia. Menggunakan mode inkremental (30 hari terakhir).',
+       });
+     }
+ 
+     return NextResponse.json({
+       success: true,
+       mode: 'full',
+       startDate: yearStart,
+       endDate,
+       historyFound: false,
+       lastSync,
+       message: 'Data tahun ini belum lengkap di database lokal. Menggunakan sync penuh sejak awal tahun.',
+     });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ success: false, error: msg }, { status: 500 });
