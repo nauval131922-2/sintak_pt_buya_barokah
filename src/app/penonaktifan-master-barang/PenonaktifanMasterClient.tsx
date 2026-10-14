@@ -942,11 +942,10 @@ export default function PenonaktifanMasterClient() {
                  type="button"
                  onClick={handleGenerate}
                  disabled={loading}
-                 className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
+                 className="h-9 w-9 text-slate-700 hover:text-emerald-800 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 transition-all flex items-center justify-center shrink-0 disabled:opacity-50 cursor-pointer shadow-sm"
                  title="Reload data usulan"
                >
                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-emerald-600' : ''}`} />
-                 <span className="hidden sm:inline">Reload</span>
                </button>
                <div className="relative flex-1 min-w-0">
                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -1473,11 +1472,10 @@ export default function PenonaktifanMasterClient() {
                     <button
                       type="button"
                       onClick={() => loadRekap(shareToken)}
-                      className="h-8 px-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 hover:text-emerald-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm shrink-0"
+                      className="h-8 w-8 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 hover:text-emerald-700 rounded-xl flex items-center justify-center transition-colors cursor-pointer shadow-sm shrink-0"
                       title="Muat ulang rekap review"
                     >
                       <RefreshCw size={13} />
-                      <span className="hidden sm:inline">Reload</span>
                     </button>
                   )}
                   <div className="relative w-48 sm:w-72">
