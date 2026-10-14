@@ -38,7 +38,7 @@ interface ReviewRowProps {
   marked: boolean;
   selected: boolean;
   onToggleMarked: (kode: string) => void;
-  onToggleSelect: (kode: string, e?: React.MouseEvent) => void;
+  onToggleSelect: (kode: string, e?: React.MouseEvent, isCheckbox?: boolean) => void;
   dropReason: string;
   onDropReasonChange: (kode: string, reason: string) => void;
 }
@@ -58,7 +58,7 @@ const ReviewRow = memo(function ReviewRow({
       onClick={(e) => {
         const target = e.target as HTMLElement;
         if (target.closest('input, button')) return;
-        onToggleSelect(s.kode, e);
+        onToggleSelect(s.kode, e, false);
       }}
       className={`px-3 sm:px-4 py-2.5 flex items-start gap-2.5 text-xs transition-colors cursor-pointer select-none ${
         marked
@@ -71,8 +71,10 @@ const ReviewRow = memo(function ReviewRow({
       <input
         type="checkbox"
         checked={selected}
-        onChange={() => {}}
-        onClick={(e) => onToggleSelect(s.kode, e)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleSelect(s.kode, e, true);
+        }}
         className="mt-1 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500/20 border-slate-300 cursor-pointer shrink-0"
         title="Pilih (tahan Shift untuk memilih banyak sekaligus)"
       />
@@ -257,7 +259,7 @@ export default function ReviewTokenClient({ token }: { token: string }) {
   }, []);
 
   // Multi-select with Shift support
-  const toggleSelect = useCallback((kode: string, e?: React.MouseEvent) => {
+  const toggleSelect = useCallback((kode: string, e?: React.MouseEvent, isCheckbox?: boolean) => {
     setSelectedKodes((prev) => {
       const next = new Set(prev);
       if (e?.shiftKey && lastClickedKodeRef.current) {
@@ -273,12 +275,25 @@ export default function ReviewTokenClient({ token }: { token: string }) {
           return next;
         }
       }
-      if (next.has(kode)) {
-        next.delete(kode);
-      } else {
-        next.add(kode);
+      if (isCheckbox || e?.ctrlKey || e?.metaKey) {
+        if (next.has(kode)) {
+          next.delete(kode);
+        } else {
+          next.add(kode);
+        }
+        lastClickedKodeRef.current = kode;
+        return next;
       }
-      lastClickedKodeRef.current = kode;
+      const isCurrentlySelected = next.has(kode);
+      const wasOnlyOneSelected = next.size === 1;
+      if (isCurrentlySelected && wasOnlyOneSelected) {
+        next.clear();
+        lastClickedKodeRef.current = null;
+      } else {
+        next.clear();
+        next.add(kode);
+        lastClickedKodeRef.current = kode;
+      }
       return next;
     });
   }, [filtered]);
