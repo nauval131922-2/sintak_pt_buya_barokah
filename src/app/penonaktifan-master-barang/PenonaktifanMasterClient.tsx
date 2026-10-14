@@ -1380,9 +1380,8 @@ export default function PenonaktifanMasterClient() {
        {rekapOpen && (
          <Portal>
            <div
-             className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
-             onClick={() => setRekapOpen(false)}
-           >
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+          >
             <div
               className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[92vh] h-[88vh] overflow-hidden"
               onClick={(e) => e.stopPropagation()}
@@ -1403,16 +1402,6 @@ export default function PenonaktifanMasterClient() {
                    </p>
                  </div>
                  <div className="flex items-center gap-2">
-                   {shareToken && (
-                     <button
-                       type="button"
-                       onClick={() => loadRekap(shareToken)}
-                       className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
-                     >
-                       <RefreshCw size={13} />
-                       <span>Muat Ulang</span>
-                     </button>
-                   )}
                    <button
                      type="button"
                      onClick={() => setRekapOpen(false)}
@@ -1527,6 +1516,7 @@ export default function PenonaktifanMasterClient() {
                        <input
                          type="checkbox"
                          checked={isSelected}
+                         onChange={() => {}}
                          onClick={(e) => {
                            e.stopPropagation();
                            toggleSelectRekap(item.id, e, true);
