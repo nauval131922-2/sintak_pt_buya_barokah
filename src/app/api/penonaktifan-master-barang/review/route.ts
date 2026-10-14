@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireApiPermission } from '@/lib/api-guard';
 import { getSession } from '@/lib/session';
-import { createReview, getReview, addReviewItems, decideReviewItem } from '@/lib/penonaktifan-review';
+import { createReview, getReview, addReviewItems, decideReviewItem, decideReviewItemsBatch } from '@/lib/penonaktifan-review';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,11 +66,16 @@ export async function PATCH(req: NextRequest) {
   const gate = await requireApiPermission('produksi_penonaktifan_master');
   if (gate.error) return gate.error;
   try {
-    const body = (await req.json()) as { id?: number; keputusan?: string };
-    if (!Number.isFinite(Number(body.id))) return NextResponse.json({ success: false, error: 'id tidak valid' }, { status: 400 });
+    const body = (await req.json()) as { id?: number; ids?: number[]; keputusan?: string };
     if (body.keputusan !== 'setuju' && body.keputusan !== 'tolak') {
       return NextResponse.json({ success: false, error: 'keputusan harus setuju/tolak' }, { status: 400 });
     }
+    if (Array.isArray(body.ids) && body.ids.length > 0) {
+      const validIds = body.ids.map(Number).filter((x) => Number.isFinite(x) && x > 0);
+      await decideReviewItemsBatch(validIds, body.keputusan);
+      return NextResponse.json({ success: true, count: validIds.length });
+    }
+    if (!Number.isFinite(Number(body.id))) return NextResponse.json({ success: false, error: 'id tidak valid' }, { status: 400 });
     await decideReviewItem(Number(body.id), body.keputusan);
     return NextResponse.json({ success: true });
   } catch (error) {

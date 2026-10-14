@@ -1,7 +1,7 @@
  'use client';
 import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
- import { Download, Loader2, Play, AlertCircle, Settings2, X, Plus, Trash2, Save, RefreshCw, Share2, Check, ThumbsUp, ThumbsDown, Search, ShieldCheck } from 'lucide-react';
+ import { Download, Loader2, Play, AlertCircle, Settings2, X, Plus, Trash2, Save, RefreshCw, Share2, Check, ThumbsUp, ThumbsDown, Search, ShieldCheck, CheckSquare, Square, ClipboardList } from 'lucide-react';
 import Portal from '@/components/Portal';
 import TableFooter from '@/components/TableFooter';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -133,8 +133,9 @@ export default function PenonaktifanMasterClient() {
    const [sharing, setSharing] = useState(false);
    const [shareToken, setShareToken] = useState<string | null>(() => (typeof window !== 'undefined' ? localStorage.getItem('penonaktifan_shareToken') : null));
    const [rekap, setRekap] = useState<Array<{ id: number; kode: string; nama: string; aksi: string; alasan: string; reviewer: string; keputusan: string }>>([]);
-   const [rekapOpen, setRekapOpen] = useState(false);
-   const [rekapAt, setRekapAt] = useState<string | null>(null);
+  const [rekapOpen, setRekapOpen] = useState(false);
+  const [rekapAt, setRekapAt] = useState<string | null>(null);
+  const [selectedRekapIds, setSelectedRekapIds] = useState<Set<number>>(new Set());
   const [manualKode, setManualKode] = useState('');
   const [manualNama, setManualNama] = useState('');
   const [manualAlasan, setManualAlasan] = useState('');
@@ -188,14 +189,14 @@ export default function PenonaktifanMasterClient() {
    // eslint-disable-next-line react-hooks/exhaustive-deps
    }, []);
  
-   // Polling rekap tiap 30 detik saat panel terbuka — putaran bolak-balik tanpa aksi user.
-   useEffect(() => {
-     if (!rekapOpen || !shareToken) return;
-     loadRekap(shareToken);
-     const t = setInterval(() => loadRekap(shareToken), 30000);
-     return () => clearInterval(t);
-     // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [rekapOpen, shareToken]);
+  // Polling rekap tiap 20 detik jika ada shareToken (agar tombol berkedip jika ada update)
+  useEffect(() => {
+    if (!shareToken) return;
+    loadRekap(shareToken);
+    const t = setInterval(() => loadRekap(shareToken), 20000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shareToken]);
 
   useEffect(() => {
     const urlSearch = searchParams.get('search');
@@ -483,7 +484,9 @@ export default function PenonaktifanMasterClient() {
      } catch { /* abaikan */ }
    };
 
-   const decide = async (id: number, keputusan: 'setuju' | 'tolak', item: { kode: string; aksi: string }) => {
+   const pendingRekapCount = useMemo(() => rekap.filter((x) => !x.keputusan || x.keputusan === 'pending').length, [rekap]);
+
+   const decide = async (id: number, keputusan: 'setuju' | 'tolak', item: { kode: string; nama?: string; aksi: string; alasan?: string }) => {
      try {
        const res = await fetch('/api/penonaktifan-master-barang/review', {
          method: 'PATCH',
@@ -497,8 +500,69 @@ export default function PenonaktifanMasterClient() {
        if (keputusan === 'setuju' && data) {
          if (item.aksi === 'usul_hapus') {
            setData({ ...data, rows: data.rows.filter((r) => r.kode !== item.kode), bolehCount: data.bolehCount - 1 });
+         } else if (item.aksi === 'usul_tambah' && !data.rows.some((r) => r.kode === item.kode)) {
+           const newRow: PreviewRow = {
+             id: item.kode,
+             kode: item.kode,
+             nama: item.nama || item.kode,
+             satuan: '',
+             golongan: 'Barang Jadi Pesanan',
+             kelompok: 'MANUAL REVIEW',
+             saldo: '0.00',
+             kategori: 'MANUAL',
+             alasan: `Usulan reviewer: ${item.alasan || 'Ditambah via review'}`,
+           };
+           setData({ ...data, rows: [newRow, ...data.rows], bolehCount: data.bolehCount + 1 });
          }
        }
+     } catch (e) {
+       if (!mountedRef.current) return;
+       setError(e instanceof Error ? e.message : String(e));
+     }
+   };
+
+   const decideBatch = async (ids: number[], keputusan: 'setuju' | 'tolak') => {
+     if (ids.length === 0) return;
+     try {
+       const res = await fetch('/api/penonaktifan-master-barang/review', {
+         method: 'PATCH',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ ids, keputusan }),
+       });
+       const json = await res.json();
+       if (!json.success) throw new Error(json.error || 'Gagal');
+       if (!mountedRef.current) return;
+
+       const idSet = new Set(ids);
+       setRekap((prev) => prev.map((x) => (idSet.has(x.id) ? { ...x, keputusan } : x)));
+
+       if (keputusan === 'setuju' && data) {
+         const itemsToApply = rekap.filter((x) => idSet.has(x.id));
+         let currentRows = [...data.rows];
+         let deltaCount = 0;
+
+         for (const item of itemsToApply) {
+           if (item.aksi === 'usul_hapus') {
+             currentRows = currentRows.filter((r) => r.kode !== item.kode);
+             deltaCount--;
+           } else if (item.aksi === 'usul_tambah' && !currentRows.some((r) => r.kode === item.kode)) {
+             currentRows.unshift({
+               id: item.kode,
+               kode: item.kode,
+               nama: item.nama || item.kode,
+               satuan: '',
+               golongan: 'Barang Jadi Pesanan',
+               kelompok: 'MANUAL REVIEW',
+               saldo: '0.00',
+               kategori: 'MANUAL',
+               alasan: `Usulan reviewer: ${item.alasan || 'Ditambah via review'}`,
+             });
+             deltaCount++;
+           }
+         }
+         setData({ ...data, rows: currentRows, bolehCount: data.bolehCount + deltaCount });
+       }
+       setSelectedRekapIds(new Set());
      } catch (e) {
        if (!mountedRef.current) return;
        setError(e instanceof Error ? e.message : String(e));
@@ -784,18 +848,25 @@ export default function PenonaktifanMasterClient() {
                 <button
                   type="button"
                   onClick={() => {
-                    const next = !rekapOpen;
-                    setRekapOpen(next);
-                    if (next && shareToken) loadRekap(shareToken);
+                    setRekapOpen(true);
+                    if (shareToken) loadRekap(shareToken);
                   }}
-                  title={rekapOpen ? 'Tutup panel rekap koreksi' : 'Buka panel rekap koreksi review'}
-                  className={`shrink-0 px-4 py-2.5 bg-white border rounded-xl text-[12px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all ${
-                    rekapOpen
-                      ? 'border-emerald-500 text-emerald-700 bg-emerald-50/50'
+                  title="Buka dialog rekap koreksi review"
+                  className={`shrink-0 px-4 py-2.5 bg-white border rounded-xl text-[12px] font-bold shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    pendingRekapCount > 0
+                      ? 'border-amber-400 text-amber-700 bg-amber-50/70 ring-2 ring-amber-400/30'
                       : 'border-gray-100 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50'
                   }`}
                 >
-                  Rekap koreksi {rekap.length > 0 ? `(${rekap.length})` : ''}
+                  <ClipboardList size={16} />
+                  <span>Rekap koreksi</span>
+                  {pendingRekapCount > 0 ? (
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-500 text-white animate-pulse">
+                      {pendingRekapCount} baru
+                    </span>
+                  ) : rekap.length > 0 ? (
+                    <span className="text-slate-400 text-[11px] font-medium">({rekap.length})</span>
+                  ) : null}
                 </button>
                 <button
                   onClick={handleExport}
@@ -813,121 +884,6 @@ export default function PenonaktifanMasterClient() {
         {data && (
           <>
 
-            {rekapOpen && (
-              <div className="shrink-0 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                   <div className="flex items-center gap-2">
-                     <span className="text-xs font-bold text-slate-800">Rekap Koreksi Review</span>
-                     <span className="text-[11px] text-slate-400">({rekap.length} usulan masuk{rekapAt ? ` • ${formatLastUpdate(rekapAt)}` : ''} • auto 30 dtk)</span>
-                   </div>
-                  <div className="flex items-center gap-2">
-                    {shareToken && (
-                      <button
-                        type="button"
-                        onClick={() => loadRekap(shareToken)}
-                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors"
-                        title={`Muat ulang rekap dari token: ${shareToken}`}
-                      >
-                        <RefreshCw size={13} />
-                        Muat rekap
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setRekapOpen(false)}
-                      className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
-                    >
-                      <X size={15} />
-                    </button>
-                  </div>
-                </div>
-
-                {!shareToken && rekap.length === 0 && (
-                  <p className="text-xs text-slate-400">
-                    Belum ada sesi share. Klik tombol <b>Bagikan</b> terlebih dahulu untuk membuat link review.
-                  </p>
-                )}
-
-                {shareToken && rekap.length === 0 && (
-                  <div className="flex items-center justify-between text-xs text-slate-500 py-1">
-                    <span>Belum ada usulan dari reviewer atau belum dimuat.</span>
-                    <button
-                      type="button"
-                      onClick={() => loadRekap(shareToken)}
-                      className="text-emerald-600 font-bold hover:underline"
-                    >
-                      Muat sekarang
-                    </button>
-                  </div>
-                )}
-
-                {rekap.length > 0 && (
-                  <div className="max-h-56 overflow-y-auto custom-scrollbar divide-y divide-slate-100 border border-slate-100 rounded-xl">
-                    {rekap.map((item) => (
-                      <div key={item.id} className="p-2.5 flex items-center justify-between gap-3 text-xs hover:bg-slate-50/60">
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <span
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                              item.aksi === 'usul_hapus'
-                                ? 'bg-amber-100 text-amber-700'
-                                : 'bg-emerald-100 text-emerald-700'
-                            }`}
-                          >
-                            {item.aksi === 'usul_hapus' ? 'Usul Hapus' : 'Usul Tambah'}
-                          </span>
-                          <span className="font-mono font-bold text-slate-700 shrink-0">{item.kode}</span>
-                          <span className="text-slate-600 truncate max-w-[200px]" title={item.nama || item.kode}>
-                            {item.nama || '—'}
-                          </span>
-                          <span className="text-slate-400 truncate flex-1" title={item.alasan}>
-                            “{item.alasan}”
-                          </span>
-                          <span className="text-[11px] text-slate-400 shrink-0 font-medium">
-                            oleh {item.reviewer || 'reviewer'}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          {item.keputusan === 'pending' || !item.keputusan ? (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => decide(item.id, 'setuju', item)}
-                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold flex items-center gap-1 transition-colors"
-                                title="Setujui usulan"
-                              >
-                                <ThumbsUp size={12} />
-                                Setuju
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => decide(item.id, 'tolak', item)}
-                                className="px-2.5 py-1 bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-700 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-colors"
-                                title="Tolak usulan"
-                              >
-                                <ThumbsDown size={12} />
-                                Tolak
-                              </button>
-                            </>
-                          ) : (
-                            <span
-                              className={`px-2 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1 ${
-                                item.keputusan === 'setuju'
-                                  ? 'bg-emerald-100 text-emerald-700'
-                                  : 'bg-slate-100 text-slate-500 line-through'
-                              }`}
-                            >
-                              {item.keputusan === 'setuju' && <Check size={11} />}
-                              {item.keputusan}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
 
              <div className="shrink-0 flex items-center gap-2 w-full">
                <button
@@ -1226,7 +1182,7 @@ export default function PenonaktifanMasterClient() {
              onClick={() => setShowManual(false)}
            >
              <div
-               className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] overflow-hidden"
+               className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[85vh] overflow-visible"
                onClick={(e) => e.stopPropagation()}
              >
                <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0">
@@ -1238,7 +1194,7 @@ export default function PenonaktifanMasterClient() {
                    <X size={16} />
                  </button>
                </div>
-               <div ref={manualSearchContainerRef} className="p-5 flex flex-col gap-3 overflow-y-auto custom-scrollbar flex-1 min-h-0">
+               <div ref={manualSearchContainerRef} className="p-5 flex flex-col gap-3 overflow-visible flex-1 min-h-0">
                  {manualError && <span className="text-[11px] font-bold text-rose-600">{manualError}</span>}
                  <div>
                    <div className="text-xs font-bold text-slate-700 mb-1.5">Kode barang</div>
@@ -1260,7 +1216,7 @@ export default function PenonaktifanMasterClient() {
                        className="w-full px-3 py-2 text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
                      />
                      {manualShowDropdown && manualSearchActiveField === 'kode' && (
-                       <div className="mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-sm max-h-52 overflow-y-auto divide-y divide-slate-100">
+                       <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-white border border-slate-200 rounded-xl shadow-2xl max-h-52 overflow-y-auto divide-y divide-slate-100 animate-in fade-in zoom-in-95 duration-100">
                          {manualSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari barang…</div>}
                          {!manualSearching && manualHits.length === 0 && (
                            <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada barang yang cocok.</div>
@@ -1308,7 +1264,7 @@ export default function PenonaktifanMasterClient() {
                        className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
                      />
                      {manualShowDropdown && manualSearchActiveField === 'nama' && (
-                       <div className="mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-sm max-h-52 overflow-y-auto divide-y divide-slate-100">
+                       <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-white border border-slate-200 rounded-xl shadow-2xl max-h-52 overflow-y-auto divide-y divide-slate-100 animate-in fade-in zoom-in-95 duration-100">
                          {manualSearching && <div className="px-3 py-2 text-[11px] text-gray-400">Mencari barang…</div>}
                          {!manualSearching && manualHits.length === 0 && (
                            <div className="px-3 py-2 text-[11px] text-gray-400">Tidak ada barang yang cocok.</div>
@@ -1370,6 +1326,215 @@ export default function PenonaktifanMasterClient() {
          </Portal>
        )}
 
+       {rekapOpen && (
+         <Portal>
+           <div
+             className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+             onClick={() => setRekapOpen(false)}
+           >
+             <div
+               className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200 flex flex-col max-h-[88vh] overflow-hidden"
+               onClick={(e) => e.stopPropagation()}
+             >
+               {/* Header Modal */}
+               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/80 shrink-0">
+                 <div>
+                   <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                     <span>Rekap Koreksi Reviewer</span>
+                     {pendingRekapCount > 0 && (
+                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white animate-pulse">
+                         {pendingRekapCount} Belum Diputuskan
+                       </span>
+                     )}
+                   </h3>
+                   <p className="text-[11px] text-slate-500 mt-0.5">
+                     {rekap.length} total usulan {rekapAt ? `• diperbarui ${formatLastUpdate(rekapAt)}` : ''} • auto-refresh tiap 20 detik
+                   </p>
+                 </div>
+                 <div className="flex items-center gap-2">
+                   {shareToken && (
+                     <button
+                       type="button"
+                       onClick={() => loadRekap(shareToken)}
+                       className="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+                     >
+                       <RefreshCw size={13} />
+                       <span>Muat Ulang</span>
+                     </button>
+                   )}
+                   <button
+                     type="button"
+                     onClick={() => setRekapOpen(false)}
+                     className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all cursor-pointer"
+                   >
+                     <X size={16} />
+                   </button>
+                 </div>
+               </div>
+
+               {/* Action Bar Modal */}
+               <div className="px-5 py-2.5 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap shrink-0">
+                 <div className="flex items-center gap-3">
+                   <button
+                     type="button"
+                     onClick={() => {
+                       if (selectedRekapIds.size === rekap.length && rekap.length > 0) {
+                         setSelectedRekapIds(new Set());
+                       } else {
+                         setSelectedRekapIds(new Set(rekap.map((x) => x.id)));
+                       }
+                     }}
+                     className="flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-emerald-700 cursor-pointer"
+                   >
+                     {selectedRekapIds.size === rekap.length && rekap.length > 0 ? (
+                       <CheckSquare size={15} className="text-emerald-600" />
+                     ) : (
+                       <Square size={15} className="text-slate-400" />
+                     )}
+                     <span>Pilih Semua ({rekap.length})</span>
+                   </button>
+
+                   {selectedRekapIds.size > 0 && (
+                     <div className="flex items-center gap-2 pl-3 border-l border-slate-200 animate-in fade-in duration-150">
+                       <button
+                         type="button"
+                         onClick={() => decideBatch(Array.from(selectedRekapIds), 'setuju')}
+                         className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm transition-colors"
+                       >
+                         <Check size={13} />
+                         <span>Setujui ({selectedRekapIds.size}) Terpilih</span>
+                       </button>
+                       <button
+                         type="button"
+                         onClick={() => decideBatch(Array.from(selectedRekapIds), 'tolak')}
+                         className="px-3 py-1 bg-white border border-slate-200 hover:bg-rose-50 hover:text-rose-700 text-slate-700 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                       >
+                         <X size={13} />
+                         <span>Tolak ({selectedRekapIds.size}) Terpilih</span>
+                       </button>
+                     </div>
+                   )}
+                 </div>
+
+                 {pendingRekapCount > 0 && (
+                   <button
+                     type="button"
+                     onClick={() => {
+                       const pendingIds = rekap.filter((x) => !x.keputusan || x.keputusan === 'pending').map((x) => x.id);
+                       decideBatch(pendingIds, 'setuju');
+                     }}
+                     className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-emerald-900/10 cursor-pointer transition-all"
+                   >
+                     <Check size={14} />
+                     <span>Setujui Semua Pending ({pendingRekapCount})</span>
+                   </button>
+                 )}
+               </div>
+
+               {/* Daftar Item Rekap */}
+               <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar divide-y divide-slate-100 p-2">
+                 {rekap.map((item) => {
+                   const isSelected = selectedRekapIds.has(item.id);
+                   const isPending = !item.keputusan || item.keputusan === 'pending';
+                   return (
+                     <div
+                       key={item.id}
+                       className={`p-3 rounded-xl flex items-start gap-3 text-xs transition-colors ${
+                         isSelected ? 'bg-slate-50' : 'hover:bg-slate-50/60'
+                       }`}
+                     >
+                       <input
+                         type="checkbox"
+                         checked={isSelected}
+                         onChange={() => {
+                           setSelectedRekapIds((prev) => {
+                             const next = new Set(prev);
+                             if (next.has(item.id)) next.delete(item.id);
+                             else next.add(item.id);
+                             return next;
+                           });
+                         }}
+                         className="mt-1 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500/20 border-slate-300 cursor-pointer shrink-0"
+                       />
+
+                       <span
+                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 mt-0.5 ${
+                           item.aksi === 'usul_hapus'
+                             ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                             : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                         }`}
+                       >
+                         {item.aksi === 'usul_hapus' ? 'Usul Hapus' : 'Usul Tambah'}
+                       </span>
+
+                       <span className="font-mono font-bold text-slate-800 shrink-0 w-24 mt-0.5">{item.kode}</span>
+
+                       {/* Nama Barang Utuh (Tanpa Truncate) */}
+                       <div className="flex-1 min-w-0 pr-2">
+                         <span className="block text-slate-800 font-semibold text-xs leading-snug whitespace-normal break-words">
+                           {item.nama || '—'}
+                         </span>
+                         {item.alasan && (
+                           <span className="block text-[11px] text-slate-500 italic mt-0.5 whitespace-normal break-words">
+                             "{item.alasan}"
+                           </span>
+                         )}
+                       </div>
+
+                       <div className="text-[11px] text-slate-400 shrink-0 mt-0.5">
+                         oleh <b className="text-slate-600">{item.reviewer || 'reviewer'}</b>
+                       </div>
+
+                       {/* Action Buttons or Status Badge */}
+                       <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+                         {isPending ? (
+                           <>
+                             <button
+                               type="button"
+                               onClick={() => decide(item.id, 'setuju', item)}
+                               className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
+                               title="Setujui usulan ini"
+                             >
+                               <Check size={11} />
+                               <span>Setuju</span>
+                             </button>
+                             <button
+                               type="button"
+                               onClick={() => decide(item.id, 'tolak', item)}
+                               className="px-2.5 py-1 bg-white border border-slate-200 hover:bg-rose-50 hover:text-rose-700 text-slate-600 rounded-lg text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                               title="Tolak usulan ini"
+                             >
+                               <X size={11} />
+                               <span>Tolak</span>
+                             </button>
+                           </>
+                         ) : (
+                           <span
+                             className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1 ${
+                               item.keputusan === 'setuju'
+                                 ? 'bg-emerald-100 text-emerald-700'
+                                 : 'bg-slate-100 text-slate-400 line-through'
+                             }`}
+                           >
+                             {item.keputusan === 'setuju' && <Check size={11} />}
+                             {item.keputusan}
+                           </span>
+                         )}
+                       </div>
+                     </div>
+                   );
+                 })}
+
+                 {rekap.length === 0 && (
+                   <div className="py-12 text-center text-xs text-slate-400">
+                     Belum ada usulan koreksi yang masuk dari reviewer.
+                   </div>
+                 )}
+               </div>
+             </div>
+           </div>
+         </Portal>
+       )}
       <ConfirmDialog
         isOpen={dialog.isOpen}
         type={dialog.type}

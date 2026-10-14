@@ -122,3 +122,12 @@ export async function decideReviewItem(id: number, keputusan: 'setuju' | 'tolak'
   await ensureTables();
   await db.execute({ sql: `UPDATE penonaktifan_review_items SET keputusan = ? WHERE id = ?`, args: [keputusan, id] });
 }
+
+export async function decideReviewItemsBatch(ids: number[], keputusan: 'setuju' | 'tolak'): Promise<void> {
+  if (ids.length === 0) return;
+  await ensureTables();
+  const validIds = ids.filter((x) => Number.isFinite(x) && x > 0);
+  if (validIds.length === 0) return;
+  const placeholders = validIds.map(() => '?').join(',');
+  await db.execute({ sql: `UPDATE penonaktifan_review_items SET keputusan = ? WHERE id IN (${placeholders})`, args: [keputusan, ...validIds] });
+}

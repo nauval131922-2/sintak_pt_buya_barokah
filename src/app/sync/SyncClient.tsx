@@ -159,6 +159,15 @@ const SYNC_TO_PERM_MAP: Record<string, string> = {
   'rek-akuntansi': 'akt_mrek',
 };
 
+const CATEGORY_STYLES: Record<string, string> = {
+  'Stok': 'bg-amber-50 text-amber-700 border-amber-200',
+  'Pembelian': 'bg-blue-50 text-blue-700 border-blue-200',
+  'Produksi': 'bg-purple-50 text-purple-700 border-purple-200',
+  'Penjualan': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  'Akuntansi & Keuangan': 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  'Sistem': 'bg-slate-100 text-slate-700 border-slate-200',
+};
+
 export default function SyncClient({ userPermissions = {} }: { userPermissions?: Record<string, boolean> }) {
   const [startDate, setStartDate] = useState<Date>(() => getDefaultScraperDateRange().startDate);
   const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange().endDate);
@@ -449,8 +458,9 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
       size: 130,
       cell: ({ getValue }) => {
         const val = String(getValue() ?? '');
+        const badgeStyle = CATEGORY_STYLES[val] || 'bg-slate-100 text-slate-700 border-slate-200';
         return (
-          <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+          <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${badgeStyle}`}>
             {val}
           </span>
         );
