@@ -55,8 +55,17 @@ const ReviewRow = memo(function ReviewRow({
 }: ReviewRowProps) {
   return (
     <div
-      className={`px-3 sm:px-4 py-2.5 flex items-start gap-2.5 text-xs transition-colors ${
-        marked ? 'bg-amber-50/70 border-l-4 border-l-amber-500' : selected ? 'bg-slate-50' : 'hover:bg-slate-50/50'
+      onClick={(e) => {
+        const target = e.target as HTMLElement;
+        if (target.closest('input, button')) return;
+        onToggleSelect(s.kode, e);
+      }}
+      className={`px-3 sm:px-4 py-2.5 flex items-start gap-2.5 text-xs transition-colors cursor-pointer select-none ${
+        marked
+          ? 'bg-amber-50/70 border-l-4 border-l-amber-500'
+          : selected
+          ? 'bg-emerald-50/60 border-l-4 border-l-emerald-500'
+          : 'hover:bg-slate-50/60'
       }`}
     >
       <input

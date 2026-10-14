@@ -1488,12 +1488,19 @@ export default function PenonaktifanMasterClient() {
                    const isSelected = selectedRekapIds.has(item.id);
                    const isPending = !item.keputusan || item.keputusan === 'pending';
                    return (
-                     <div
-                       key={item.id}
-                       className={`p-3 rounded-xl flex items-start gap-3 text-xs transition-colors ${
-                         isSelected ? 'bg-slate-50' : 'hover:bg-slate-50/60'
-                       }`}
-                     >
+                    <div
+                      key={item.id}
+                      onClick={(e) => {
+                        const target = e.target as HTMLElement;
+                        if (target.closest('input, button')) return;
+                        toggleSelectRekap(item.id, e);
+                      }}
+                      className={`p-3 rounded-xl flex items-start gap-3 text-xs transition-colors cursor-pointer select-none ${
+                        isSelected
+                          ? 'bg-emerald-50/60 ring-1 ring-emerald-300 shadow-xs'
+                          : 'hover:bg-slate-50/80'
+                      }`}
+                    >
                        <input
                          type="checkbox"
                          checked={isSelected}
