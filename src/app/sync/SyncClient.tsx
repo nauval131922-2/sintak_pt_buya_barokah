@@ -43,6 +43,7 @@ type SyncStatus = 'idle' | 'loading' | 'success' | 'error';
 interface ModuleSyncState {
   status: SyncStatus;
   lastUpdate: string | null;
+  rawTimestamp?: number | null;
   message: string | null;
   period?: { start: string; end: string } | null;
 }
@@ -188,12 +189,12 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
   const [isRefreshingStatus, setIsRefreshingStatus] = useState(false);
 
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => ({
+    action: 100,
     modul: 300,
     kategori: 130,
     status: 220,
     lastUpdate: 170,
     period: 190,
-    action: 100,
   }));
 
   // Hydrate global date picker on mount
@@ -247,11 +248,13 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
             if (lastUpdatedTimestamp) {
               const date = new Date(String(lastUpdatedTimestamp).split('|')[0]);
               const formattedNow = formatLastUpdate(date);
+              const ts = date.getTime();
 
               newState[modId] = {
                 ...newState[modId],
                 status: 'success',
                 lastUpdate: formattedNow,
+                rawTimestamp: isNaN(ts) ? null : ts,
                 period: period
               };
             }
@@ -314,6 +317,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
           [modId]: { 
             status: 'success', 
             lastUpdate: formattedNow, 
+            rawTimestamp: Date.now(),
             period: mod.noDateRange ? null : { 
               start: startDate.toLocaleDateString('en-GB').replace(/\//g, '-'), 
               end: endDate.toLocaleDateString('en-GB').replace(/\//g, '-') 
@@ -321,7 +325,6 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
             message: `${processedCount.toLocaleString('id-ID')} baris ditarik` 
           }
         }));
-
         return { success: true, count: processedCount };
       } else {
         throw new Error(data.error || 'Server returned error status');
@@ -438,6 +441,30 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
 
   const columns = useMemo<ColumnDef<TableRowData>[]>(() => [
     {
+      id: 'action',
+      header: 'Aksi',
+      size: 100,
+      accessorFn: (row) => row.sync?.status || 'idle',
+      cell: ({ row }) => {
+        const mod = row.original;
+        const state = row.original.sync;
+        const isLoading = state?.status === 'loading' || currentModuleId === mod.id;
+        return (
+          <div className="flex items-center justify-start">
+            <button
+              type="button"
+              onClick={() => runSync(mod.id)}
+              disabled={isBatchProcessing || isLoading}
+              className="px-3 py-1 bg-white hover:bg-slate-50 text-slate-700 hover:text-emerald-700 rounded-lg border border-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              <RefreshCw size={12} className={isLoading ? 'animate-spin text-emerald-600' : ''} />
+              <span>Sync</span>
+            </button>
+          </div>
+        );
+      }
+    },
+    {
       accessorKey: 'name',
       id: 'modul',
       header: 'Modul Operasional',
@@ -475,6 +502,13 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
       id: 'status',
       header: 'Status Sinkronisasi',
       size: 220,
+      accessorFn: (row) => {
+        const state = row.sync;
+        if (state?.status === 'loading') return state?.message || 'Sedang proses...';
+        if (state?.status === 'success') return state?.message || 'Sinkron';
+        if (state?.status === 'error') return state?.message || 'Gagal';
+        return 'Belum sinkron';
+      },
       cell: ({ row }) => {
         const mod = row.original;
         const state = row.original.sync;
@@ -518,6 +552,7 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
       id: 'lastUpdate',
       header: 'Terakhir Sinkron',
       size: 170,
+      accessorFn: (row) => row.sync?.rawTimestamp ?? 0,
       cell: ({ row }) => {
         const state = row.original.sync;
         return (
@@ -532,6 +567,14 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
       id: 'period',
       header: 'Rentang Scrape',
       size: 190,
+      accessorFn: (row) => {
+        if (row.noDateRange) return 'Semua Data';
+        if (row.sync?.period?.start && row.sync?.period?.end) {
+          return `${row.sync.period.start} - ${row.sync.period.end}`;
+        }
+        if (row.saldoTgl) return 'Posisi akhir cutoff';
+        return '-';
+      },
       cell: ({ row }) => {
         const mod = row.original;
         const state = row.original.sync;
@@ -553,29 +596,6 @@ export default function SyncClient({ userPermissions = {} }: { userPermissions?:
           return <span className="text-gray-400 text-[11px]">Posisi akhir cutoff</span>;
         }
         return <span className="text-gray-400 text-[11px]">-</span>;
-      }
-    },
-    {
-      id: 'action',
-      header: 'Aksi',
-      size: 100,
-      cell: ({ row }) => {
-        const mod = row.original;
-        const state = row.original.sync;
-        const isLoading = state?.status === 'loading' || currentModuleId === mod.id;
-        return (
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={() => runSync(mod.id)}
-              disabled={isBatchProcessing || isLoading}
-              className="px-3 py-1 bg-white hover:bg-slate-50 text-slate-700 hover:text-emerald-700 rounded-lg border border-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-            >
-              <RefreshCw size={12} className={isLoading ? 'animate-spin text-emerald-600' : ''} />
-              <span>Sync</span>
-            </button>
-          </div>
-        );
       }
     }
   ], [currentModuleId, isBatchProcessing, runSync]);
