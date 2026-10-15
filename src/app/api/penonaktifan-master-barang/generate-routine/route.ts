@@ -110,13 +110,13 @@ export async function GET(req: NextRequest) {
 
       // Pencocokan langsung dari kode barang, kalau tidak ada kode barang ya nama barang
       for (const s of salesTexts) {
-        if (s.includes(k) || (nm && (s.includes(nm) || nm.includes(s)))) nJual++;
+        if (s.includes(k) || (nm && (s.includes(nm) || (s.length >= 15 && nm.includes(s))))) nJual++;
       }
       for (const s of soTexts) {
-        if (s.includes(k) || (nm && (s.includes(nm) || nm.includes(s)))) nSo++;
+        if (s.includes(k) || (nm && (s.includes(nm) || (s.length >= 15 && nm.includes(s))))) nSo++;
       }
       for (const s of beliTexts) {
-        if (s.includes(k) || (nm && (s.includes(nm) || nm.includes(s)))) nBeli++;
+        if (s.includes(k) || (nm && (s.includes(nm) || (s.length >= 15 && nm.includes(s))))) nBeli++;
       }
 
       const c: Cand = { kode, nama, bom, beli: nBeli, so: nSo, jual: nJual, spk: berSpk.has(kode) };
