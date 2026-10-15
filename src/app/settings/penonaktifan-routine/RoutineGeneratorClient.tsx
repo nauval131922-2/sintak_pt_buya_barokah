@@ -9,6 +9,7 @@ interface Cand {
   kode: string;
   nama: string;
   bom: number;
+  beli: number;
   so: number;
   jual: number;
   spk: boolean;
@@ -78,6 +79,7 @@ const CandidateRow = memo(function CandidateRow({
         </div>
       </td>
       <td className="px-2 py-1.5 text-right tabular-nums text-slate-700 font-semibold">{c.bom}×</td>
+      <td className="px-2 py-1.5 text-right tabular-nums text-slate-600">{c.beli > 0 ? `${c.beli}×` : '—'}</td>
       <td className="px-2 py-1.5 text-right tabular-nums text-slate-600">{c.so > 0 ? `${c.so}×` : '—'}</td>
       <td className="px-2 py-1.5 text-right tabular-nums text-slate-600">{c.jual > 0 ? `${c.jual}×` : '—'}</td>
       <td className="px-2 py-1.5 text-center">
@@ -414,6 +416,7 @@ export default function RoutineGeneratorClient() {
                 <th className="text-left px-2 py-2 font-bold text-slate-600">Kode</th>
                 <th className="text-left px-2 py-2 font-bold text-slate-600">Nama</th>
                 <th className="text-right px-2 py-2 font-bold text-slate-600">BOM</th>
+                <th className="text-right px-2 py-2 font-bold text-slate-600" title="Frekuensi di Penerimaan Pembelian (Faktur PB)">Beli</th>
                 <th className="text-right px-2 py-2 font-bold text-slate-600" title="Frekuensi di Sales Order (Pesanan Konsumen)">SO</th>
                 <th className="text-right px-2 py-2 font-bold text-slate-600" title="Frekuensi di Penjualan (Faktur PJ Kasir)">Jual</th>
                 <th className="text-center px-2 py-2 font-bold text-slate-600">SPK</th>
@@ -431,7 +434,7 @@ export default function RoutineGeneratorClient() {
               ))}
               {filteredRows.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-3 py-8 text-center text-slate-400">
+                  <td colSpan={8} className="px-3 py-8 text-center text-slate-400">
                     {searchValue ? 'Tidak ada kandidat yang cocok dengan pencarian.' : 'Tidak ada kandidat.'}
                   </td>
                 </tr>
