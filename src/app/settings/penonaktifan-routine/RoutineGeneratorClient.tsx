@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { Loader2, Play, Save, CheckSquare, Square } from 'lucide-react';
+import CopyButton from '@/components/ui/CopyButton';
 
 interface Cand {
   kode: string;
@@ -182,13 +183,23 @@ export default function RoutineGeneratorClient() {
                   <tr
                     key={c.kode}
                     onClick={(e) => handleRowClick(tableId, c.kode, rows, e)}
-                    className={`cursor-pointer transition-colors ${on ? 'bg-emerald-50/90 hover:bg-emerald-100/60' : 'hover:bg-slate-50'}`}
+                    className={`group cursor-pointer transition-colors ${on ? 'bg-emerald-50/90 hover:bg-emerald-100/60' : 'hover:bg-slate-50'}`}
                   >
                     <td className="px-2.5 py-1.5 text-center text-emerald-600">
                       {on ? <CheckSquare size={15} /> : <Square size={15} className="text-slate-300" />}
                     </td>
-                    <td className="px-2 py-1.5 font-mono font-bold text-slate-700 whitespace-nowrap">{c.kode}</td>
-                    <td className="px-2 py-1.5 text-slate-600 max-w-[280px] truncate" title={c.nama}>{c.nama}</td>
+                    <td className="px-2 py-1.5 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono font-bold text-slate-700">{c.kode}</span>
+                        <CopyButton text={c.kode} size={11} className="w-5 h-5 opacity-40 group-hover:opacity-100 hover:!opacity-100" title="Salin kode" />
+                      </div>
+                    </td>
+                    <td className="px-2 py-1.5 max-w-[280px]">
+                      <div className="flex items-center justify-between gap-1.5 min-w-0">
+                        <span className="text-slate-600 truncate flex-1" title={c.nama}>{c.nama}</span>
+                        <CopyButton text={c.nama} size={11} className="w-5 h-5 shrink-0 opacity-40 group-hover:opacity-100 hover:!opacity-100" title="Salin nama barang" />
+                      </div>
+                    </td>
                     <td className="px-2 py-1.5 text-right tabular-nums text-slate-700">{c.bom}×</td>
                     <td className="px-2 py-1.5 text-center">
                       {c.spk ? (
