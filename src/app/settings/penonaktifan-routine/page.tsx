@@ -2,11 +2,7 @@ import type { Metadata } from 'next';
 import { getSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 import PageHeader from '@/components/PageHeader';
-import dynamicImport from 'next/dynamic';
-
-const RoutineGeneratorClient = dynamicImport(() => import('./RoutineGeneratorClient'), {
-  ssr: false,
-});
+import RoutineGeneratorClient from './RoutineGeneratorClient';
 
 export const metadata: Metadata = {
   title: 'SINTAK | Generator Kode Rutin',

@@ -89,68 +89,56 @@ const CandidateRow = memo(function CandidateRow({
 });
 
 export default function RoutineGeneratorClient() {
-  const [minBom, setMinBom] = useState<string>(() => {
-    if (typeof window === 'undefined') return '3';
-    try {
-      return localStorage.getItem(STORAGE_KEYS.MIN_BOM) || '3';
-    } catch {
-      return '3';
-    }
-  });
+  const [minBom, setMinBom] = useState('3');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [data, setData] = useState<GenResult | null>(() => {
-    if (typeof window === 'undefined') return null;
+  const [data, setData] = useState<GenResult | null>(null);
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [msg, setMsg] = useState('');
+  const [isMounted, setIsMounted] = useState(false);
+
+  const lastClickedRef = useRef<{ tableId: string; kode: string } | null>(null);
+
+  // Restore dari localStorage setelah mounted di browser (mencegah hydration mismatch)
+  useEffect(() => {
     try {
+      const savedMinBom = localStorage.getItem(STORAGE_KEYS.MIN_BOM);
+      if (savedMinBom) setMinBom(savedMinBom);
+
       const savedData = localStorage.getItem(STORAGE_KEYS.DATA);
       if (savedData) {
         const parsed = JSON.parse(savedData) as GenResult;
         if (parsed && Array.isArray(parsed.generik) && Array.isArray(parsed.custom)) {
-          return parsed;
+          setData(parsed);
         }
       }
-    } catch {
-      /* ignore */
-    }
-    return null;
-  });
-  const [picked, setPicked] = useState<Set<string>>(() => {
-    if (typeof window === 'undefined') return new Set();
-    try {
+
       const savedPicked = localStorage.getItem(STORAGE_KEYS.PICKED);
       if (savedPicked) {
         const parsedPicked = JSON.parse(savedPicked);
         if (Array.isArray(parsedPicked)) {
-          return new Set(parsedPicked);
+          setPicked(new Set(parsedPicked));
         }
       }
-    } catch {
-      /* ignore */
+    } catch (e) {
+      console.error('Failed to restore routine generator data:', e);
+    } finally {
+      setIsMounted(true);
     }
-    return new Set();
-  });
-  const [msg, setMsg] = useState('');
-  const [hydrated, setHydrated] = useState(false);
-
-  const lastClickedRef = useRef<{ tableId: string; kode: string } | null>(null);
-
-  // Tandai hydration selesai
-  useEffect(() => {
-    setHydrated(true);
   }, []);
 
   // Simpan minBom ke localStorage
   useEffect(() => {
-    if (!hydrated) return;
+    if (!isMounted) return;
     try {
       localStorage.setItem(STORAGE_KEYS.MIN_BOM, minBom);
     } catch { /* ignore */ }
-  }, [minBom, hydrated]);
+  }, [minBom, isMounted]);
 
   // Simpan data kandidat ke localStorage
   useEffect(() => {
-    if (!hydrated) return;
+    if (!isMounted) return;
     try {
       if (data) {
         localStorage.setItem(STORAGE_KEYS.DATA, JSON.stringify(data));
@@ -158,18 +146,18 @@ export default function RoutineGeneratorClient() {
         localStorage.removeItem(STORAGE_KEYS.DATA);
       }
     } catch { /* ignore quota */ }
-  }, [data, hydrated]);
+  }, [data, isMounted]);
 
   // Debounced simpan picked ke localStorage (mencegah disk blocking di setiap klik)
   useEffect(() => {
-    if (!hydrated) return;
+    if (!isMounted) return;
     const timer = setTimeout(() => {
       try {
         localStorage.setItem(STORAGE_KEYS.PICKED, JSON.stringify([...picked]));
       } catch { /* ignore quota */ }
     }, 300);
     return () => clearTimeout(timer);
-  }, [picked, hydrated]);
+  }, [picked, isMounted]);
 
   const handleGenerate = async () => {
     const n = Number(minBom);
@@ -427,7 +415,7 @@ export default function RoutineGeneratorClient() {
           {loading ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
           Generate kandidat
         </button>
-        {data && (
+        {isMounted && data && (
           <>
             <button
               onClick={() => handleSave('tambah')}
@@ -451,12 +439,16 @@ export default function RoutineGeneratorClient() {
       {error && <p className="text-xs font-semibold text-red-600 shrink-0">{error}</p>}
       {msg && <p className="text-xs font-semibold text-emerald-600 shrink-0">{msg}</p>}
 
-      {data ? (
+      {!isMounted ? (
+        <div className="flex-1 flex items-center justify-center border border-dashed border-slate-200 rounded-2xl text-slate-400 text-xs">
+          <Loader2 size={18} className="animate-spin text-emerald-600 mr-2" /> Memuat data...
+        </div>
+      ) : data ? (
         <div className="flex-1 min-h-0 grid grid-cols-1 xl:grid-cols-2 gap-4 overflow-hidden">
           {renderTable('generik', data.generik, 'Generik — disarankan', 'Tanpa OP/HP/NN, repeat-order massal. Centang = lindungi.')}
           {renderTable('custom', data.custom, 'Custom — tidak disarankan', 'Sekali-cetak pelanggan. Terlindungi otomatis via oplah saat SPK jalan.')}
         </div>
-      ) : !loading && hydrated ? (
+      ) : !loading ? (
         <div className="flex-1 flex items-center justify-center border border-dashed border-slate-200 rounded-2xl text-slate-400 text-xs">
           Atur batas repeat, klik Generate — centang kandidat, lalu Tambah ke rutin.
         </div>
