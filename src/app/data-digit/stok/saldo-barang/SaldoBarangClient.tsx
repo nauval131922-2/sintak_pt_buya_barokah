@@ -2,12 +2,21 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { DownloadCloud, Loader2, AlertCircle } from 'lucide-react';
+import {
+  DownloadCloud,
+  Loader2,
+  AlertCircle,
+  RefreshCw,
+  Search,
+  Filter,
+  Calendar,
+  RotateCcw,
+} from 'lucide-react';
 import TableFooter from '@/components/TableFooter';
-import SearchAndReload from '@/components/SearchAndReload';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { DataTable } from '@/components/ui/DataTable';
 import DatePicker from '@/components/DatePicker';
+import SquareDropdown from '@/components/SquareDropdown';
 import { formatLastUpdate } from '@/lib/date-utils';
 import { useTableSelection } from '@/lib/hooks/useTableSelection';
 import { highlightText } from '@/lib/highlight';
@@ -287,105 +296,168 @@ export default function SaldoBarangClient() {
   if (!isMounted) return null;
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-500 overflow-hidden">
+    <div className="flex-1 min-h-0 flex flex-col gap-4 animate-in fade-in duration-500 overflow-hidden">
       {error && (
-        <div className="p-4 bg-red-50 text-red-600 border border-red-100 rounded-xl shadow-sm shadow-red-900/5 text-sm font-bold flex items-start gap-3 animate-in fade-in shrink-0">
+        <div className="p-4 bg-red-50 text-red-600 border border-red-100 rounded-xl shadow-xs text-sm font-bold flex items-start gap-3 animate-in fade-in shrink-0">
           <AlertCircle className="w-5 h-5 shrink-0" />
           <p>{error}</p>
         </div>
       )}
 
-      <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
-        <div className="flex flex-col gap-4 shrink-0 px-1">
-          <div className="flex items-end gap-2 flex-wrap">
-            <div>
-              <label className="block text-[11px] font-bold text-gray-400 mb-1">
-                Tanggal posisi{lastUpdated ? <span className="font-semibold text-gray-300"> • Update: {formatLastUpdate(lastUpdated.split('|')[0])}</span> : null}
-              </label>
-              <DatePicker name="tgl" value={isoToDate(tgl)} onChange={(d) => { setTgl(dateToIso(d)); setPage(1); }} />
-            </div>
+      {/* Toolbar Persis Format & Styling Laporan Pekerjaan */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-3 flex flex-col gap-2.5 shrink-0">
+        {/* Baris 1: Reload Data, Search Box, dan Tombol Tarik Data */}
+        <div className="flex items-center gap-2 w-full">
+          <button
+            type="button"
+            onClick={() => load(page, tgl, debouncedQuery, sorting, golongan, status)}
+            disabled={loading}
+            className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-xs"
+            title="Reload Data Saldo Barang"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-emerald-600" : ""}`} />
+            <span className="hidden sm:inline">Reload</span>
+          </button>
 
-            <div className="flex flex-col gap-1">
-              <label className="block text-[11px] font-bold text-gray-400">Golongan</label>
-              <select
-                value={golongan}
-                onChange={(e) => { setGolongan(e.target.value); setPage(1); }}
-                className="h-10 px-3 bg-white border border-gray-100 rounded-lg text-xs font-bold text-gray-700 shadow-sm focus:outline-none focus:border-emerald-500 cursor-pointer"
-              >
-                <option value="">Semua Golongan</option>
-                {golonganOptions.map((g) => (
-                  <option key={g} value={g}>{g}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="block text-[11px] font-bold text-gray-400">Status</label>
-              <select
-                value={status}
-                onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-                className="h-10 px-3 bg-white border border-gray-100 rounded-lg text-xs font-bold text-gray-700 shadow-sm focus:outline-none focus:border-emerald-500 cursor-pointer"
-              >
-                <option value="">Semua Status</option>
-                {statusOptions.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              onClick={handleSync}
-              disabled={isSyncing || loading}
-              className="shrink-0 w-full sm:w-auto min-w-[140px] px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-xl text-[12px] font-bold shadow-sm shadow-emerald-900/20 hover:shadow-emerald-900/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group/btn relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
-              <span className="relative z-10 flex items-center gap-2">
-                {isSyncing ? (
-                  <><Loader2 size={16} className="animate-spin" /> {syncProgress ? `Menarik page ${syncProgress.page} (${syncProgress.fetched.toLocaleString('id-ID')} baris)...` : 'Sedang Menarik...'}</>
-                ) : (
-                  <><DownloadCloud size={16} className="group-hover/btn:-translate-y-0.5 transition-transform duration-300" /> Tarik Data</>
-                )}
-              </span>
-            </button>
-
-            <div className="flex-1 min-w-[200px]">
-              <SearchAndReload
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                onReload={() => load(page, tgl, debouncedQuery, sorting, golongan, status)}
-                loading={loading}
-                placeholder="Cari berdasarkan kode, nama barang, golongan, atau kelompok..."
-              />
-            </div>
+          <div className="relative flex-1 min-w-0">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari berdasarkan kode, nama barang, golongan, atau kelompok..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 h-9 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
+            />
           </div>
+
+          <button
+            type="button"
+            onClick={handleSync}
+            disabled={isSyncing || loading}
+            className="h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer"
+            title="Tarik Data dari Digit"
+          >
+            {isSyncing ? (
+              <>
+                <Loader2 size={14} className="animate-spin" />
+                <span className="hidden sm:inline">{syncProgress ? `Menarik (${syncProgress.fetched.toLocaleString('id-ID')})...` : 'Menarik...'}</span>
+              </>
+            ) : (
+              <>
+                <DownloadCloud size={14} />
+                <span className="hidden sm:inline">Tarik Data</span>
+              </>
+            )}
+          </button>
         </div>
 
-        <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
-          <DataTable
-            columns={columns}
-            data={rows}
-            sorting={sorting}
-            onSortingChange={handleSortingChange}
-            manualSorting
-            isLoading={loading}
-            selectedIds={selectedIds}
-            onRowClick={handleRowClick}
-            columnWidths={columnWidths}
-            onColumnWidthChange={setColumnWidths}
-            rowHeight="h-11"
-          />
-          <TableFooter
-            totalCount={total}
-            currentCount={rows.length}
-            label="Saldo Barang"
-            selectedCount={selectedIds.size}
-            onClearSelection={clearSelection}
-            loadTime={loadTime}
-            page={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-          />
+        {/* Baris 2: Controls Filter (Tanggal Posisi, Golongan, Status, Reset) */}
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 pt-2 border-t border-slate-100">
+          <div className="hidden sm:flex items-center text-xs text-slate-500 font-medium shrink-0">
+            <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
+          </div>
+
+          {/* Filter Tanggal Posisi */}
+          <div className="flex items-center gap-1 bg-slate-50 p-0.5 rounded-lg border border-slate-200 shrink-0">
+            <DatePicker
+              name="tgl"
+              value={isoToDate(tgl)}
+              onChange={(d) => { setTgl(dateToIso(d)); setPage(1); }}
+              popupAlign="left"
+              customTrigger={() => (
+                <div
+                  className="h-7 px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                  title={`Posisi Tgl: ${tgl}`}
+                >
+                  <Calendar size={12} className="text-slate-400 shrink-0" />
+                  <span>{tgl}</span>
+                </div>
+              )}
+            />
+          </div>
+
+          {/* Filter Golongan dengan SquareDropdown */}
+          <div className="w-full sm:w-auto">
+            <SquareDropdown
+              options={[
+                { value: '', label: 'Semua Golongan' },
+                ...golonganOptions.map((g) => ({ value: g, label: g })),
+              ]}
+              value={golongan}
+              onChange={(val) => { setGolongan(val); setPage(1); }}
+              placeholder="Semua Golongan"
+              searchPlaceholder="Cari Golongan..."
+              widthClass="w-full sm:w-44 md:w-52"
+            />
+          </div>
+
+          {/* Filter Status dengan SquareDropdown */}
+          <div className="w-full sm:w-auto">
+            <SquareDropdown
+              options={[
+                { value: '', label: 'Semua Status' },
+                ...statusOptions.map((s) => ({ value: s, label: s })),
+              ]}
+              value={status}
+              onChange={(val) => { setStatus(val); setPage(1); }}
+              placeholder="Semua Status"
+              searchPlaceholder="Cari Status..."
+              widthClass="w-full sm:w-36"
+            />
+          </div>
+
+          {/* Tombol Reset Filter */}
+          {(golongan || status || searchQuery) && (
+            <button
+              type="button"
+              onClick={() => {
+                setGolongan('');
+                setStatus('');
+                setSearchQuery('');
+                setPage(1);
+              }}
+              className="h-7 px-2 text-[11px] font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-md border border-slate-200 hover:border-rose-200 transition-all flex items-center gap-1 cursor-pointer shrink-0"
+              title="Reset semua filter"
+            >
+              <RotateCcw size={11} />
+              <span>Reset</span>
+            </button>
+          )}
+
+          {lastUpdated && (
+            <span className="hidden lg:inline text-[10px] font-medium text-slate-400 ml-auto">
+              Update: {formatLastUpdate(lastUpdated.split('|')[0])}
+            </span>
+          )}
         </div>
+      </div>
+
+      {/* Tabel Saldo Barang */}
+      <div className="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden relative">
+        <DataTable
+          columns={columns}
+          data={rows}
+          sorting={sorting}
+          onSortingChange={handleSortingChange}
+          manualSorting
+          isLoading={loading}
+          selectedIds={selectedIds}
+          onRowClick={handleRowClick}
+          columnWidths={columnWidths}
+          onColumnWidthChange={setColumnWidths}
+          rowHeight="h-11"
+        />
+        <TableFooter
+          totalCount={total}
+          currentCount={rows.length}
+          label="Saldo Barang"
+          selectedCount={selectedIds.size}
+          onClearSelection={clearSelection}
+          loadTime={loadTime}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
       </div>
 
       <ConfirmDialog
