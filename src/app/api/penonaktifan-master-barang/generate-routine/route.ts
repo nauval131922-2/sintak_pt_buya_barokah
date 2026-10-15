@@ -78,9 +78,10 @@ export async function GET(req: NextRequest) {
       db.execute({ sql: `SELECT LOWER(kd_barang) AS b FROM sales_orders WHERE kd_barang IS NOT NULL` }),
       db.execute({ sql: `SELECT LOWER(kd_barang) AS b FROM rekap_pembelian_barang WHERE kd_barang IS NOT NULL` }),
     ]);
-    const salesTexts = (salesRowsRes.rows as Array<Record<string, unknown>>).map((r) => String(r.b ?? '')).filter(Boolean);
-    const soTexts = (soRowsRes.rows as Array<Record<string, unknown>>).map((r) => String(r.b ?? '')).filter(Boolean);
-    const beliTexts = (beliRowsRes.rows as Array<Record<string, unknown>>).map((r) => String(r.b ?? '')).filter(Boolean);
+    const cleanTx = (raw: unknown) => String(raw ?? '').trim().toLowerCase().replace(/^[a-z0-9]+\s*-\s*/, '');
+    const salesTexts = (salesRowsRes.rows as Array<Record<string, unknown>>).map((r) => cleanTx(r.b)).filter(Boolean);
+    const soTexts = (soRowsRes.rows as Array<Record<string, unknown>>).map((r) => cleanTx(r.b)).filter(Boolean);
+    const beliTexts = (beliRowsRes.rows as Array<Record<string, unknown>>).map((r) => cleanTx(r.b)).filter(Boolean);
     const opRe = /^\s*(OP|PO|PR)\./i;
     const hpRe = /\+62|08\d{8,}/;
     const nnRe = /\bNN\b\s*-/i;
@@ -97,57 +98,55 @@ export async function GET(req: NextRequest) {
       const bom = freq.get(kode) ?? 0;
       if (bom < minBom) continue;
 
-      const kLower = kode.toLowerCase();
-      const isQuddus = nama.toLowerCase().includes('quddus');
-      const isYanbua = nama.toLowerCase().includes('yanbu');
-      const isKitab = nama.toLowerCase().includes('qorib') || nama.toLowerCase().includes('muta');
+      const nm = nama.trim().toLowerCase();
+      const isQuddus = nm.includes('quddus');
+      const isYanbua = nm.includes('yanbu');
+      const isKitab = nm.includes('qorib') || nm.includes('muta') || nm.includes("ta'lim") || nm.includes('talim');
 
       let nJual = 0;
       let nSo = 0;
       let nBeli = 0;
 
       if (isQuddus) {
-        const varMatch = nama.match(/\b(A1|A97|B1\.d|B1|B2|B3|B5|B97)\b/i);
-        const variant = varMatch ? varMatch[1].toLowerCase().replace('.d', '') : '';
-        for (const s of salesTexts) {
-          if (s.includes('quddus') && (!variant || s.includes(variant))) nJual++;
-        }
-        for (const s of soTexts) {
-          if (s.includes('quddus') && (!variant || s.includes(variant))) nSo++;
-        }
-        for (const s of beliTexts) {
-          if (s.includes('quddus') && (!variant || s.includes(variant))) nBeli++;
+        const varMatch = nm.match(/\b(a97|a1|b1\.d|b1|b2|b3|b5|b97|d65)\b/);
+        const variant = varMatch ? varMatch[1] : null;
+        if (variant) {
+          const varClean = variant.replace('.d', '');
+          for (const s of salesTexts) {
+            if (s.includes('quddus') && (s.includes(variant) || s.includes(varClean))) nJual++;
+          }
+          for (const s of soTexts) {
+            if (s.includes('quddus') && (s.includes(variant) || s.includes(varClean))) nSo++;
+          }
+          for (const s of beliTexts) {
+            if (s.includes('quddus') && (s.includes(variant) || s.includes(varClean))) nBeli++;
+          }
+        } else {
+          const key = nm.includes('juz 30') ? 'juz 30' : nm.slice(0, 20);
+          for (const s of salesTexts) {
+            if (s.includes('quddus') && s.includes(key)) nJual++;
+          }
+          for (const s of soTexts) {
+            if (s.includes('quddus') && s.includes(key)) nSo++;
+          }
+          for (const s of beliTexts) {
+            if (s.includes('quddus') && s.includes(key)) nBeli++;
+          }
         }
       } else if (isYanbua) {
-        for (const s of salesTexts) {
-          if (s.includes('yanbu')) nJual++;
-        }
-        for (const s of soTexts) {
-          if (s.includes('yanbu')) nSo++;
-        }
-        for (const s of beliTexts) {
-          if (s.includes('yanbu')) nBeli++;
-        }
+        for (const s of salesTexts) if (s.includes('yanbu')) nJual++;
+        for (const s of soTexts) if (s.includes('yanbu')) nSo++;
+        for (const s of beliTexts) if (s.includes('yanbu')) nBeli++;
       } else if (isKitab) {
-        for (const s of salesTexts) {
-          if (s.includes('qorib') || s.includes('muta')) nJual++;
-        }
-        for (const s of soTexts) {
-          if (s.includes('qorib') || s.includes('muta')) nSo++;
-        }
-        for (const s of beliTexts) {
-          if (s.includes('qorib') || s.includes('muta')) nBeli++;
-        }
+        for (const s of salesTexts) if (s.includes('qorib') || s.includes('muta') || s.includes("ta'lim") || s.includes('talim')) nJual++;
+        for (const s of soTexts) if (s.includes('qorib') || s.includes('muta') || s.includes("ta'lim") || s.includes('talim')) nSo++;
+        for (const s of beliTexts) if (s.includes('qorib') || s.includes('muta') || s.includes("ta'lim") || s.includes('talim')) nBeli++;
       } else {
-        for (const s of salesTexts) {
-          if (s.includes(kLower)) nJual++;
-        }
-        for (const s of soTexts) {
-          if (s.includes(kLower)) nSo++;
-        }
-        for (const s of beliTexts) {
-          if (s.includes(kLower)) nBeli++;
-        }
+        const words = nm.replace(/[\(\)\[\]\-\,\.]+/g, ' ').trim().split(/\s+/);
+        const sub = words.length >= 2 ? words.slice(0, 3).join(' ') : nm;
+        for (const s of salesTexts) if (s.includes(sub)) nJual++;
+        for (const s of soTexts) if (s.includes(sub)) nSo++;
+        for (const s of beliTexts) if (s.includes(sub)) nBeli++;
       }
 
       const c: Cand = { kode, nama, bom, beli: nBeli, so: nSo, jual: nJual, spk: berSpk.has(kode) };
