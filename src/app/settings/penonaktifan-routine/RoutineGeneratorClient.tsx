@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 import { Loader2, Play, Save, CheckSquare, Square } from 'lucide-react';
 import CopyButton from '@/components/ui/CopyButton';
 
@@ -26,6 +26,58 @@ const STORAGE_KEYS = {
   DATA: 'sintak_routine_candidates',
   PICKED: 'sintak_routine_picked',
 };
+
+// Komponen baris di-memoize: hanya me-render ulang baris yang status seleksinya berubah (mengurangi 99% beban render)
+const CandidateRow = memo(function CandidateRow({
+  c,
+  tableId,
+  isSelected,
+  onRowClick,
+}: {
+  c: Cand;
+  tableId: string;
+  isSelected: boolean;
+  onRowClick: (tableId: string, kode: string, e: React.MouseEvent, isCheckbox?: boolean) => void;
+}) {
+  return (
+    <tr
+      onClick={(e) => onRowClick(tableId, c.kode, e, false)}
+      className={`group cursor-pointer transition-colors ${isSelected ? 'bg-emerald-50/90 hover:bg-emerald-100/60' : 'hover:bg-slate-50'}`}
+    >
+      <td
+        className="px-2.5 py-1.5 text-center text-emerald-600"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRowClick(tableId, c.kode, e, true);
+        }}
+      >
+        {isSelected ? <CheckSquare size={15} /> : <Square size={15} className="text-slate-300" />}
+      </td>
+      <td className="px-2 py-1.5 whitespace-nowrap">
+        <div className="flex items-center gap-1.5">
+          <span className="font-mono font-bold text-slate-700">{c.kode}</span>
+          <CopyButton text={c.kode} size={11} className="w-5 h-5 opacity-40 group-hover:opacity-100 hover:!opacity-100" title="Salin kode" />
+        </div>
+      </td>
+      <td className="px-2 py-1.5 max-w-[280px]">
+        <div className="flex items-center justify-between gap-1.5 min-w-0">
+          <span className="text-slate-600 truncate flex-1" title={c.nama}>{c.nama}</span>
+          <CopyButton text={c.nama} size={11} className="w-5 h-5 shrink-0 opacity-40 group-hover:opacity-100 hover:!opacity-100" title="Salin nama barang" />
+        </div>
+      </td>
+      <td className="px-2 py-1.5 text-right tabular-nums text-slate-700">{c.bom}×</td>
+      <td className="px-2 py-1.5 text-center">
+        {c.spk ? (
+          <span className="text-[10px] font-bold text-amber-600" title="Sudah ada SPK — terlindungi otomatis, tak perlu rutin">
+            SPK ✓
+          </span>
+        ) : (
+          <span className="text-[10px] text-slate-300">—</span>
+        )}
+      </td>
+    </tr>
+  );
+});
 
 export default function RoutineGeneratorClient() {
   const [minBom, setMinBom] = useState('3');
@@ -87,12 +139,15 @@ export default function RoutineGeneratorClient() {
     } catch { /* ignore quota */ }
   }, [data, hydrated]);
 
-  // Simpan picked ke localStorage
+  // Debounced simpan picked ke localStorage (mencegah disk blocking di setiap klik)
   useEffect(() => {
     if (!hydrated) return;
-    try {
-      localStorage.setItem(STORAGE_KEYS.PICKED, JSON.stringify([...picked]));
-    } catch { /* ignore quota */ }
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEYS.PICKED, JSON.stringify([...picked]));
+      } catch { /* ignore quota */ }
+    }, 300);
+    return () => clearTimeout(timer);
   }, [picked, hydrated]);
 
   const handleGenerate = async () => {
@@ -118,34 +173,30 @@ export default function RoutineGeneratorClient() {
     }
   };
 
-  const handleRowClick = (
-    tableId: string,
-    kode: string,
-    tableRows: Cand[],
-    e: React.MouseEvent,
-    isCheckbox?: boolean
-  ) => {
-    setPicked((prev) => {
-      const next = new Set(prev);
+  const handleRowClick = useCallback(
+    (tableId: string, kode: string, e: React.MouseEvent, isCheckbox?: boolean) => {
+      const tableRows = tableId === 'generik' ? (data?.generik ?? []) : (data?.custom ?? []);
 
-      // 1. Shift + Klik: Range selection (mengambil semua baris antara lastClicked dan baris saat ini)
-      if (e.shiftKey && lastClickedRef.current?.tableId === tableId) {
-        const lastKode = lastClickedRef.current.kode;
-        const cIdx = tableRows.findIndex((x) => x.kode === kode);
-        const lIdx = tableRows.findIndex((x) => x.kode === lastKode);
-        if (cIdx !== -1 && lIdx !== -1) {
-          const start = Math.min(cIdx, lIdx);
-          const end = Math.max(cIdx, lIdx);
-          for (let i = start; i <= end; i++) {
-            next.add(tableRows[i].kode);
+      setPicked((prev) => {
+        const next = new Set(prev);
+
+        // 1. Shift + Klik: Range selection (mengambil semua baris antara lastClicked dan baris saat ini)
+        if (e.shiftKey && lastClickedRef.current?.tableId === tableId) {
+          const lastKode = lastClickedRef.current.kode;
+          const cIdx = tableRows.findIndex((x) => x.kode === kode);
+          const lIdx = tableRows.findIndex((x) => x.kode === lastKode);
+          if (cIdx !== -1 && lIdx !== -1) {
+            const start = Math.min(cIdx, lIdx);
+            const end = Math.max(cIdx, lIdx);
+            for (let i = start; i <= end; i++) {
+              next.add(tableRows[i].kode);
+            }
+            lastClickedRef.current = { tableId, kode };
+            return next;
           }
-          lastClickedRef.current = { tableId, kode };
-          return next;
         }
-      }
 
-      // 2. Klik pada Checkbox langsung ATAU Ctrl / Cmd + Klik: Additive toggle
-      if (isCheckbox || e.ctrlKey || e.metaKey) {
+        // 2. Klik biasa atau Checkbox atau Ctrl/Cmd + Klik: Additive toggle (aman, tidak menghapus ratusan hasil generate)
         if (next.has(kode)) {
           next.delete(kode);
         } else {
@@ -153,22 +204,10 @@ export default function RoutineGeneratorClient() {
         }
         lastClickedRef.current = { tableId, kode };
         return next;
-      }
-
-      // 3. Klik biasa pada baris: Single select (gaya Windows Explorer / Gmail)
-      const isCurrentlySelected = next.has(kode);
-      const wasOnlyOneSelected = next.size === 1;
-      if (isCurrentlySelected && wasOnlyOneSelected) {
-        next.clear();
-        lastClickedRef.current = null;
-      } else {
-        next.clear();
-        next.add(kode);
-        lastClickedRef.current = { tableId, kode };
-      }
-      return next;
-    });
-  };
+      });
+    },
+    [data]
+  );
 
   const handleSave = async (mode: 'tambah' | 'ganti') => {
     setSaving(true);
@@ -195,15 +234,42 @@ export default function RoutineGeneratorClient() {
     }
   };
 
-  const renderTable = (tableId: string, rows: Cand[], title: string, desc: string) => {
-    const selectedInTable = rows.filter((c) => picked.has(c.kode)).length;
-    const allSelected = rows.length > 0 && selectedInTable === rows.length;
-    const someSelected = selectedInTable > 0 && !allSelected;
+  const generikStats = useMemo(() => {
+    const rows = data?.generik ?? [];
+    let count = 0;
+    for (const c of rows) if (picked.has(c.kode)) count++;
+    return {
+      total: rows.length,
+      selected: count,
+      all: rows.length > 0 && count === rows.length,
+      some: count > 0 && count < rows.length,
+    };
+  }, [data?.generik, picked]);
+
+  const customStats = useMemo(() => {
+    const rows = data?.custom ?? [];
+    let count = 0;
+    for (const c of rows) if (picked.has(c.kode)) count++;
+    return {
+      total: rows.length,
+      selected: count,
+      all: rows.length > 0 && count === rows.length,
+      some: count > 0 && count < rows.length,
+    };
+  }, [data?.custom, picked]);
+
+  const renderTable = (
+    tableId: 'generik' | 'custom',
+    rows: Cand[],
+    title: string,
+    desc: string
+  ) => {
+    const stats = tableId === 'generik' ? generikStats : customStats;
 
     const toggleAll = () => {
       setPicked((prev) => {
         const next = new Set(prev);
-        if (allSelected) {
+        if (stats.all) {
           for (const c of rows) next.delete(c.kode);
         } else {
           for (const c of rows) next.add(c.kode);
@@ -221,11 +287,11 @@ export default function RoutineGeneratorClient() {
           </div>
           {rows.length > 0 && (
             <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
-              selectedInTable > 0
+              stats.selected > 0
                 ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
                 : 'text-slate-500 bg-slate-100 border-slate-200'
             }`}>
-              {selectedInTable} dipilih
+              {stats.selected} dipilih
             </span>
           )}
         </div>
@@ -238,12 +304,12 @@ export default function RoutineGeneratorClient() {
                     type="button"
                     onClick={toggleAll}
                     disabled={rows.length === 0}
-                    title={allSelected ? 'Batalkan semua di tabel ini' : 'Pilih semua di tabel ini'}
+                    title={stats.all ? 'Batalkan semua di tabel ini' : 'Pilih semua di tabel ini'}
                     className="p-0.5 rounded hover:bg-slate-100 text-emerald-600 transition-colors cursor-pointer disabled:cursor-not-allowed"
                   >
-                    {allSelected ? (
+                    {stats.all ? (
                       <CheckSquare size={15} />
-                    ) : someSelected ? (
+                    ) : stats.some ? (
                       <div className="w-[15px] h-[15px] rounded border border-emerald-600 bg-emerald-50 flex items-center justify-center">
                         <div className="w-2 h-0.5 bg-emerald-600 rounded-xs" />
                       </div>
@@ -259,48 +325,15 @@ export default function RoutineGeneratorClient() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 select-none">
-              {rows.map((c) => {
-                const on = picked.has(c.kode);
-                return (
-                  <tr
-                    key={c.kode}
-                    onClick={(e) => handleRowClick(tableId, c.kode, rows, e, false)}
-                    className={`group cursor-pointer transition-colors ${on ? 'bg-emerald-50/90 hover:bg-emerald-100/60' : 'hover:bg-slate-50'}`}
-                  >
-                    <td
-                      className="px-2.5 py-1.5 text-center text-emerald-600"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRowClick(tableId, c.kode, rows, e, true);
-                      }}
-                    >
-                      {on ? <CheckSquare size={15} /> : <Square size={15} className="text-slate-300" />}
-                    </td>
-                    <td className="px-2 py-1.5 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-mono font-bold text-slate-700">{c.kode}</span>
-                        <CopyButton text={c.kode} size={11} className="w-5 h-5 opacity-40 group-hover:opacity-100 hover:!opacity-100" title="Salin kode" />
-                      </div>
-                    </td>
-                    <td className="px-2 py-1.5 max-w-[280px]">
-                      <div className="flex items-center justify-between gap-1.5 min-w-0">
-                        <span className="text-slate-600 truncate flex-1" title={c.nama}>{c.nama}</span>
-                        <CopyButton text={c.nama} size={11} className="w-5 h-5 shrink-0 opacity-40 group-hover:opacity-100 hover:!opacity-100" title="Salin nama barang" />
-                      </div>
-                    </td>
-                    <td className="px-2 py-1.5 text-right tabular-nums text-slate-700">{c.bom}×</td>
-                    <td className="px-2 py-1.5 text-center">
-                      {c.spk ? (
-                        <span className="text-[10px] font-bold text-amber-600" title="Sudah ada SPK — terlindungi otomatis, tak perlu rutin">
-                          SPK ✓
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-slate-300">—</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+              {rows.map((c) => (
+                <CandidateRow
+                  key={c.kode}
+                  c={c}
+                  tableId={tableId}
+                  isSelected={picked.has(c.kode)}
+                  onRowClick={handleRowClick}
+                />
+              ))}
               {rows.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-3 py-8 text-center text-slate-400">
