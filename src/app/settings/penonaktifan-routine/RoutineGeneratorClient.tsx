@@ -8,16 +8,16 @@ import SearchAndReload from '@/components/SearchAndReload';
 interface Cand {
   kode: string;
   nama: string;
-  bom: number;
   beli: number;
   so: number;
   jual: number;
-  spk: boolean;
 }
 
 interface GenResult {
   success: boolean;
-  minBom: number;
+  minBeli: number;
+  minSo: number;
+  minJual: number;
   generik: Cand[];
   generikCount: number;
   custom: Cand[];
@@ -26,7 +26,9 @@ interface GenResult {
 }
 
 const STORAGE_KEYS = {
-  MIN_BOM: 'sintak_routine_minBom',
+  MIN_BELI: 'sintak_routine_minBeli',
+  MIN_SO: 'sintak_routine_minSo',
+  MIN_JUAL: 'sintak_routine_minJual',
   DATA: 'sintak_routine_candidates',
   PICKED: 'sintak_routine_picked',
 };
@@ -78,25 +80,17 @@ const CandidateRow = memo(function CandidateRow({
           <CopyButton text={c.nama} size={11} className="w-5 h-5 shrink-0 opacity-40 group-hover:opacity-100 hover:!opacity-100" title="Salin nama barang" />
         </div>
       </td>
-      <td className="px-2 py-1.5 text-right tabular-nums text-slate-700 font-semibold">{c.bom}×</td>
-      <td className="px-2 py-1.5 text-right tabular-nums text-slate-600">{c.beli > 0 ? `${c.beli}×` : '—'}</td>
+      <td className="px-2 py-1.5 text-right tabular-nums text-slate-700 font-semibold">{c.beli > 0 ? `${c.beli}×` : '—'}</td>
       <td className="px-2 py-1.5 text-right tabular-nums text-slate-600">{c.so > 0 ? `${c.so}×` : '—'}</td>
       <td className="px-2 py-1.5 text-right tabular-nums text-slate-600">{c.jual > 0 ? `${c.jual}×` : '—'}</td>
-      <td className="px-2 py-1.5 text-center">
-        {c.spk ? (
-          <span className="text-[10px] font-bold text-amber-600" title="Sudah ada SPK — terlindungi otomatis, tak perlu rutin">
-            SPK ✓
-          </span>
-        ) : (
-          <span className="text-[10px] text-slate-300">—</span>
-        )}
-      </td>
     </tr>
   );
 });
 
 export default function RoutineGeneratorClient() {
-  const [minBom, setMinBom] = useState('3');
+  const [minBeli, setMinBeli] = useState('0');
+  const [minSo, setMinSo] = useState('0');
+  const [minJual, setMinJual] = useState('1');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -113,8 +107,14 @@ export default function RoutineGeneratorClient() {
   // Restore dari localStorage setelah mounted di browser (mencegah hydration mismatch)
   useEffect(() => {
     try {
-      const savedMinBom = localStorage.getItem(STORAGE_KEYS.MIN_BOM);
-      if (savedMinBom) setMinBom(savedMinBom);
+      const savedBeli = localStorage.getItem(STORAGE_KEYS.MIN_BELI);
+      if (savedBeli) setMinBeli(savedBeli);
+
+      const savedSo = localStorage.getItem(STORAGE_KEYS.MIN_SO);
+      if (savedSo) setMinSo(savedSo);
+
+      const savedJual = localStorage.getItem(STORAGE_KEYS.MIN_JUAL);
+      if (savedJual) setMinJual(savedJual);
 
       const savedData = localStorage.getItem(STORAGE_KEYS.DATA);
       if (savedData) {
@@ -138,13 +138,15 @@ export default function RoutineGeneratorClient() {
     }
   }, []);
 
-  // Simpan minBom ke localStorage
+  // Simpan input filter ke localStorage
   useEffect(() => {
     if (!isMounted) return;
     try {
-      localStorage.setItem(STORAGE_KEYS.MIN_BOM, minBom);
+      localStorage.setItem(STORAGE_KEYS.MIN_BELI, minBeli);
+      localStorage.setItem(STORAGE_KEYS.MIN_SO, minSo);
+      localStorage.setItem(STORAGE_KEYS.MIN_JUAL, minJual);
     } catch { /* ignore */ }
-  }, [minBom, isMounted]);
+  }, [minBeli, minSo, minJual, isMounted]);
 
   // Simpan data kandidat ke localStorage
   useEffect(() => {
@@ -170,21 +172,20 @@ export default function RoutineGeneratorClient() {
   }, [picked, isMounted]);
 
   const handleGenerate = async () => {
-    const n = Number(minBom);
-    if (!minBom.trim() || !Number.isFinite(n) || n < 1) {
-      setError('Repeat minimal harus angka ≥ 1.');
-      return;
-    }
     setLoading(true);
     setError('');
     setMsg('');
     lastClickedRef.current = null;
     try {
-      const res = await fetch(`/api/penonaktifan-master-barang/generate-routine?minBom=${encodeURIComponent(String(Math.floor(n)))}&limit=200`);
+      const b = Math.max(0, parseInt(minBeli, 10) || 0);
+      const s = Math.max(0, parseInt(minSo, 10) || 0);
+      const j = Math.max(0, parseInt(minJual, 10) || 0);
+
+      const res = await fetch(`/api/penonaktifan-master-barang/generate-routine?minBeli=${b}&minSo=${s}&minJual=${j}&limit=200`);
       const json = (await res.json()) as GenResult;
       if (!json.success) throw new Error(json.error || 'Gagal generate');
       setData(json);
-      setPicked(new Set(json.generik.filter((c) => !c.spk).map((c) => c.kode)));
+      setPicked(new Set(json.generik.map((c) => c.kode)));
       const now = new Date();
       const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       setMsg(`Berhasil di-generate pukul ${timeStr} WIB: Ditemukan ${json.generikCount} kandidat generik dan ${json.customCount} custom.`);
@@ -418,11 +419,9 @@ export default function RoutineGeneratorClient() {
                 </th>
                 <th className="text-left px-2 py-2 font-bold text-slate-600">Kode</th>
                 <th className="text-left px-2 py-2 font-bold text-slate-600">Nama</th>
-                <th className="text-right px-2 py-2 font-bold text-slate-600">BOM</th>
                 <th className="text-right px-2 py-2 font-bold text-slate-600" title="Frekuensi di Penerimaan Pembelian (Faktur PB)">Beli</th>
                 <th className="text-right px-2 py-2 font-bold text-slate-600" title="Frekuensi di Sales Order (Pesanan Konsumen)">SO</th>
                 <th className="text-right px-2 py-2 font-bold text-slate-600" title="Frekuensi di Penjualan (Faktur PJ Kasir)">Jual</th>
-                <th className="text-center px-2 py-2 font-bold text-slate-600">SPK</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 select-none">
@@ -437,7 +436,7 @@ export default function RoutineGeneratorClient() {
               ))}
               {filteredRows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-3 py-8 text-center text-slate-400">
+                  <td colSpan={6} className="px-3 py-8 text-center text-slate-400">
                     {searchValue ? 'Tidak ada kandidat yang cocok dengan pencarian.' : 'Tidak ada kandidat.'}
                   </td>
                 </tr>
@@ -451,14 +450,35 @@ export default function RoutineGeneratorClient() {
 
   return (
     <div className="flex-1 flex flex-col gap-4 overflow-hidden min-h-0 px-1 pb-2">
-      <div className="flex items-end gap-2 flex-wrap shrink-0">
+      <div className="flex items-end gap-2.5 flex-wrap shrink-0">
         <div>
-          <label className="block text-[11px] font-bold text-gray-400 mb-1">Minimal produksi berulang (×)</label>
+          <label className="block text-[11px] font-bold text-gray-400 mb-1">Minimal Pembelian (×)</label>
           <input
-            value={minBom}
-            onChange={(e) => setMinBom(e.target.value.replace(/\D/g, ''))}
+            value={minBeli}
+            onChange={(e) => setMinBeli(e.target.value.replace(/\D/g, ''))}
             inputMode="numeric"
-            className="px-3 py-2 w-24 text-xs tabular-nums bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none shadow-xs"
+            placeholder="0"
+            className="px-3 py-2 w-20 text-xs tabular-nums bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none shadow-xs"
+          />
+        </div>
+        <div>
+          <label className="block text-[11px] font-bold text-gray-400 mb-1">Minimal SO (×)</label>
+          <input
+            value={minSo}
+            onChange={(e) => setMinSo(e.target.value.replace(/\D/g, ''))}
+            inputMode="numeric"
+            placeholder="0"
+            className="px-3 py-2 w-20 text-xs tabular-nums bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none shadow-xs"
+          />
+        </div>
+        <div>
+          <label className="block text-[11px] font-bold text-gray-400 mb-1">Minimal Penjualan (×)</label>
+          <input
+            value={minJual}
+            onChange={(e) => setMinJual(e.target.value.replace(/\D/g, ''))}
+            inputMode="numeric"
+            placeholder="1"
+            className="px-3 py-2 w-20 text-xs tabular-nums bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none shadow-xs"
           />
         </div>
         <button
@@ -504,7 +524,7 @@ export default function RoutineGeneratorClient() {
         </div>
       ) : !loading ? (
         <div className="flex-1 flex items-center justify-center border border-dashed border-slate-200 rounded-2xl text-slate-400 text-xs">
-          Atur batas repeat, klik Generate — centang kandidat, lalu Tambah ke rutin.
+          Atur batas transaksi, klik Generate — centang kandidat, lalu Tambah ke rutin.
         </div>
       ) : null}
     </div>

@@ -713,30 +713,44 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
               <AccordionMenu
                 label="Settings"
                 icon={<Database size={18} />}
-                 items={[{
-                   label: 'Konversi Data',
-                   icon: <RefreshCw size={16} />,
-                   items: [
-                     {
-                       label: 'Kalkulasi',
-                       icon: <Calculator size={14} />,
-                       items: [{
-                         label: 'Data',
-                         icon: <Database size={12} />,
-                         items: [{ label: 'HPP Kalkulasi', href: '/settings/konversi-data/kalkulasi/hpp-kalkulasi', icon: <Calculator size={12} />, exact: true }]
-                       }]
-                     },
-                     {
-                       label: 'Produksi',
-                       icon: <Package size={14} />,
-                       items: [
-                         { label: 'SOPd & Jurnal Harian', href: '/settings/konversi-data/jurnal-harian-produksi', icon: <ClipboardList size={12} />, exact: true },
-                         { label: 'Laporan Pekerjaan', href: '/settings/konversi-data/laporan-pekerjaan', icon: <FileSpreadsheet size={12} />, exact: true },
-                         { label: 'Generator Kode Rutin', href: '/settings/penonaktifan-routine', icon: <Sparkles size={12} />, exact: true }
-                       ]
-                     }
-                   ]
-                 }]}
+                 items={[
+                   {
+                     label: 'Konversi Data',
+                     icon: <RefreshCw size={16} />,
+                     items: [
+                       {
+                         label: 'Kalkulasi',
+                         icon: <Calculator size={14} />,
+                         items: [{
+                           label: 'Data',
+                           icon: <Database size={12} />,
+                           items: [{ label: 'HPP Kalkulasi', href: '/settings/konversi-data/kalkulasi/hpp-kalkulasi', icon: <Calculator size={12} />, exact: true }]
+                         }]
+                       },
+                       {
+                         label: 'Produksi',
+                         icon: <Package size={14} />,
+                         items: [
+                           { label: 'SOPd & Jurnal Harian', href: '/settings/konversi-data/jurnal-harian-produksi', icon: <ClipboardList size={12} />, exact: true },
+                           { label: 'Laporan Pekerjaan', href: '/settings/konversi-data/laporan-pekerjaan', icon: <FileSpreadsheet size={12} />, exact: true }
+                         ]
+                       }
+                     ]
+                   },
+                   {
+                     label: 'Produksi',
+                     icon: <Package size={16} />,
+                     items: [
+                       {
+                         label: 'Lap. Penonaktifan Master Barang',
+                         icon: <FileCheck size={14} />,
+                         items: [
+                           { label: 'Generator Kode Rutin', href: '/settings/penonaktifan-routine', icon: <Sparkles size={12} />, exact: true }
+                         ]
+                       }
+                     ]
+                   }
+                 ]}
               />
             )}
           </>
