@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
-import { Loader2, Play, Save, CheckSquare, Square, HelpCircle, BookOpen, X, ShieldCheck, CheckCircle2, Info, Layers, MousePointerClick } from 'lucide-react';
+import { Loader2, Play, Save, CheckSquare, Square } from 'lucide-react';
 import CopyButton from '@/components/ui/CopyButton';
 import SearchAndReload from '@/components/SearchAndReload';
 
@@ -104,7 +104,6 @@ export default function RoutineGeneratorClient() {
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [msg, setMsg] = useState('');
   const [isMounted, setIsMounted] = useState(false);
-  const [showGuide, setShowGuide] = useState(false);
 
   const [searchGenerik, setSearchGenerik] = useState('');
   const [searchCustom, setSearchCustom] = useState('');
@@ -186,6 +185,9 @@ export default function RoutineGeneratorClient() {
       if (!json.success) throw new Error(json.error || 'Gagal generate');
       setData(json);
       setPicked(new Set(json.generik.filter((c) => !c.spk).map((c) => c.kode)));
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      setMsg(`Berhasil di-generate pukul ${timeStr} WIB: Ditemukan ${json.generikCount} kandidat generik dan ${json.customCount} custom.`);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -467,15 +469,6 @@ export default function RoutineGeneratorClient() {
           {loading ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
           Generate kandidat
         </button>
-        <button
-          type="button"
-          onClick={() => setShowGuide(true)}
-          className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-[12px] font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
-          title="Panduan penggunaan & penjelasan logika kurasi"
-        >
-          <HelpCircle size={15} className="text-emerald-600" />
-          <span>Panduan</span>
-        </button>
         {isMounted && data && (
           <>
             <button
@@ -514,149 +507,6 @@ export default function RoutineGeneratorClient() {
           Atur batas repeat, klik Generate — centang kandidat, lalu Tambah ke rutin.
         </div>
       ) : null}
-
-      {/* Modal Panduan Penggunaan Halaman Generator Kode Rutin */}
-      {showGuide && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150"
-          onClick={() => setShowGuide(false)}
-        >
-          <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[88vh] flex flex-col overflow-hidden border border-slate-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header Modal */}
-            <div className="px-6 py-4 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center border border-white/20">
-                  <BookOpen size={20} className="text-white" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold tracking-tight">Panduan Generator Kode Rutin</h3>
-                  <p className="text-xs text-emerald-100">Sistem Kurasi Proteksi Kode Barang Master terhadap Usulan Penonaktifan</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowGuide(false)}
-                className="w-8 h-8 rounded-lg hover:bg-white/20 text-white/90 hover:text-white flex items-center justify-center transition-all cursor-pointer"
-                title="Tutup Panduan"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Isi Panduan Rinci */}
-            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 flex flex-col gap-5 text-xs text-slate-600 leading-relaxed">
-              {/* Seksi 1: Tujuan Halaman */}
-              <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4">
-                <div className="flex items-center gap-2 text-slate-800 font-bold text-sm mb-1.5">
-                  <ShieldCheck size={16} className="text-emerald-600" />
-                  <h4>Tujuan &amp; Fungsi Halaman</h4>
-                </div>
-                <p>
-                  Halaman ini berfungsi sebagai <strong>alat kurasi proteksi master barang</strong>. Master barang yang terdaftar di dalam <em>Kode Rutin</em> akan <strong>dikecualikan (diberi proteksi kebal)</strong> dari sistem usulan penonaktifan mingguan pada modul <em>Lap. Penonaktifan Master Barang Jadi</em>, karena barang tersebut dinilai merupakan produk standar percetakan yang terus-menerus dipesan ulang (<em>repeat order</em>).
-                </p>
-              </div>
-
-              {/* Seksi 2: Indikator Kolom Transaksi */}
-              <div>
-                <h4 className="font-bold text-slate-800 text-sm mb-2 flex items-center gap-2">
-                  <Layers size={15} className="text-emerald-600" />
-                  Arti 5 Kolom Indikator Transaksi
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                  <div className="p-3 rounded-xl border border-slate-100 bg-white shadow-2xs">
-                    <span className="font-bold text-slate-800 block text-xs">1. Kolom BOM (Produksi)</span>
-                    <span className="text-[11px] text-slate-500">Jumlah frekuensi barang ini dibuatkan <em>Bill of Materials</em> / SPK naik cetak di percetakan.</span>
-                  </div>
-                  <div className="p-3 rounded-xl border border-slate-100 bg-white shadow-2xs">
-                    <span className="font-bold text-slate-800 block text-xs">2. Kolom Beli (Pembelian PB)</span>
-                    <span className="text-[11px] text-slate-500">Jumlah transaksi penerimaan barang pembelian (faktur PB) yang tercatat di <code>rekap_pembelian_barang</code>.</span>
-                  </div>
-                  <div className="p-3 rounded-xl border border-slate-100 bg-white shadow-2xs">
-                    <span className="font-bold text-slate-800 block text-xs">3. Kolom SO (Sales Order)</span>
-                    <span className="text-[11px] text-slate-500">Jumlah riwayat pesanan resmi dari konsumen yang tercatat pada modul <code>sales_orders</code>.</span>
-                  </div>
-                  <div className="p-3 rounded-xl border border-slate-100 bg-white shadow-2xs">
-                    <span className="font-bold text-slate-800 block text-xs">4. Kolom Jual (Penjualan Kasir)</span>
-                    <span className="text-[11px] text-slate-500">Jumlah faktur nota penjualan kasir/admin yang tercatat pada modul <code>sales_reports</code>.</span>
-                  </div>
-                  <div className="p-3 rounded-xl border border-slate-100 bg-white shadow-2xs md:col-span-2">
-                    <span className="font-bold text-amber-600 block text-xs">5. Kolom SPK ✓ (Proteksi Otomatis Produksi)</span>
-                    <span className="text-[11px] text-slate-500">Menandakan barang sedang memiliki SPK aktif berjalan di pabrik. Barang ini <strong>sudah terlindungi otomatis</strong> oleh sistem penonaktifan via oplah berjalan, sehingga tidak wajib dimasukkan ke kode rutin.</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Seksi 3: Klasifikasi Generik vs Custom */}
-              <div>
-                <h4 className="font-bold text-slate-800 text-sm mb-2 flex items-center gap-2">
-                  <CheckCircle2 size={15} className="text-emerald-600" />
-                  Kriteria Pemisahan: Generik vs Custom
-                </h4>
-                <div className="space-y-2">
-                  <div className="p-3 rounded-xl border border-emerald-200 bg-emerald-50/50">
-                    <span className="font-bold text-emerald-800 block text-xs">Tabel Kiri: Generik — Disarankan</span>
-                    <p className="text-[11px] text-emerald-900/80 mt-0.5">
-                      Berisi produk massal standar milik percetakan sendiri (seperti <em>Al-Qur&apos;an Al-Quddus</em> berbagai varian, <em>Buku Panduan Yanbu&apos;a</em>, dan <em>Kitab Standar Pesantren</em>) yang terbukti memiliki riwayat transaksi penjualan/SO aktif berulang kali dan bukan milik satu pemesan perorangan. <strong>Sangat disarankan dicentang untuk dilindungi</strong>.
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-xl border border-slate-200 bg-slate-50/70">
-                    <span className="font-bold text-slate-800 block text-xs">Tabel Kanan: Custom — Tidak Disarankan</span>
-                    <p className="text-[11px] text-slate-600 mt-0.5">
-                      Berisi pesanan perorangan atau instansi khusus (mengandung nama pemesan, nomor HP/WA, label <code>NN -</code>, awalan <code>OP./PO.</code>, nama sekolah/madrasah/ponpes, biro travel umrah, buku manasik, kalender musiman, buku setoran, map raport, atau tidak memiliki riwayat penjualan berulang). Barang-barang ini bertipe <em>made-to-order</em> (sekali cetak). Tidak disarankan dilindungi abadi agar master tidak menumpuk saat sudah selesai acaranya.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Seksi 4: Panduan Interaksi Tabel & Keyboard Shortcut */}
-              <div>
-                <h4 className="font-bold text-slate-800 text-sm mb-2 flex items-center gap-2">
-                  <MousePointerClick size={15} className="text-emerald-600" />
-                  Cara Seleksi Baris (Multi-Select) &amp; Pencarian
-                </h4>
-                <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-600 pl-1">
-                  <li><strong>Klik Biasa pada Baris:</strong> Memilih/fokus pada satu baris tunggal di tabel tersebut.</li>
-                  <li><strong>Shift + Klik:</strong> Memilih seluruh rentang baris sekaligus dari baris terakhir yang diklik (<em>range selection</em>).</li>
-                  <li><strong>Ctrl + Klik (atau Cmd + Klik):</strong> Menambah atau membatalkan pilihan baris secara individual tanpa mereset baris lain.</li>
-                  <li><strong>Klik Kotak Checkbox:</strong> Berfungsi sebagai <em>toggle</em> aditif langsung pada baris tersebut.</li>
-                  <li><strong>Checkbox Header Tabel:</strong> Memilih semua atau membatalkan semua baris di tabel tersebut dalam 1 klik.</li>
-                  <li><strong>Search &amp; Reload per Tabel:</strong> Gunakan kotak cari di atas masing-masing tabel untuk menyaring kode atau nama barang tertentu secara cepat.</li>
-                </ul>
-              </div>
-
-              {/* Seksi 5: Perbedaan Tombol Simpan */}
-              <div className="border-t border-slate-200/80 pt-4">
-                <h4 className="font-bold text-slate-800 text-sm mb-2">Perbedaan Tombol Simpan Proteksi:</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-[11px]">
-                  <div className="p-3 rounded-xl border border-blue-200 bg-blue-50/40">
-                    <span className="font-bold text-blue-700 block text-xs">Tambah {picked.size} ke rutin (Append)</span>
-                    <span>Menggabungkan kode-kode yang sedang Anda centang saat ini ke dalam daftar rutin lama. Kode rutin lama yang sebelumnya sudah terdaftar <strong>tetap dipertahankan (tidak hilang)</strong>.</span>
-                  </div>
-                  <div className="p-3 rounded-xl border border-slate-200 bg-white">
-                    <span className="font-bold text-slate-700 block text-xs">Ganti semua (Overwrite)</span>
-                    <span>Menghapus seluruh daftar kode rutin lama dan <strong>menggantinya secara total</strong> hanya dengan kode-kode yang Anda centang saat ini. Cocok untuk menyetel ulang daftar proteksi dari nol.</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer Modal */}
-            <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between shrink-0">
-              <span className="text-[11px] text-slate-400 font-medium">SINTAK • Sistem Penonaktifan Master Barang PT Buya Barokah</span>
-              <button
-                type="button"
-                onClick={() => setShowGuide(false)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
-              >
-                Tutup Panduan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
