@@ -82,5 +82,5 @@ export const searchableMenuItems: SearchableMenuItem[] = [
   { label: 'Konversi Data - HPP Kalkulasi', href: '/settings/konversi-data/kalkulasi/hpp-kalkulasi', category: 'Settings', keywords: 'konversi data hpp kalkulasi excel', permission: 'settings_konversi_data_hpp' },
   { label: 'Konversi Data - JHP', href: '/settings/konversi-data/jurnal-harian-produksi', category: 'Settings', keywords: 'konversi data sopd jhp jurnal harian', permission: 'settings_konversi_data' },
   { label: 'Konversi Data - Laporan Pekerjaan', href: '/settings/konversi-data/laporan-pekerjaan', category: 'Settings', keywords: 'konversi data laporan pekerjaan spreadsheet', permission: 'settings_konversi_data' },
-  { label: 'Generator Kode Rutin', href: '/settings/penonaktifan-routine', category: 'Settings', keywords: 'generator rutin penonaktifan kode repeat bom', permission: 'settings_konversi_data' },
+  { label: 'Generator Kode Rutin', href: '/settings/penonaktifan-routine', category: 'Settings', keywords: 'generator rutin penonaktifan kode repeat pembelian so penjualan transaksi produksi', permission: 'settings_konversi_data' },
 ];
