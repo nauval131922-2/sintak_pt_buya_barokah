@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Loader2, Play, Save, CheckSquare, Square } from 'lucide-react';
 import CopyButton from '@/components/ui/CopyButton';
 
@@ -21,6 +21,12 @@ interface GenResult {
   error?: string;
 }
 
+const STORAGE_KEYS = {
+  MIN_BOM: 'sintak_routine_minBom',
+  DATA: 'sintak_routine_candidates',
+  PICKED: 'sintak_routine_picked',
+};
+
 export default function RoutineGeneratorClient() {
   const [minBom, setMinBom] = useState('3');
   const [loading, setLoading] = useState(false);
@@ -29,8 +35,65 @@ export default function RoutineGeneratorClient() {
   const [data, setData] = useState<GenResult | null>(null);
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [msg, setMsg] = useState('');
+  const [hydrated, setHydrated] = useState(false);
 
   const lastClickedRef = useRef<{ tableId: string; kode: string } | null>(null);
+
+  // Restore dari localStorage saat pertama kali mount
+  useEffect(() => {
+    try {
+      const savedMinBom = localStorage.getItem(STORAGE_KEYS.MIN_BOM);
+      if (savedMinBom) setMinBom(savedMinBom);
+
+      const savedData = localStorage.getItem(STORAGE_KEYS.DATA);
+      if (savedData) {
+        const parsed = JSON.parse(savedData) as GenResult;
+        if (parsed && Array.isArray(parsed.generik) && Array.isArray(parsed.custom)) {
+          setData(parsed);
+        }
+      }
+
+      const savedPicked = localStorage.getItem(STORAGE_KEYS.PICKED);
+      if (savedPicked) {
+        const parsedPicked = JSON.parse(savedPicked);
+        if (Array.isArray(parsedPicked)) {
+          setPicked(new Set(parsedPicked));
+        }
+      }
+    } catch (e) {
+      console.error('Failed to restore routine generator data:', e);
+    } finally {
+      setHydrated(true);
+    }
+  }, []);
+
+  // Simpan minBom ke localStorage
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(STORAGE_KEYS.MIN_BOM, minBom);
+    } catch { /* ignore */ }
+  }, [minBom, hydrated]);
+
+  // Simpan data kandidat ke localStorage
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      if (data) {
+        localStorage.setItem(STORAGE_KEYS.DATA, JSON.stringify(data));
+      } else {
+        localStorage.removeItem(STORAGE_KEYS.DATA);
+      }
+    } catch { /* ignore quota */ }
+  }, [data, hydrated]);
+
+  // Simpan picked ke localStorage
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(STORAGE_KEYS.PICKED, JSON.stringify([...picked]));
+    } catch { /* ignore quota */ }
+  }, [picked, hydrated]);
 
   const handleGenerate = async () => {
     const n = Number(minBom);
@@ -55,9 +118,17 @@ export default function RoutineGeneratorClient() {
     }
   };
 
-  const handleRowClick = (tableId: string, kode: string, tableRows: Cand[], e: React.MouseEvent) => {
+  const handleRowClick = (
+    tableId: string,
+    kode: string,
+    tableRows: Cand[],
+    e: React.MouseEvent,
+    isCheckbox?: boolean
+  ) => {
     setPicked((prev) => {
       const next = new Set(prev);
+
+      // 1. Shift + Klik: Range selection (mengambil semua baris antara lastClicked dan baris saat ini)
       if (e.shiftKey && lastClickedRef.current?.tableId === tableId) {
         const lastKode = lastClickedRef.current.kode;
         const cIdx = tableRows.findIndex((x) => x.kode === kode);
@@ -65,25 +136,36 @@ export default function RoutineGeneratorClient() {
         if (cIdx !== -1 && lIdx !== -1) {
           const start = Math.min(cIdx, lIdx);
           const end = Math.max(cIdx, lIdx);
-          const targetWillSelect = !prev.has(kode);
           for (let i = start; i <= end; i++) {
-            if (targetWillSelect) {
-              next.add(tableRows[i].kode);
-            } else {
-              next.delete(tableRows[i].kode);
-            }
+            next.add(tableRows[i].kode);
           }
           lastClickedRef.current = { tableId, kode };
           return next;
         }
       }
 
-      if (next.has(kode)) {
-        next.delete(kode);
-      } else {
-        next.add(kode);
+      // 2. Klik pada Checkbox langsung ATAU Ctrl / Cmd + Klik: Additive toggle
+      if (isCheckbox || e.ctrlKey || e.metaKey) {
+        if (next.has(kode)) {
+          next.delete(kode);
+        } else {
+          next.add(kode);
+        }
+        lastClickedRef.current = { tableId, kode };
+        return next;
       }
-      lastClickedRef.current = { tableId, kode };
+
+      // 3. Klik biasa pada baris: Single select (gaya Windows Explorer / Gmail)
+      const isCurrentlySelected = next.has(kode);
+      const wasOnlyOneSelected = next.size === 1;
+      if (isCurrentlySelected && wasOnlyOneSelected) {
+        next.clear();
+        lastClickedRef.current = null;
+      } else {
+        next.clear();
+        next.add(kode);
+        lastClickedRef.current = { tableId, kode };
+      }
       return next;
     });
   };
@@ -182,10 +264,16 @@ export default function RoutineGeneratorClient() {
                 return (
                   <tr
                     key={c.kode}
-                    onClick={(e) => handleRowClick(tableId, c.kode, rows, e)}
+                    onClick={(e) => handleRowClick(tableId, c.kode, rows, e, false)}
                     className={`group cursor-pointer transition-colors ${on ? 'bg-emerald-50/90 hover:bg-emerald-100/60' : 'hover:bg-slate-50'}`}
                   >
-                    <td className="px-2.5 py-1.5 text-center text-emerald-600">
+                    <td
+                      className="px-2.5 py-1.5 text-center text-emerald-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRowClick(tableId, c.kode, rows, e, true);
+                      }}
+                    >
                       {on ? <CheckSquare size={15} /> : <Square size={15} className="text-slate-300" />}
                     </td>
                     <td className="px-2 py-1.5 whitespace-nowrap">
