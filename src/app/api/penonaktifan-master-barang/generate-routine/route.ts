@@ -77,8 +77,8 @@ export async function GET(req: NextRequest) {
     const hpRe = /\+62|08\d{8,}/;
     const nnRe = /\bNN\b\s*-/i;
     const customRe = /\bcustom\b/i;
-    const clientRe = /\b(tour|travel|pt\b|cv\b|biro|kbihu|haji|umrah|umroh|pesantren|pondok|pp\b|ppsd|pptq|smp\b|sma\b|smk\b|man\b|mi\b|mts\b|ma\b|sd\b|tk\b|paud|lmy|yqbs|klinik|dr\.|percetakan|perc\.|kemenag)\b/i;
-    const customDocRe = /kalender|buku\s+manasik|^sampul\s+raport|^stopmap|^syahadah|^surat\s+keterangan|^nota\b|^kop\s+pp|^cetak\s+lembaran/i;
+    const clientRe = /\b(tour|travel|pt\b|cv\b|biro|kbihu|haji|umrah|umroh|pesantren|pondok|pp\b|ppsd|pptq|ptyq|smp\b|sma\b|smk\b|man\b|mi\b|mts\b|ma\b|sd\b|tk\b|paud|lmy|yqbs|klinik|dr\.|percetakan|perc\.|kemenag)\b/i;
+    const customDocRe = /kalender|buku\s+manasik|^sampul\s+raport|^stopmap|^syahadah|^surat\s+keterangan|^nota\b|^kop\s+pp|^cetak\s+lembaran|rokok|notebook/i;
     const bookCoverRe = /^Buku\s+(Soft|Hard)\s+Cover|^Album\s+Kenangan/i;
     const sosmedRe = /·\s*(TikTok|Facebook)|@\w+/i;
     const generik: Cand[] = [];

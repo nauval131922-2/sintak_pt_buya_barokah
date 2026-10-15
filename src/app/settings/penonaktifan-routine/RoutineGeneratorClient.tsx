@@ -89,43 +89,55 @@ const CandidateRow = memo(function CandidateRow({
 });
 
 export default function RoutineGeneratorClient() {
-  const [minBom, setMinBom] = useState('3');
+  const [minBom, setMinBom] = useState<string>(() => {
+    if (typeof window === 'undefined') return '3';
+    try {
+      return localStorage.getItem(STORAGE_KEYS.MIN_BOM) || '3';
+    } catch {
+      return '3';
+    }
+  });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [data, setData] = useState<GenResult | null>(null);
-  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [data, setData] = useState<GenResult | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const savedData = localStorage.getItem(STORAGE_KEYS.DATA);
+      if (savedData) {
+        const parsed = JSON.parse(savedData) as GenResult;
+        if (parsed && Array.isArray(parsed.generik) && Array.isArray(parsed.custom)) {
+          return parsed;
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    return null;
+  });
+  const [picked, setPicked] = useState<Set<string>>(() => {
+    if (typeof window === 'undefined') return new Set();
+    try {
+      const savedPicked = localStorage.getItem(STORAGE_KEYS.PICKED);
+      if (savedPicked) {
+        const parsedPicked = JSON.parse(savedPicked);
+        if (Array.isArray(parsedPicked)) {
+          return new Set(parsedPicked);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    return new Set();
+  });
   const [msg, setMsg] = useState('');
   const [hydrated, setHydrated] = useState(false);
 
   const lastClickedRef = useRef<{ tableId: string; kode: string } | null>(null);
 
-  // Restore dari localStorage saat pertama kali mount
+  // Tandai hydration selesai
   useEffect(() => {
-    try {
-      const savedMinBom = localStorage.getItem(STORAGE_KEYS.MIN_BOM);
-      if (savedMinBom) setMinBom(savedMinBom);
-
-      const savedData = localStorage.getItem(STORAGE_KEYS.DATA);
-      if (savedData) {
-        const parsed = JSON.parse(savedData) as GenResult;
-        if (parsed && Array.isArray(parsed.generik) && Array.isArray(parsed.custom)) {
-          setData(parsed);
-        }
-      }
-
-      const savedPicked = localStorage.getItem(STORAGE_KEYS.PICKED);
-      if (savedPicked) {
-        const parsedPicked = JSON.parse(savedPicked);
-        if (Array.isArray(parsedPicked)) {
-          setPicked(new Set(parsedPicked));
-        }
-      }
-    } catch (e) {
-      console.error('Failed to restore routine generator data:', e);
-    } finally {
-      setHydrated(true);
-    }
+    setHydrated(true);
   }, []);
 
   // Simpan minBom ke localStorage
@@ -444,7 +456,7 @@ export default function RoutineGeneratorClient() {
           {renderTable('generik', data.generik, 'Generik — disarankan', 'Tanpa OP/HP/NN, repeat-order massal. Centang = lindungi.')}
           {renderTable('custom', data.custom, 'Custom — tidak disarankan', 'Sekali-cetak pelanggan. Terlindungi otomatis via oplah saat SPK jalan.')}
         </div>
-      ) : !loading ? (
+      ) : !loading && hydrated ? (
         <div className="flex-1 flex items-center justify-center border border-dashed border-slate-200 rounded-2xl text-slate-400 text-xs">
           Atur batas repeat, klik Generate — centang kandidat, lalu Tambah ke rutin.
         </div>
