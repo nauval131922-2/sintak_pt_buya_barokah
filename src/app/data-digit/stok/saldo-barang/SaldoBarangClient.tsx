@@ -7,10 +7,10 @@ import TableFooter from '@/components/TableFooter';
 import SearchAndReload from '@/components/SearchAndReload';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { DataTable } from '@/components/ui/DataTable';
- import DatePicker from '@/components/DatePicker';
- import { formatLastUpdate } from '@/lib/date-utils';
- import { useTableSelection } from '@/lib/hooks/useTableSelection';
- import { highlightText } from '@/lib/highlight';
+import DatePicker from '@/components/DatePicker';
+import { formatLastUpdate } from '@/lib/date-utils';
+import { useTableSelection } from '@/lib/hooks/useTableSelection';
+import { highlightText } from '@/lib/highlight';
 
 interface SaldoRow {
   id: string;
@@ -56,6 +56,10 @@ export default function SaldoBarangClient() {
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
   const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
   const [highlightQuery, setHighlightQuery] = useState(() => searchParams.get('search') || '');
+  const [golongan, setGolongan] = useState(() => searchParams.get('golongan') || '');
+  const [status, setStatus] = useState(() => searchParams.get('status') || '');
+  const [golonganOptions, setGolonganOptions] = useState<string[]>([]);
+  const [statusOptions, setStatusOptions] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const [rows, setRows] = useState<SaldoRow[]>([]);
   const [total, setTotal] = useState(0);
@@ -76,9 +80,9 @@ export default function SaldoBarangClient() {
       const saved = localStorage.getItem('saldoBarang_columnWidths');
       if (saved) return JSON.parse(saved);
     }
-     return {
-       kode: 120, nama: 350, kd_satuan: 100, saldo: 120, n_persd: 130, status: 100, kd_golongan: 160, kd_kelompok: 200,
-     };
+    return {
+      kode: 120, nama: 350, kd_satuan: 100, saldo: 120, n_persd: 130, status: 100, kd_golongan: 160, kd_kelompok: 200,
+    };
   });
 
   useEffect(() => {
@@ -89,12 +93,15 @@ export default function SaldoBarangClient() {
     setIsMounted(true);
     mountedRef.current = true;
     const savedLastUpdate = localStorage.getItem('SaldoBarangClient_lastUpdated');
+    if (savedLastUpdate) setLastUpdated(savedLastUpdate);
     return () => { mountedRef.current = false; };
   }, []);
 
   useEffect(() => {
     const urlSearch = searchParams.get('search');
     const urlTgl = searchParams.get('tgl');
+    const urlGol = searchParams.get('golongan');
+    const urlStat = searchParams.get('status');
     if (urlSearch !== null) {
       urlSearchRef.current = urlSearch;
       setSearchQuery(urlSearch);
@@ -104,6 +111,14 @@ export default function SaldoBarangClient() {
     }
     if (urlTgl && /^\d{4}-\d{2}-\d{2}$/.test(urlTgl)) {
       setTgl(urlTgl);
+      setPage(1);
+    }
+    if (urlGol !== null) {
+      setGolongan(urlGol);
+      setPage(1);
+    }
+    if (urlStat !== null) {
+      setStatus(urlStat);
       setPage(1);
     }
   }, [searchParams]);
@@ -124,12 +139,14 @@ export default function SaldoBarangClient() {
     setPage(1);
   }, []);
 
-  const load = useCallback(async (p: number, date: string, keyword: string, sort: Array<{ id: string; desc: boolean }>) => {
+  const load = useCallback(async (p: number, date: string, keyword: string, sort: Array<{ id: string; desc: boolean }>, gol: string, stat: string) => {
     setLoading(p === 1);
     setError('');
     const startTimer = performance.now();
     try {
       const params = new URLSearchParams({ page: String(p), limit: String(PAGE_SIZE), tgl: date, q: keyword });
+      if (gol) params.set('golongan', gol);
+      if (stat) params.set('status', stat);
       if (sort.length > 0) params.set('sort', JSON.stringify(sort));
       const res = await fetch(`/api/saldo-barang?${params.toString()}`);
       if (!res.ok) throw new Error('Gagal memuat data');
@@ -140,6 +157,8 @@ export default function SaldoBarangClient() {
       setTotal(json.total || 0);
       setAvailable(json.available ?? []);
       if (json.lastUpdated) setLastUpdated(String(json.lastUpdated));
+      if (Array.isArray(json.golonganList) && json.golonganList.length > 0) setGolonganOptions(json.golonganList);
+      if (Array.isArray(json.statusList) && json.statusList.length > 0) setStatusOptions(json.statusList);
       setLoadTime(Math.round(performance.now() - startTimer));
     } catch (e) {
       if (mountedRef.current) {
@@ -153,17 +172,19 @@ export default function SaldoBarangClient() {
 
   useEffect(() => {
     if (!isMounted) return;
-    load(page, tgl, debouncedQuery, sorting);
-  }, [page, tgl, debouncedQuery, sorting, isMounted, load]);
+    load(page, tgl, debouncedQuery, sorting, golongan, status);
+  }, [page, tgl, debouncedQuery, sorting, golongan, status, isMounted, load]);
 
   useEffect(() => {
     if (!isMounted) return;
     const params = new URLSearchParams();
     if (debouncedQuery) params.set('search', debouncedQuery);
     if (tgl) params.set('tgl', tgl);
+    if (golongan) params.set('golongan', golongan);
+    if (status) params.set('status', status);
     const qs = params.toString();
     router.replace(qs ? `/data-digit/stok/saldo-barang?${qs}` : '/data-digit/stok/saldo-barang', { scroll: false });
-  }, [debouncedQuery, tgl, isMounted, router]);
+  }, [debouncedQuery, tgl, golongan, status, isMounted, router]);
 
   const handleSync = async () => {
     try {
@@ -175,7 +196,6 @@ export default function SaldoBarangClient() {
       let polls = 0;
       const poll = setInterval(async () => {
         polls += 1;
-        // ponytail: max ~5 menit (150x2s); Digit lambat tapi 13rb baris kelar jauh sebelum itu
         if (polls > 150) { clearInterval(poll); return; }
         try {
           const pr = await fetch('/api/scrape-saldo-barang?progress=1');
@@ -187,11 +207,11 @@ export default function SaldoBarangClient() {
       }, 2000);
       try {
         const res = await fetch(`/api/scrape-saldo-barang?tgl=${tgl}`);
-      const json = await res.json();
-      if (!res.ok || !json.success) throw new Error(json.error || json.details || 'Gagal sinkronisasi data');
-      const now = new Date();
-      localStorage.setItem('SaldoBarangClient_lastUpdated', now.toISOString());
-      await load(1, tgl, debouncedQuery, sorting);
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.error || json.details || 'Gagal sinkronisasi data');
+        const now = new Date();
+        localStorage.setItem('SaldoBarangClient_lastUpdated', now.toISOString());
+        await load(1, tgl, debouncedQuery, sorting, golongan, status);
         setDialog({ isOpen: true, type: 'success', title: 'Berhasil', message: `Berhasil menarik ${Number(json.total).toLocaleString('id-ID')} kode saldo per ${json.tgl}.` });
       } finally {
         clearInterval(poll);
@@ -244,24 +264,24 @@ export default function SaldoBarangClient() {
       accessorKey: 'status',
       header: 'Status',
       size: 100,
-      cell: ({ getValue, row }: any) => {
+      cell: ({ getValue }: any) => {
         const val = String(getValue() || '');
         const aktif = val === 'Aktif';
         return <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-bold ${aktif ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>{val || '—'}</span>;
       }
     },
-     {
-       accessorKey: 'kd_golongan',
-       header: 'Golongan',
-       size: 160,
-       cell: ({ getValue, row }: { getValue: () => unknown; row: { getIsSelected: () => boolean } }) => <span className={`font-medium block truncate ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-600'}`} title={String(getValue())}>{highlightText(String(getValue() || '—'), highlightQuery)}</span>
-     },
-     {
-       accessorKey: 'kd_kelompok',
-       header: 'Kelompok',
-       size: 200,
-       cell: ({ getValue, row }: any) => <span className={`font-medium block truncate ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-600'}`} title={String(getValue())}>{highlightText(String(getValue() || '—'), highlightQuery)}</span>
-     },
+    {
+      accessorKey: 'kd_golongan',
+      header: 'Golongan',
+      size: 160,
+      cell: ({ getValue, row }: any) => <span className={`font-medium block truncate ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-600'}`} title={String(getValue())}>{highlightText(String(getValue() || '—'), highlightQuery)}</span>
+    },
+    {
+      accessorKey: 'kd_kelompok',
+      header: 'Kelompok',
+      size: 200,
+      cell: ({ getValue, row }: any) => <span className={`font-medium block truncate ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-600'}`} title={String(getValue())}>{highlightText(String(getValue() || '—'), highlightQuery)}</span>
+    },
   ], [highlightQuery]);
 
   if (!isMounted) return null;
@@ -278,34 +298,65 @@ export default function SaldoBarangClient() {
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         <div className="flex flex-col gap-4 shrink-0 px-1">
           <div className="flex items-end gap-2 flex-wrap">
-             <div>
-               <label className="block text-[11px] font-bold text-gray-400 mb-1">Tanggal posisi{lastUpdated ? <span className="font-semibold text-gray-300"> • Update: {formatLastUpdate(lastUpdated.split('|')[0])}</span> : null}</label>
-               <DatePicker name="tgl" value={isoToDate(tgl)} onChange={(d) => { setTgl(dateToIso(d)); setPage(1); }} />
-             </div>
+            <div>
+              <label className="block text-[11px] font-bold text-gray-400 mb-1">
+                Tanggal posisi{lastUpdated ? <span className="font-semibold text-gray-300"> • Update: {formatLastUpdate(lastUpdated.split('|')[0])}</span> : null}
+              </label>
+              <DatePicker name="tgl" value={isoToDate(tgl)} onChange={(d) => { setTgl(dateToIso(d)); setPage(1); }} />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="block text-[11px] font-bold text-gray-400">Golongan</label>
+              <select
+                value={golongan}
+                onChange={(e) => { setGolongan(e.target.value); setPage(1); }}
+                className="h-10 px-3 bg-white border border-gray-100 rounded-lg text-xs font-bold text-gray-700 shadow-sm focus:outline-none focus:border-emerald-500 cursor-pointer"
+              >
+                <option value="">Semua Golongan</option>
+                {golonganOptions.map((g) => (
+                  <option key={g} value={g}>{g}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="block text-[11px] font-bold text-gray-400">Status</label>
+              <select
+                value={status}
+                onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+                className="h-10 px-3 bg-white border border-gray-100 rounded-lg text-xs font-bold text-gray-700 shadow-sm focus:outline-none focus:border-emerald-500 cursor-pointer"
+              >
+                <option value="">Semua Status</option>
+                {statusOptions.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+
             <button
               onClick={handleSync}
-               disabled={isSyncing || loading}
-               className="shrink-0 w-full sm:w-auto min-w-[140px] px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-xl text-[12px] font-bold shadow-sm shadow-emerald-900/20 hover:shadow-emerald-900/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group/btn relative overflow-hidden"
-             >
-               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
-               <span className="relative z-10 flex items-center gap-2">
-                 {isSyncing ? (
-                   <><Loader2 size={16} className="animate-spin" /> {syncProgress ? `Menarik page ${syncProgress.page} (${syncProgress.fetched.toLocaleString('id-ID')} baris)...` : 'Sedang Menarik...'}</>
-                 ) : (
-                   <><DownloadCloud size={16} className="group-hover/btn:-translate-y-0.5 transition-transform duration-300" /> Tarik Data</>
-                 )}
-               </span>
-             </button>
+              disabled={isSyncing || loading}
+              className="shrink-0 w-full sm:w-auto min-w-[140px] px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-xl text-[12px] font-bold shadow-sm shadow-emerald-900/20 hover:shadow-emerald-900/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group/btn relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-out" />
+              <span className="relative z-10 flex items-center gap-2">
+                {isSyncing ? (
+                  <><Loader2 size={16} className="animate-spin" /> {syncProgress ? `Menarik page ${syncProgress.page} (${syncProgress.fetched.toLocaleString('id-ID')} baris)...` : 'Sedang Menarik...'}</>
+                ) : (
+                  <><DownloadCloud size={16} className="group-hover/btn:-translate-y-0.5 transition-transform duration-300" /> Tarik Data</>
+                )}
+              </span>
+            </button>
+
             <div className="flex-1 min-w-[200px]">
               <SearchAndReload
                 searchQuery={searchQuery}
                 setSearchQuery={setSearchQuery}
-                onReload={() => load(page, tgl, debouncedQuery, sorting)}
+                onReload={() => load(page, tgl, debouncedQuery, sorting, golongan, status)}
                 loading={loading}
-                placeholder="Cari berdasarkan kode, nama barang, atau kelompok..."
+                placeholder="Cari berdasarkan kode, nama barang, golongan, atau kelompok..."
               />
             </div>
- 
           </div>
         </div>
 
