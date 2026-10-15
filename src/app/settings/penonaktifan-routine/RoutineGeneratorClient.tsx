@@ -9,6 +9,8 @@ interface Cand {
   kode: string;
   nama: string;
   bom: number;
+  so: number;
+  jual: number;
   spk: boolean;
 }
 
@@ -75,7 +77,9 @@ const CandidateRow = memo(function CandidateRow({
           <CopyButton text={c.nama} size={11} className="w-5 h-5 shrink-0 opacity-40 group-hover:opacity-100 hover:!opacity-100" title="Salin nama barang" />
         </div>
       </td>
-      <td className="px-2 py-1.5 text-right tabular-nums text-slate-700">{c.bom}×</td>
+      <td className="px-2 py-1.5 text-right tabular-nums text-slate-700 font-semibold">{c.bom}×</td>
+      <td className="px-2 py-1.5 text-right tabular-nums text-slate-600">{c.so > 0 ? `${c.so}×` : '—'}</td>
+      <td className="px-2 py-1.5 text-right tabular-nums text-slate-600">{c.jual > 0 ? `${c.jual}×` : '—'}</td>
       <td className="px-2 py-1.5 text-center">
         {c.spk ? (
           <span className="text-[10px] font-bold text-amber-600" title="Sudah ada SPK — terlindungi otomatis, tak perlu rutin">
@@ -410,6 +414,8 @@ export default function RoutineGeneratorClient() {
                 <th className="text-left px-2 py-2 font-bold text-slate-600">Kode</th>
                 <th className="text-left px-2 py-2 font-bold text-slate-600">Nama</th>
                 <th className="text-right px-2 py-2 font-bold text-slate-600">BOM</th>
+                <th className="text-right px-2 py-2 font-bold text-slate-600" title="Frekuensi di Sales Order (Pesanan Konsumen)">SO</th>
+                <th className="text-right px-2 py-2 font-bold text-slate-600" title="Frekuensi di Penjualan (Faktur PJ Kasir)">Jual</th>
                 <th className="text-center px-2 py-2 font-bold text-slate-600">SPK</th>
               </tr>
             </thead>
@@ -425,7 +431,7 @@ export default function RoutineGeneratorClient() {
               ))}
               {filteredRows.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-3 py-8 text-center text-slate-400">
+                  <td colSpan={7} className="px-3 py-8 text-center text-slate-400">
                     {searchValue ? 'Tidak ada kandidat yang cocok dengan pencarian.' : 'Tidak ada kandidat.'}
                   </td>
                 </tr>

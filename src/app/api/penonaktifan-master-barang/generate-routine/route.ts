@@ -31,9 +31,7 @@ export async function GET(req: NextRequest) {
     const bjpRes = await db.execute({
       sql: `SELECT kode, nama FROM stok_master_barang WHERE kd_golongan = 'Barang Jadi Pesanan' AND status LIKE '%checked%'`,
     });
-    type Cand = { kode: string; nama: string; bom: number; spk: boolean };
-
-    // Kumpulkan kandidat yang memenuhi syarat minBom terlebih dahulu
+    type Cand = { kode: string; nama: string; bom: number; so: number; jual: number; spk: boolean };
     const candidateCodes: string[] = [];
     for (const r of bjpRes.rows as Array<Record<string, unknown>>) {
       const kode = String(r.kode ?? '');
@@ -73,6 +71,14 @@ export async function GET(req: NextRequest) {
         }
       }
     }
+
+    // Ambil data teks transaksi sales_reports dan sales_orders untuk cek frekuensi riil penjualan
+    const [salesRowsRes, soRowsRes] = await Promise.all([
+      db.execute({ sql: `SELECT LOWER(kd_barang) AS b FROM sales_reports WHERE kd_barang IS NOT NULL` }),
+      db.execute({ sql: `SELECT LOWER(kd_barang) AS b FROM sales_orders WHERE kd_barang IS NOT NULL` }),
+    ]);
+    const salesTexts = (salesRowsRes.rows as Array<Record<string, unknown>>).map((r) => String(r.b ?? '')).filter(Boolean);
+    const soTexts = (soRowsRes.rows as Array<Record<string, unknown>>).map((r) => String(r.b ?? '')).filter(Boolean);
     const opRe = /^\s*(OP|PO|PR)\./i;
     const hpRe = /\+62|08\d{8,}/;
     const nnRe = /\bNN\b\s*-/i;
@@ -88,7 +94,48 @@ export async function GET(req: NextRequest) {
       const nama = String(r.nama ?? '');
       const bom = freq.get(kode) ?? 0;
       if (bom < minBom) continue;
-      const c: Cand = { kode, nama, bom, spk: berSpk.has(kode) };
+
+      const kLower = kode.toLowerCase();
+      const isQuddus = nama.toLowerCase().includes('quddus');
+      const isYanbua = nama.toLowerCase().includes('yanbu');
+      const isKitab = nama.toLowerCase().includes('qorib') || nama.toLowerCase().includes('muta');
+
+      let nJual = 0;
+      let nSo = 0;
+
+      if (isQuddus) {
+        const varMatch = nama.match(/\b(A1|A97|B1\.d|B1|B2|B3|B5|B97)\b/i);
+        const variant = varMatch ? varMatch[1].toLowerCase().replace('.d', '') : '';
+        for (const s of salesTexts) {
+          if (s.includes('quddus') && (!variant || s.includes(variant))) nJual++;
+        }
+        for (const s of soTexts) {
+          if (s.includes('quddus') && (!variant || s.includes(variant))) nSo++;
+        }
+      } else if (isYanbua) {
+        for (const s of salesTexts) {
+          if (s.includes('yanbu')) nJual++;
+        }
+        for (const s of soTexts) {
+          if (s.includes('yanbu')) nSo++;
+        }
+      } else if (isKitab) {
+        for (const s of salesTexts) {
+          if (s.includes('qorib') || s.includes('muta')) nJual++;
+        }
+        for (const s of soTexts) {
+          if (s.includes('qorib') || s.includes('muta')) nSo++;
+        }
+      } else {
+        for (const s of salesTexts) {
+          if (s.includes(kLower)) nJual++;
+        }
+        for (const s of soTexts) {
+          if (s.includes(kLower)) nSo++;
+        }
+      }
+
+      const c: Cand = { kode, nama, bom, so: nSo, jual: nJual, spk: berSpk.has(kode) };
       const isCustomOrder =
         opRe.test(nama) ||
         hpRe.test(nama) ||
@@ -97,12 +144,13 @@ export async function GET(req: NextRequest) {
         clientRe.test(nama) ||
         customDocRe.test(nama) ||
         bookCoverRe.test(nama) ||
-        sosmedRe.test(nama);
+        sosmedRe.test(nama) ||
+        (nJual === 0 && nSo === 0);
       if (!isCustomOrder) generik.push(c);
       else custom.push(c);
     }
-     generik.sort((a, b) => b.bom - a.bom);
-     custom.sort((a, b) => b.bom - a.bom);
+    generik.sort((a, b) => b.jual + b.so + b.bom - (a.jual + a.so + a.bom));
+    custom.sort((a, b) => b.jual + b.so + b.bom - (a.jual + a.so + a.bom));
 
     return NextResponse.json({
       success: true,
