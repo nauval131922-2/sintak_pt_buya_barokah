@@ -78,6 +78,8 @@ export async function GET(req: NextRequest) {
     const nnRe = /\bNN\b\s*-/i;
     const customRe = /\bcustom\b/i;
     const clientRe = /\b(tour|travel|pt\b|cv\b)\b/i;
+    const bookCoverRe = /^Buku (Soft|Hard) Cover|^Album Kenangan/i;
+    const sosmedRe = /·\s*(TikTok|Facebook)|@\w+/i;
     const generik: Cand[] = [];
     const custom: Cand[] = [];
     for (const r of bjpRes.rows as Array<Record<string, unknown>>) {
@@ -86,7 +88,14 @@ export async function GET(req: NextRequest) {
       const bom = freq.get(kode) ?? 0;
       if (bom < minBom) continue;
       const c: Cand = { kode, nama, bom, spk: berSpk.has(kode) };
-      const isCustomOrder = opRe.test(nama) || hpRe.test(nama) || nnRe.test(nama) || customRe.test(nama) || clientRe.test(nama);
+      const isCustomOrder =
+        opRe.test(nama) ||
+        hpRe.test(nama) ||
+        nnRe.test(nama) ||
+        customRe.test(nama) ||
+        clientRe.test(nama) ||
+        bookCoverRe.test(nama) ||
+        sosmedRe.test(nama);
       if (!isCustomOrder) generik.push(c);
       else custom.push(c);
     }

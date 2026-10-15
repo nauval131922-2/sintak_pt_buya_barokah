@@ -182,7 +182,7 @@ export default function RoutineGeneratorClient() {
     }
   };
 
-  // Implementasi seleksi identik dengan useTableSelection di Lap. Penonaktifan Master Barang Jadi
+  // Implementasi seleksi identik dengan useTableSelection di Lap. Penonaktifan, terisolasi per tabel
   const handleRowClick = useCallback(
     (tableId: string, kode: string, e: React.MouseEvent, isCheckbox?: boolean) => {
       const tableRows = tableId === 'generik' ? (data?.generik ?? []) : (data?.custom ?? []);
@@ -211,16 +211,23 @@ export default function RoutineGeneratorClient() {
           else next.add(kode);
           lastClickedRef.current = { tableId, kode };
         }
-        // 3. Normal Click pada baris: Fokus single selection (persis useTableSelection di Lap. Penonaktifan)
+        // 3. Normal Click pada baris: Fokus single selection terisolasi pada tabel ini (TIDAK menghapus pilihan di tabel lain)
         else {
           const isCurrentlySelected = next.has(kode);
-          const wasOnlyOneSelected = next.size === 1 && isCurrentlySelected;
+          let selectedCountInThisTable = 0;
+          for (const d of tableRows) {
+            if (next.has(d.kode)) selectedCountInThisTable++;
+          }
+          const wasOnlyOneSelected = selectedCountInThisTable === 1 && isCurrentlySelected;
+
+          // Hapus hanya pilihan milik tabel ini, biarkan tabel lain tetap utuh
+          for (const d of tableRows) {
+            next.delete(d.kode);
+          }
 
           if (wasOnlyOneSelected) {
-            next.clear();
             lastClickedRef.current = null;
           } else {
-            next.clear();
             next.add(kode);
             lastClickedRef.current = { tableId, kode };
           }
@@ -301,6 +308,14 @@ export default function RoutineGeneratorClient() {
       });
     };
 
+    const clearThisTable = () => {
+      setPicked((prev) => {
+        const next = new Set(prev);
+        for (const c of rows) next.delete(c.kode);
+        return next;
+      });
+    };
+
     return (
       <div className="flex flex-col h-full min-h-0 border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
         <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 shrink-0 flex items-center justify-between gap-2">
@@ -317,7 +332,7 @@ export default function RoutineGeneratorClient() {
                   </span>
                   <button
                     type="button"
-                    onClick={() => setPicked(new Set())}
+                    onClick={clearThisTable}
                     className="text-[11px] font-semibold text-slate-400 hover:text-blue-600 underline cursor-pointer"
                   >
                     Bersihkan
