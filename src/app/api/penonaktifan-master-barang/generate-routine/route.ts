@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
     const limitRaw = Number(searchParams.get('limit') ?? '100');
     const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(Math.floor(limitRaw), 500) : 100;
 
-    // Ambil data teks transaksi sales_reports, sales_orders, rekap_pembelian_barang, dan master BJP aktif
+    // Ambil data transaksi sales_reports, sales_orders, rekap_pembelian_barang, dan master BJP aktif
     const [salesRowsRes, soRowsRes, beliRowsRes, bjpRes] = await Promise.all([
       db.execute({ sql: `SELECT LOWER(kd_barang) AS b FROM sales_reports WHERE kd_barang IS NOT NULL` }),
       db.execute({ sql: `SELECT LOWER(kd_barang) AS b FROM sales_orders WHERE kd_barang IS NOT NULL` }),
@@ -29,20 +29,38 @@ export async function GET(req: NextRequest) {
     ]);
 
     const cleanStr = (raw: unknown) => {
-      const s = String(raw ?? '').trim().toLowerCase().replace(/^(exp|lembar|unit|pcs|bendel|bandel|rim|box|pak|roll|meter|plate)\s*-\s*/i, '');
+      const s = String(raw ?? '').trim().toLowerCase().replace(/^(exp|lembar|unit|pcs|bendel|bandel|rim|box|pak|roll|meter|plate|buku)\s*[-/:]\s*/i, '');
       return s.replace(/[`']/g, "'").replace(/\s+/g, ' ').trim();
     };
 
-    const salesTexts = (salesRowsRes.rows as Array<Record<string, unknown>>).map((r) => cleanStr(r.b)).filter(Boolean);
-    const soTexts = (soRowsRes.rows as Array<Record<string, unknown>>).map((r) => cleanStr(r.b)).filter(Boolean);
-    const beliTexts = (beliRowsRes.rows as Array<Record<string, unknown>>).map((r) => cleanStr(r.b)).filter(Boolean);
+    // Hitung frekuensi exact per nama/kode ter-normalisasi (O(1) Map lookup)
+    const salesCounts = new Map<string, number>();
+    for (const r of salesRowsRes.rows as Array<Record<string, unknown>>) {
+      const s = cleanStr(r.b);
+      if (s) salesCounts.set(s, (salesCounts.get(s) ?? 0) + 1);
+    }
+
+    const soCounts = new Map<string, number>();
+    for (const r of soRowsRes.rows as Array<Record<string, unknown>>) {
+      const s = cleanStr(r.b);
+      if (s) soCounts.set(s, (soCounts.get(s) ?? 0) + 1);
+    }
+
+    const beliCounts = new Map<string, number>();
+    for (const r of beliRowsRes.rows as Array<Record<string, unknown>>) {
+      const raw = String(r.b ?? '').trim().toLowerCase();
+      // Abaikan bahan baku/penolong (plate, roll laminasi, yellow board, print art, kawat) agar tidak dikira barang jadi
+      if (/^(plate|roll|yellow board|print\s+art|kawat|isi staples)/i.test(raw)) continue;
+      const s = cleanStr(raw);
+      if (s) beliCounts.set(s, (beliCounts.get(s) ?? 0) + 1);
+    }
 
     const opRe = /^\s*(OP|PO|PR)\./i;
     const hpRe = /\+62|08\d{8,}/;
     const nnRe = /\bNN\b\s*-/i;
     const customRe = /\bcustom\b/i;
     const clientRe = /\b(tour|travel|pt\b|cv\b|biro|kbihu|haji|umrah|umroh|pesantren|pondok|ponpes|dayah|pp\b|ppsd|pptq|ptyq|smp\b|sma\b|smk\b|man\b|mi\b|mts\b|ma\b|sd\b|tk\b|paud|lmy|yqbs|klinik|dr\.|percetakan|perc\.|kemenag)\b/i;
-    const customDocRe = /kalender|buku\s+manasik|^sampul\s+raport|^stopmap|^syahadah|^surat\s+keterangan|^nota\b|^kop\s+pp|^cetak\s+lembaran|rokok|notebook|\bspp\b|tabungan|setoran|hafalan|mura?ja'?ah/i;
+    const customDocRe = /kalender|buku\s+manasik|^sampul\s+raport|^stopmap|^syahadah|^surat\s+keterangan|^nota\b|^kop\s+pp|^cetak\s+lembaran|rokok|notebook|\bspp\b|tabungan|setoran|\b(?:buku|kartu|lembar)\s+hafalan\b|mura?ja'?ah/i;
     const bookCoverRe = /^Buku\s+(Soft|Hard)\s+Cover|^Album\s+Kenangan/i;
     const sosmedRe = /·\s*(TikTok|Facebook)|@\w+/i;
 
@@ -56,20 +74,10 @@ export async function GET(req: NextRequest) {
       const k = kode.toLowerCase();
       const nm = cleanStr(nama);
 
-      let nJual = 0;
-      let nSo = 0;
-      let nBeli = 0;
-
-      // Pencocokan langsung dari kode barang, kalau tidak ada kode barang ya nama barang
-      for (const s of salesTexts) {
-        if (s.includes(k) || (nm && (s.includes(nm) || (s.length >= 15 && nm.includes(s))))) nJual++;
-      }
-      for (const s of soTexts) {
-        if (s.includes(k) || (nm && (s.includes(nm) || (s.length >= 15 && nm.includes(s))))) nSo++;
-      }
-      for (const s of beliTexts) {
-        if (s.includes(k) || (nm && (s.includes(nm) || (s.length >= 15 && nm.includes(s))))) nBeli++;
-      }
+      // Exact match nama produk ter-normalisasi atau kode barang
+      const nJual = (salesCounts.get(nm) ?? 0) + (salesCounts.get(k) ?? 0);
+      const nSo = (soCounts.get(nm) ?? 0) + (soCounts.get(k) ?? 0);
+      const nBeli = (beliCounts.get(nm) ?? 0) + (beliCounts.get(k) ?? 0);
 
       // Kriteria ambang batas transaksi komersial (pembelian, SO, penjualan)
       if ((minBeli > 0 && nBeli < minBeli) || (minSo > 0 && nSo < minSo) || (minJual > 0 && nJual < minJual)) {
