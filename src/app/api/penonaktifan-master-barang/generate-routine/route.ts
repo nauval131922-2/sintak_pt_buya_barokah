@@ -31,13 +31,48 @@ export async function GET(req: NextRequest) {
     const bjpRes = await db.execute({
       sql: `SELECT kode, nama FROM stok_master_barang WHERE kd_golongan = 'Barang Jadi Pesanan' AND status LIKE '%checked%'`,
     });
-     type Cand = { kode: string; nama: string; bom: number; spk: boolean };
-     // kode yang sudah punya SPK berjalan (tertahan engine otomatis, tak perlu rutin)
-     const spkRes = await db.execute({
-       sql: `SELECT DISTINCT b.kd_barang AS kode FROM bill_of_materials b JOIN orders o ON UPPER(TRIM(b.faktur)) = UPPER(TRIM(o.faktur_bom)) WHERE b.kd_barang IS NOT NULL AND o.faktur_bom IS NOT NULL AND TRIM(o.faktur_bom) != ''`,
-     });
-     const berSpk = new Set((spkRes.rows as Array<Record<string, unknown>>).map((r) => String(r.kode ?? '')));
- 
+    type Cand = { kode: string; nama: string; bom: number; spk: boolean };
+
+    // Kumpulkan kandidat yang memenuhi syarat minBom terlebih dahulu
+    const candidateCodes: string[] = [];
+    for (const r of bjpRes.rows as Array<Record<string, unknown>>) {
+      const kode = String(r.kode ?? '');
+      if ((freq.get(kode) ?? 0) >= minBom) {
+        candidateCodes.push(kode);
+      }
+    }
+
+    // Cek kode yang sudah punya SPK berjalan (tertahan engine otomatis, tak perlu rutin)
+    // Optimasi: gunakan hash lookup faktur_bom dari orders + filter IN chunk untuk kandidat
+    const berSpk = new Set<string>();
+    if (candidateCodes.length > 0) {
+      const orderFaktursRes = await db.execute({
+        sql: `SELECT DISTINCT UPPER(TRIM(faktur_bom)) AS f FROM orders WHERE faktur_bom IS NOT NULL AND TRIM(faktur_bom) != ''`,
+      });
+      const orderFakturs = new Set(
+        (orderFaktursRes.rows as Array<Record<string, unknown>>)
+          .map((r) => String(r.f ?? ''))
+          .filter(Boolean)
+      );
+
+      if (orderFakturs.size > 0) {
+        const CH = 400;
+        for (let i = 0; i < candidateCodes.length; i += CH) {
+          const chunk = candidateCodes.slice(i, i + CH);
+          const placeholders = chunk.map(() => '?').join(',');
+          const bomRes = await db.execute({
+            sql: `SELECT kd_barang, UPPER(TRIM(faktur)) AS f FROM bill_of_materials WHERE kd_barang IN (${placeholders}) AND faktur IS NOT NULL`,
+            args: chunk,
+          });
+          for (const row of bomRes.rows as Array<Record<string, unknown>>) {
+            const f = String(row.f ?? '');
+            if (orderFakturs.has(f)) {
+              berSpk.add(String(row.kd_barang ?? ''));
+            }
+          }
+        }
+      }
+    }
      const opRe = /^\s*(OP|PO|PR)\./i;
      const hpRe = /\+62|08\d{8,}/;
      const nnRe = /\bNN\b\s*-/;
