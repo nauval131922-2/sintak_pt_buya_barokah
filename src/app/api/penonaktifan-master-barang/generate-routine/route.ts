@@ -73,20 +73,23 @@ export async function GET(req: NextRequest) {
         }
       }
     }
-     const opRe = /^\s*(OP|PO|PR)\./i;
-     const hpRe = /\+62|08\d{8,}/;
-     const nnRe = /\bNN\b\s*-/;
-     const generik: Cand[] = [];
-     const custom: Cand[] = [];
-     for (const r of bjpRes.rows as Array<Record<string, unknown>>) {
-       const kode = String(r.kode ?? '');
-       const nama = String(r.nama ?? '');
-       const bom = freq.get(kode) ?? 0;
-       if (bom < minBom) continue;
-       const c: Cand = { kode, nama, bom, spk: berSpk.has(kode) };
-       if (!opRe.test(nama) && !hpRe.test(nama) && !nnRe.test(nama)) generik.push(c);
-       else custom.push(c);
-     }
+    const opRe = /^\s*(OP|PO|PR)\./i;
+    const hpRe = /\+62|08\d{8,}/;
+    const nnRe = /\bNN\b\s*-/i;
+    const customRe = /\bcustom\b/i;
+    const clientRe = /\b(tour|travel|pt\b|cv\b)\b/i;
+    const generik: Cand[] = [];
+    const custom: Cand[] = [];
+    for (const r of bjpRes.rows as Array<Record<string, unknown>>) {
+      const kode = String(r.kode ?? '');
+      const nama = String(r.nama ?? '');
+      const bom = freq.get(kode) ?? 0;
+      if (bom < minBom) continue;
+      const c: Cand = { kode, nama, bom, spk: berSpk.has(kode) };
+      const isCustomOrder = opRe.test(nama) || hpRe.test(nama) || nnRe.test(nama) || customRe.test(nama) || clientRe.test(nama);
+      if (!isCustomOrder) generik.push(c);
+      else custom.push(c);
+    }
      generik.sort((a, b) => b.bom - a.bom);
      custom.sort((a, b) => b.bom - a.bom);
 

@@ -27,7 +27,7 @@ const STORAGE_KEYS = {
   PICKED: 'sintak_routine_picked',
 };
 
-// Komponen baris di-memoize: hanya me-render ulang baris yang status seleksinya berubah (mengurangi 99% beban render)
+// Komponen baris di-memoize: identik dengan tabel Lap. Penonaktifan Master Barang Jadi
 const CandidateRow = memo(function CandidateRow({
   c,
   tableId,
@@ -41,11 +41,20 @@ const CandidateRow = memo(function CandidateRow({
 }) {
   return (
     <tr
+      onMouseDown={(e) => {
+        if (e.shiftKey || e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+        }
+      }}
       onClick={(e) => onRowClick(tableId, c.kode, e, false)}
-      className={`group cursor-pointer transition-colors ${isSelected ? 'bg-emerald-50/90 hover:bg-emerald-100/60' : 'hover:bg-slate-50'}`}
+      className={`group cursor-pointer transition-colors ${
+        isSelected
+          ? 'bg-blue-50/90 hover:bg-blue-100/70 text-blue-950 font-bold is-selected'
+          : 'hover:bg-slate-50 text-slate-700'
+      }`}
     >
       <td
-        className="px-2.5 py-1.5 text-center text-emerald-600"
+        className="px-2.5 py-1.5 text-center text-blue-600"
         onClick={(e) => {
           e.stopPropagation();
           onRowClick(tableId, c.kode, e, true);
@@ -173,6 +182,7 @@ export default function RoutineGeneratorClient() {
     }
   };
 
+  // Implementasi seleksi identik dengan useTableSelection di Lap. Penonaktifan Master Barang Jadi
   const handleRowClick = useCallback(
     (tableId: string, kode: string, e: React.MouseEvent, isCheckbox?: boolean) => {
       const tableRows = tableId === 'generik' ? (data?.generik ?? []) : (data?.custom ?? []);
@@ -183,26 +193,39 @@ export default function RoutineGeneratorClient() {
         // 1. Shift + Klik: Range selection (mengambil semua baris antara lastClicked dan baris saat ini)
         if (e.shiftKey && lastClickedRef.current?.tableId === tableId) {
           const lastKode = lastClickedRef.current.kode;
-          const cIdx = tableRows.findIndex((x) => x.kode === kode);
-          const lIdx = tableRows.findIndex((x) => x.kode === lastKode);
-          if (cIdx !== -1 && lIdx !== -1) {
-            const start = Math.min(cIdx, lIdx);
-            const end = Math.max(cIdx, lIdx);
+          const currentIndex = tableRows.findIndex((d) => d.kode === kode);
+          const lastIndex = tableRows.findIndex((d) => d.kode === lastKode);
+
+          if (currentIndex !== -1 && lastIndex !== -1) {
+            const start = Math.min(currentIndex, lastIndex);
+            const end = Math.max(currentIndex, lastIndex);
+
             for (let i = start; i <= end; i++) {
               next.add(tableRows[i].kode);
             }
+          }
+        }
+        // 2. Klik pada Checkbox langsung ATAU Ctrl / Cmd + Klik: Toggle individual selection
+        else if (isCheckbox || e.ctrlKey || e.metaKey) {
+          if (next.has(kode)) next.delete(kode);
+          else next.add(kode);
+          lastClickedRef.current = { tableId, kode };
+        }
+        // 3. Normal Click pada baris: Fokus single selection (persis useTableSelection di Lap. Penonaktifan)
+        else {
+          const isCurrentlySelected = next.has(kode);
+          const wasOnlyOneSelected = next.size === 1 && isCurrentlySelected;
+
+          if (wasOnlyOneSelected) {
+            next.clear();
+            lastClickedRef.current = null;
+          } else {
+            next.clear();
+            next.add(kode);
             lastClickedRef.current = { tableId, kode };
-            return next;
           }
         }
 
-        // 2. Klik biasa atau Checkbox atau Ctrl/Cmd + Klik: Additive toggle (aman, tidak menghapus ratusan hasil generate)
-        if (next.has(kode)) {
-          next.delete(kode);
-        } else {
-          next.add(kode);
-        }
-        lastClickedRef.current = { tableId, kode };
         return next;
       });
     },
@@ -286,13 +309,22 @@ export default function RoutineGeneratorClient() {
             <p className="text-[11px] text-slate-500 truncate">{desc}</p>
           </div>
           {rows.length > 0 && (
-            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
-              stats.selected > 0
-                ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                : 'text-slate-500 bg-slate-100 border-slate-200'
-            }`}>
-              {stats.selected} dipilih
-            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              {stats.selected > 0 && (
+                <>
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full border text-blue-700 bg-blue-50 border-blue-200">
+                    {stats.selected} dipilih
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPicked(new Set())}
+                    className="text-[11px] font-semibold text-slate-400 hover:text-blue-600 underline cursor-pointer"
+                  >
+                    Bersihkan
+                  </button>
+                </>
+              )}
+            </div>
           )}
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
@@ -305,13 +337,13 @@ export default function RoutineGeneratorClient() {
                     onClick={toggleAll}
                     disabled={rows.length === 0}
                     title={stats.all ? 'Batalkan semua di tabel ini' : 'Pilih semua di tabel ini'}
-                    className="p-0.5 rounded hover:bg-slate-100 text-emerald-600 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                    className="p-0.5 rounded hover:bg-slate-100 text-blue-600 transition-colors cursor-pointer disabled:cursor-not-allowed"
                   >
                     {stats.all ? (
                       <CheckSquare size={15} />
                     ) : stats.some ? (
-                      <div className="w-[15px] h-[15px] rounded border border-emerald-600 bg-emerald-50 flex items-center justify-center">
-                        <div className="w-2 h-0.5 bg-emerald-600 rounded-xs" />
+                      <div className="w-[15px] h-[15px] rounded border border-blue-600 bg-blue-50 flex items-center justify-center">
+                        <div className="w-2 h-0.5 bg-blue-600 rounded-xs" />
                       </div>
                     ) : (
                       <Square size={15} className="text-slate-300" />
