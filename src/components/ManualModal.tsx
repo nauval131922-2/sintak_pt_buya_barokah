@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
-import { Database, Info, TrendingDown, Monitor, Search, ShieldCheck, Users, FileText, FileCheck, ClipboardList, Calculator, ShoppingCart, Truck, Box, Star, BarChart3, AlertCircle, TrendingUp, CreditCard, FileSpreadsheet } from 'lucide-react';
+import { Database, Info, TrendingDown, Monitor, Search, ShieldCheck, Users, FileText, FileCheck, ClipboardList, Calculator, ShoppingCart, Truck, Box, Star, BarChart3, AlertCircle, TrendingUp, CreditCard, FileSpreadsheet, Sparkles } from 'lucide-react';
 import BaseModal from '@/components/ui/BaseModal';
 
 export default function ManualModal() {
@@ -159,6 +159,36 @@ export default function ManualModal() {
        'Serahkan ke PPIC — pastikan sync master terbaru sebelum eksekusi, karena saldo 0 di Sintak diasumsikan N PERSD 0.',
      ],
     tips: 'Transaksi dievaluasi sampai tanggal cutoff: barang jadi yang masih ada transaksi aktif atau memiliki sisa saldo/WIP pada tanggal cutoff otomatis ditahan oleh filter pelindung.',
+   },
+   '/settings/penonaktifan-routine': {
+     title: 'Generator Kode Rutin',
+     icon: Sparkles,
+     description: 'Analisa frekuensi produksi dan transaksi riil per kode barang master untuk memilih produk repeat-order yang dilindungi dari usulan penonaktifan.',
+     steps: [
+       'Atur **Minimal produksi berulang (×)** — batas ambang frekuensi BOM minimum (default: 3×). Hanya barang dengan riwayat cetak ≥ batas ini yang dianalisis.',
+       'Klik **Generate kandidat** — sistem memindai database dan memisahkan hasil ke dalam 2 tabel secara otomatis:',
+       '  • **Tabel Kiri (Generik — disarankan)**: Produk massal standar percetakan (seperti Al-Qur\'an Al-Quddus, Panduan Yanbu\'a, dan Kitab Standar) yang memiliki perputaran transaksi nyata dan bukan pesanan khusus satu orang. Sangat disarankan dicentang.',
+       '  • **Tabel Kanan (Custom — tidak disarankan)**: Pesanan perorangan/instansi (mengandung nama pemesan, nomor HP, prefix OP./PO., label NN -, sekolah/ponpes/biro travel, buku manasik, kalender musiman, buku setoran, raport, atau tidak ada transaksi penjualan berulang). Tipe made-to-order sekali-cetak, otomatis terlindungi via oplah saat SPK jalan, tidak disarankan dilindungi abadi.',
+       'Pahami 5 Kolom Indikator Transaksi:',
+       '  • **BOM**: Frekuensi barang dibuatkan Bill of Materials / SPK cetak di percetakan.',
+       '  • **Beli**: Frekuensi penerimaan barang pembelian (faktur PB) di rekap_pembelian_barang.',
+       '  • **SO**: Frekuensi riwayat pesanan resmi konsumen di sales_orders.',
+       '  • **Jual**: Frekuensi faktur nota penjualan kasir/admin di sales_reports.',
+       '  • **SPK ✓**: Menandakan saat ini ada SPK aktif berjalan di pabrik (sudah otomatis kebal penonaktifan).',
+       'Gunakan fitur **Search & Reload** di atas masing-masing tabel untuk menyaring nama atau kode barang secara mandiri.',
+       'Lakukan seleksi baris secara fleksibel:',
+       '  • **Klik baris**: Fokus memilih satu baris pada tabel tersebut.',
+       '  • **Shift + Klik**: Memilih seluruh rentang baris sekaligus (range selection).',
+       '  • **Ctrl / Cmd + Klik**: Menambah/membatalkan pilihan baris secara individual.',
+       '  • **Klik Checkbox baris**: Centang aditif tanpa mereset pilihan lain.',
+       '  • **Checkbox Header**: Memilih atau membatalkan seluruh baris hasil filter dalam 1 klik.',
+       '  • **Salin Cepat**: Arahkan kursor ke kode atau nama barang untuk memunculkan tombol salin ke clipboard.',
+       'Pilih opsi penyimpanan:',
+       '  • **Tambah ke rutin (Append)**: Menambahkan kode-kode terpilih ke daftar proteksi lama (kode lama tetap ada).',
+       '  • **Ganti semua (Overwrite)**: Menghapus daftar proteksi lama dan menggantinya total dengan kode yang dicentang.',
+       'Daftar kode rutin yang tersimpan akan dibaca oleh modul **Lap. Penonaktifan Master Barang Jadi** sebagai daftar proteksi kebal penonaktifan.',
+     ],
+     tips: 'Prioritaskan melindungi barang dengan frekuensi Beli, SO, dan Jual yang tinggi. Barang custom pesanan perorangan sebaiknya tidak dimasukkan ke kode rutin agar master barang tidak menumpuk saat acaranya selesai.'
    },
    '/jurnal-harian-produksi/data/excel-sopd': {
       title: 'SOPd',
