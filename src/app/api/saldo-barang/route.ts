@@ -4,10 +4,10 @@ import { requireApiPermission } from "@/lib/api-guard";
 
 export const dynamic = 'force-dynamic';
 
-const SORT_COLS: Record<string, string> = {
-  kode: 'kode', nama: 'nama', kd_satuan: 'kd_satuan', saldo: 'saldo',
-  n_persd: 'n_persd', status: 'status', kd_kelompok: 'kd_kelompok',
-};
+ const SORT_COLS: Record<string, string> = {
+   kode: 'kode', nama: 'nama', kd_satuan: 'kd_satuan', saldo: 'saldo',
+   n_persd: 'n_persd', status: 'status', kd_golongan: 'kd_golongan', kd_kelompok: 'kd_kelompok',
+ };
 
 function getOrderBy(sortParam: string | null): string {
   let states: { id?: string; desc?: boolean }[] = [];
@@ -42,10 +42,10 @@ export async function GET(req: NextRequest) {
     const params: unknown[] = [];
     if (tgl) { where.push(`tgl = ?`); params.push(tgl); }
     if (golongan) { where.push(`kd_golongan = ?`); params.push(golongan); }
-    if (q) {
-      where.push(`(kode LIKE ? OR nama LIKE ?)`);
-      params.push(`%${q}%`, `%${q}%`);
-    }
+     if (q) {
+       where.push(`(kode LIKE ? OR nama LIKE ? OR kd_golongan LIKE ? OR kd_kelompok LIKE ?)`);
+       params.push(`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`);
+     }
     const whereClause = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
 
      const [dataRes, countRes, tglRes, lastRes] = await Promise.all([

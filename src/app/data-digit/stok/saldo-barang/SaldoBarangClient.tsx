@@ -76,9 +76,9 @@ export default function SaldoBarangClient() {
       const saved = localStorage.getItem('saldoBarang_columnWidths');
       if (saved) return JSON.parse(saved);
     }
-    return {
-      kode: 120, nama: 350, kd_satuan: 100, saldo: 120, n_persd: 130, status: 100, kd_kelompok: 200,
-    };
+     return {
+       kode: 120, nama: 350, kd_satuan: 100, saldo: 120, n_persd: 130, status: 100, kd_golongan: 160, kd_kelompok: 200,
+     };
   });
 
   useEffect(() => {
@@ -250,12 +250,18 @@ export default function SaldoBarangClient() {
         return <span className={`inline-block px-2 py-0.5 rounded-full text-[11px] font-bold ${aktif ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>{val || '—'}</span>;
       }
     },
-    {
-      accessorKey: 'kd_kelompok',
-      header: 'Kelompok',
-      size: 200,
-      cell: ({ getValue, row }: any) => <span className={`font-medium block truncate ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-600'}`} title={String(getValue())}>{highlightText(String(getValue() || '—'), highlightQuery)}</span>
-    },
+     {
+       accessorKey: 'kd_golongan',
+       header: 'Golongan',
+       size: 160,
+       cell: ({ getValue, row }: { getValue: () => unknown; row: { getIsSelected: () => boolean } }) => <span className={`font-medium block truncate ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-600'}`} title={String(getValue())}>{highlightText(String(getValue() || '—'), highlightQuery)}</span>
+     },
+     {
+       accessorKey: 'kd_kelompok',
+       header: 'Kelompok',
+       size: 200,
+       cell: ({ getValue, row }: any) => <span className={`font-medium block truncate ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-600'}`} title={String(getValue())}>{highlightText(String(getValue() || '—'), highlightQuery)}</span>
+     },
   ], [highlightQuery]);
 
   if (!isMounted) return null;
