@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 import { Loader2, Play, Save, CheckSquare, Square } from 'lucide-react';
 import CopyButton from '@/components/ui/CopyButton';
+import SearchAndReload from '@/components/SearchAndReload';
 
 interface Cand {
   kode: string;
@@ -98,6 +99,9 @@ export default function RoutineGeneratorClient() {
   const [msg, setMsg] = useState('');
   const [isMounted, setIsMounted] = useState(false);
 
+  const [searchGenerik, setSearchGenerik] = useState('');
+  const [searchCustom, setSearchCustom] = useState('');
+
   const lastClickedRef = useRef<{ tableId: string; kode: string } | null>(null);
 
   // Restore dari localStorage setelah mounted di browser (mencegah hydration mismatch)
@@ -182,10 +186,27 @@ export default function RoutineGeneratorClient() {
     }
   };
 
+  // Filter baris berdasarkan pencarian per tabel
+  const filteredGenerik = useMemo(() => {
+    const q = searchGenerik.trim().toLowerCase();
+    if (!q) return data?.generik ?? [];
+    return (data?.generik ?? []).filter(
+      (c) => c.kode.toLowerCase().includes(q) || c.nama.toLowerCase().includes(q)
+    );
+  }, [data?.generik, searchGenerik]);
+
+  const filteredCustom = useMemo(() => {
+    const q = searchCustom.trim().toLowerCase();
+    if (!q) return data?.custom ?? [];
+    return (data?.custom ?? []).filter(
+      (c) => c.kode.toLowerCase().includes(q) || c.nama.toLowerCase().includes(q)
+    );
+  }, [data?.custom, searchCustom]);
+
   // Implementasi seleksi identik dengan useTableSelection di Lap. Penonaktifan, terisolasi per tabel
   const handleRowClick = useCallback(
     (tableId: string, kode: string, e: React.MouseEvent, isCheckbox?: boolean) => {
-      const tableRows = tableId === 'generik' ? (data?.generik ?? []) : (data?.custom ?? []);
+      const tableRows = tableId === 'generik' ? filteredGenerik : filteredCustom;
 
       setPicked((prev) => {
         const next = new Set(prev);
@@ -236,7 +257,7 @@ export default function RoutineGeneratorClient() {
         return next;
       });
     },
-    [data]
+    [filteredGenerik, filteredCustom]
   );
 
   const handleSave = async (mode: 'tambah' | 'ganti') => {
@@ -290,19 +311,25 @@ export default function RoutineGeneratorClient() {
 
   const renderTable = (
     tableId: 'generik' | 'custom',
-    rows: Cand[],
+    rawRows: Cand[],
+    filteredRows: Cand[],
+    searchValue: string,
+    onSearchChange: (val: string) => void,
     title: string,
     desc: string
   ) => {
     const stats = tableId === 'generik' ? generikStats : customStats;
 
+    const allFilteredSelected = filteredRows.length > 0 && filteredRows.every((c) => picked.has(c.kode));
+    const someFilteredSelected = filteredRows.some((c) => picked.has(c.kode)) && !allFilteredSelected;
+
     const toggleAll = () => {
       setPicked((prev) => {
         const next = new Set(prev);
-        if (stats.all) {
-          for (const c of rows) next.delete(c.kode);
+        if (allFilteredSelected) {
+          for (const c of filteredRows) next.delete(c.kode);
         } else {
-          for (const c of rows) next.add(c.kode);
+          for (const c of filteredRows) next.add(c.kode);
         }
         return next;
       });
@@ -311,37 +338,52 @@ export default function RoutineGeneratorClient() {
     const clearThisTable = () => {
       setPicked((prev) => {
         const next = new Set(prev);
-        for (const c of rows) next.delete(c.kode);
+        for (const c of rawRows) next.delete(c.kode);
         return next;
       });
     };
 
     return (
       <div className="flex flex-col h-full min-h-0 border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-        <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 shrink-0 flex items-center justify-between gap-2">
-          <div className="min-w-0">
-            <h3 className="text-sm font-bold text-slate-800 truncate">{title} ({rows.length})</h3>
-            <p className="text-[11px] text-slate-500 truncate">{desc}</p>
-          </div>
-          {rows.length > 0 && (
-            <div className="flex items-center gap-2 shrink-0">
-              {stats.selected > 0 && (
-                <>
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full border text-blue-700 bg-blue-50 border-blue-200">
-                    {stats.selected} dipilih
-                  </span>
-                  <button
-                    type="button"
-                    onClick={clearThisTable}
-                    className="text-[11px] font-semibold text-slate-400 hover:text-blue-600 underline cursor-pointer"
-                  >
-                    Bersihkan
-                  </button>
-                </>
-              )}
+        <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 shrink-0 flex flex-col gap-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-slate-800 truncate">
+                {title} ({filteredRows.length !== rawRows.length ? `${filteredRows.length} dari ${rawRows.length}` : rawRows.length})
+              </h3>
+              <p className="text-[11px] text-slate-500 truncate">{desc}</p>
             </div>
-          )}
+            {rawRows.length > 0 && (
+              <div className="flex items-center gap-2 shrink-0">
+                {stats.selected > 0 && (
+                  <>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full border text-blue-700 bg-blue-50 border-blue-200">
+                      {stats.selected} dipilih
+                    </span>
+                    <button
+                      type="button"
+                      onClick={clearThisTable}
+                      className="text-[11px] font-semibold text-slate-400 hover:text-blue-600 underline cursor-pointer"
+                    >
+                      Bersihkan
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* SearchAndReload Baku SINTAK (Reload di Kiri + Search Bar di Kanan) */}
+          <SearchAndReload
+            searchQuery={searchValue}
+            setSearchQuery={onSearchChange}
+            onReload={handleGenerate}
+            loading={loading}
+            placeholder={`Cari kode atau nama di ${tableId === 'generik' ? 'Generik' : 'Custom'}…`}
+            compact={true}
+          />
         </div>
+
         <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
           <table className="w-full text-xs">
             <thead className="sticky top-0 bg-white border-b border-slate-100 z-10 shadow-xs">
@@ -350,13 +392,13 @@ export default function RoutineGeneratorClient() {
                   <button
                     type="button"
                     onClick={toggleAll}
-                    disabled={rows.length === 0}
-                    title={stats.all ? 'Batalkan semua di tabel ini' : 'Pilih semua di tabel ini'}
+                    disabled={filteredRows.length === 0}
+                    title={allFilteredSelected ? 'Batalkan semua di hasil filter' : 'Pilih semua di hasil filter'}
                     className="p-0.5 rounded hover:bg-slate-100 text-blue-600 transition-colors cursor-pointer disabled:cursor-not-allowed"
                   >
-                    {stats.all ? (
+                    {allFilteredSelected ? (
                       <CheckSquare size={15} />
-                    ) : stats.some ? (
+                    ) : someFilteredSelected ? (
                       <div className="w-[15px] h-[15px] rounded border border-blue-600 bg-blue-50 flex items-center justify-center">
                         <div className="w-2 h-0.5 bg-blue-600 rounded-xs" />
                       </div>
@@ -372,7 +414,7 @@ export default function RoutineGeneratorClient() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 select-none">
-              {rows.map((c) => (
+              {filteredRows.map((c) => (
                 <CandidateRow
                   key={c.kode}
                   c={c}
@@ -381,10 +423,10 @@ export default function RoutineGeneratorClient() {
                   onRowClick={handleRowClick}
                 />
               ))}
-              {rows.length === 0 && (
+              {filteredRows.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-3 py-8 text-center text-slate-400">
-                    Tidak ada kandidat.
+                    {searchValue ? 'Tidak ada kandidat yang cocok dengan pencarian.' : 'Tidak ada kandidat.'}
                   </td>
                 </tr>
               )}
@@ -445,8 +487,8 @@ export default function RoutineGeneratorClient() {
         </div>
       ) : data ? (
         <div className="flex-1 min-h-0 grid grid-cols-1 xl:grid-cols-2 gap-4 overflow-hidden">
-          {renderTable('generik', data.generik, 'Generik — disarankan', 'Tanpa OP/HP/NN, repeat-order massal. Centang = lindungi.')}
-          {renderTable('custom', data.custom, 'Custom — tidak disarankan', 'Sekali-cetak pelanggan. Terlindungi otomatis via oplah saat SPK jalan.')}
+          {renderTable('generik', data.generik, filteredGenerik, searchGenerik, setSearchGenerik, 'Generik — disarankan', 'Tanpa OP/HP/NN, repeat-order massal. Centang = lindungi.')}
+          {renderTable('custom', data.custom, filteredCustom, searchCustom, setSearchCustom, 'Custom — tidak disarankan', 'Sekali-cetak pelanggan. Terlindungi otomatis via oplah saat SPK jalan.')}
         </div>
       ) : !loading ? (
         <div className="flex-1 flex items-center justify-center border border-dashed border-slate-200 rounded-2xl text-slate-400 text-xs">
