@@ -54,20 +54,30 @@ function dateToIso(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-const PAGE_SIZE = 50;
-
-export default function SaldoBarangClient() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [isMounted, setIsMounted] = useState(false);
-  const [tgl, setTgl] = useState(() => searchParams.get('tgl') || todayIso());
-  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
-  const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
-  const [highlightQuery, setHighlightQuery] = useState(() => searchParams.get('search') || '');
-  const [golongan, setGolongan] = useState(() => searchParams.get('golongan') || '');
-  const [status, setStatus] = useState(() => searchParams.get('status') || '');
-  const [golonganOptions, setGolonganOptions] = useState<string[]>([]);
-  const [statusOptions, setStatusOptions] = useState<string[]>([]);
+ const DEFAULT_GOLONGAN = [
+   'Bahan Baku',
+   'Bahan Penolong',
+   'Barang Jadi Pesanan',
+   'Sparepart Mesin',
+   'Supplies Kantor',
+   'Supplies Pabrik',
+ ];
+ const DEFAULT_STATUS = ['Aktif', 'Tidak Aktif'];
+ const PAGE_SIZE = 50;
+ 
+ 
+ export default function SaldoBarangClient() {
+   const router = useRouter();
+   const searchParams = useSearchParams();
+   const [isMounted, setIsMounted] = useState(false);
+   const [tgl, setTgl] = useState(() => searchParams.get('tgl') || todayIso());
+   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('search') || '');
+   const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('search') || '');
+   const [highlightQuery, setHighlightQuery] = useState(() => searchParams.get('search') || '');
+   const [golongan, setGolongan] = useState(() => searchParams.get('golongan') || '');
+   const [status, setStatus] = useState(() => searchParams.get('status') || '');
+   const [golonganOptions, setGolonganOptions] = useState<string[]>(DEFAULT_GOLONGAN);
+   const [statusOptions, setStatusOptions] = useState<string[]>(DEFAULT_STATUS);
   const [page, setPage] = useState(1);
   const [rows, setRows] = useState<SaldoRow[]>([]);
   const [total, setTotal] = useState(0);

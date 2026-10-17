@@ -59,16 +59,36 @@ export async function GET(req: NextRequest) {
       db.execute({ sql: `SELECT COUNT(*) as total FROM saldo_barang ${whereClause}`, args: params }),
       db.execute({ sql: `SELECT tgl, COUNT(*) as n FROM saldo_barang GROUP BY tgl ORDER BY tgl DESC LIMIT 10` }),
       db.execute({ sql: `SELECT value FROM system_settings WHERE key = 'last_scrape_saldo_barang'` }),
-      db.execute({ sql: `SELECT DISTINCT kd_golongan FROM saldo_barang WHERE kd_golongan IS NOT NULL AND kd_golongan != '' ORDER BY kd_golongan` }),
-      db.execute({ sql: `SELECT DISTINCT status FROM saldo_barang WHERE status IS NOT NULL AND status != '' ORDER BY status` }),
+      db.execute({
+        sql: `SELECT DISTINCT kd_golongan FROM (
+                SELECT kd_golongan FROM saldo_barang WHERE kd_golongan IS NOT NULL AND kd_golongan != ''
+                UNION
+                SELECT kd_golongan FROM stok_master_barang WHERE kd_golongan IS NOT NULL AND kd_golongan != ''
+              ) ORDER BY kd_golongan`,
+      }),
+      db.execute({
+        sql: `SELECT DISTINCT status FROM (
+                SELECT status FROM saldo_barang WHERE status IS NOT NULL AND status != ''
+                UNION
+                SELECT 'Aktif' AS status
+                UNION
+                SELECT 'Tidak Aktif' AS status
+              ) ORDER BY status`,
+      }),
     ]);
 
     const rows = dataRes.rows as Record<string, unknown>[];
     const total = (countRes.rows[0] as Record<string, unknown> | undefined)?.total as number ?? 0;
     const available = (tglRes.rows ?? []) as Record<string, unknown>[];
     const lastUpdated = (lastRes.rows[0] as Record<string, unknown> | undefined)?.value ?? null;
-    const golonganList = (golRes.rows as Record<string, unknown>[]).map((r) => String(r.kd_golongan ?? '')).filter(Boolean);
-    const statusList = (statRes.rows as Record<string, unknown>[]).map((r) => String(r.status ?? '')).filter(Boolean);
+    let golonganList = (golRes.rows as Record<string, unknown>[]).map((r) => String(r.kd_golongan ?? '')).filter(Boolean);
+    if (golonganList.length === 0) {
+      golonganList = ['Bahan Baku', 'Bahan Penolong', 'Barang Jadi Pesanan', 'Sparepart Mesin', 'Supplies Kantor', 'Supplies Pabrik'];
+    }
+    let statusList = (statRes.rows as Record<string, unknown>[]).map((r) => String(r.status ?? '')).filter(Boolean);
+    if (statusList.length === 0) {
+      statusList = ['Aktif', 'Tidak Aktif'];
+    }
 
     return NextResponse.json({
       success: true,
