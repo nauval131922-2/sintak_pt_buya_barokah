@@ -465,7 +465,35 @@ export default function OrderGanttChart({ entries, orderInfo }: OrderGanttChartP
             </div>
 
             {/* Task Rows */}
-            <div className="divide-y divide-gray-100">
+            {/* Task Rows with Single Global Background Grid */}
+            <div className="relative divide-y divide-gray-100">
+              {/* Global Background Grid (Single layer behind all rows) */}
+              <div 
+                className="absolute top-0 bottom-0 pointer-events-none flex"
+                style={{ left: 320, width: totalTimelineWidth }}
+              >
+                {allDates.map((dStr) => {
+                  const dayInfo = getDayOfWeek(dStr);
+                  const isDeadline = dStr === deadlineISO;
+                  return (
+                    <div
+                      key={dStr}
+                      style={{ width: dayColWidth }}
+                      className={`shrink-0 h-full border-r border-gray-100 ${
+                        isDeadline ? 'bg-rose-50/20' : dayInfo.isHoliday ? 'bg-amber-50/20' : ''
+                      }`}
+                    />
+                  );
+                })}
+                {/* Deadline Vertical Marker Line */}
+                {deadlineISO && deadlineISO in dateIndexMap && (
+                  <div
+                    className="absolute top-0 bottom-0 z-10 border-l-2 border-dashed border-rose-500 pointer-events-none"
+                    style={{ left: (dateIndexMap[deadlineISO] + 1) * dayColWidth - 1 }}
+                  />
+                )}
+              </div>
+
               {filteredTasks.map((task) => {
                 const theme = getBagianTheme(task.bagian);
                 const startIndex = dateIndexMap[task.startDate] ?? 0;
@@ -513,36 +541,11 @@ export default function OrderGanttChart({ entries, orderInfo }: OrderGanttChartP
                       </div>
                     </div>
 
-                    {/* Right Timeline Grid for this task */}
+                    {/* Right Timeline Grid for this task (Bars only, no duplicate background grids) */}
                     <div 
                       className="relative flex items-center py-3" 
                       style={{ width: totalTimelineWidth }}
                     >
-                      {/* Grid background lines */}
-                      <div className="absolute inset-0 flex pointer-events-none">
-                        {allDates.map((dStr) => {
-                          const isHoliday = getDayOfWeek(dStr).isHoliday;
-                          const isDeadline = dStr === deadlineISO;
-                          return (
-                            <div
-                              key={dStr}
-                              style={{ width: dayColWidth }}
-                              className={`shrink-0 h-full border-r border-gray-100 ${
-                                isDeadline ? 'bg-rose-50/20' : isHoliday ? 'bg-amber-50/20' : ''
-                              }`}
-                            />
-                          );
-                        })}
-                      </div>
-
-                      {/* Deadline Vertical Marker Line */}
-                      {deadlineISO && deadlineISO in dateIndexMap && (
-                        <div
-                          className="absolute top-0 bottom-0 z-10 border-l-2 border-dashed border-rose-500 pointer-events-none"
-                          style={{ left: (dateIndexMap[deadlineISO] + 1) * dayColWidth - 1 }}
-                        />
-                      )}
-
                       {/* Gantt Bar */}
                       <div
                         style={{

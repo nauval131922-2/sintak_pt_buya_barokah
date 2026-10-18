@@ -59,20 +59,25 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    if (q && q.length >= 2) {
-      const searchStr = `%${q}%`;
+    if (q && q.trim().length >= 2) {
+      const trimmedQ = q.trim();
+      const searchStr = `%${trimmedQ}%`;
       const result = await db.execute({
         sql: `SELECT jhp.no_order, jhp.nama_order,
           o.nama_prd, o.qty, o.satuan, o.nama_pelanggan, o.tgl as tgl_order
         FROM (
           SELECT no_order, nama_order
-          FROM jurnal_harian_produksi
-          WHERE (no_order LIKE ? OR nama_order LIKE ?) AND deleted_at IS NULL
+          FROM (
+            SELECT no_order, nama_order
+            FROM jurnal_harian_produksi
+            WHERE deleted_at IS NULL AND (no_order LIKE ? OR nama_order LIKE ?)
+            ORDER BY id DESC
+            LIMIT 300
+          )
           GROUP BY no_order
+          LIMIT 30
         ) jhp
-        LEFT JOIN orders o ON o.faktur = jhp.no_order
-        ORDER BY substr(o.tgl,7,4) DESC, substr(o.tgl,4,2) DESC, substr(o.tgl,1,2) DESC
-        LIMIT 50`,
+        LEFT JOIN orders o ON o.faktur = jhp.no_order`,
         args: [searchStr, searchStr]
       });
 
@@ -89,14 +94,17 @@ export async function GET(request: NextRequest) {
           o.nama_prd, o.qty, o.satuan, o.nama_pelanggan, o.tgl as tgl_order
         FROM (
           SELECT no_order, nama_order
-          FROM jurnal_harian_produksi
-          WHERE deleted_at IS NULL
+          FROM (
+            SELECT no_order, nama_order
+            FROM jurnal_harian_produksi
+            WHERE deleted_at IS NULL AND no_order IS NOT NULL AND no_order != '' AND no_order != '-'
+            ORDER BY id DESC
+            LIMIT 400
+          )
           GROUP BY no_order
+          LIMIT 20
         ) jhp
-        LEFT JOIN orders o ON o.faktur = jhp.no_order
-        ORDER BY substr(o.tgl,7,4) DESC, substr(o.tgl,4,2) DESC, substr(o.tgl,1,2) DESC
-        LIMIT 20`,
-        args: []
+        LEFT JOIN orders o ON o.faktur = jhp.no_order`,
       });
 
       return NextResponse.json({
