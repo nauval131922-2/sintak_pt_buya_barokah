@@ -1,7 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, X, Loader2, Package, Hash, Users, Target, CheckCircle2, Layers, RefreshCw } from 'lucide-react';
+import { 
+  Search, X, Loader2, Package, Hash, Users, Target, CheckCircle2, 
+  Layers, RefreshCw, BarChart3, TableProperties, Flag 
+} from 'lucide-react';
+import OrderGanttChart from '@/components/OrderGanttChart';
 
 interface JhpEntry {
   id: number;
@@ -28,6 +32,9 @@ interface OrderInfo {
   qty: number;
   satuan: string;
   nama_pelanggan: string;
+  tgl_order?: string | null;
+  deadline_date?: string | null;
+  finished_date?: string | null;
 }
 
 interface SearchOrder {
@@ -48,13 +55,14 @@ export default function AnalisaClient() {
   const [entries, setEntries] = useState<JhpEntry[]>([]);
   const [orderInfo, setOrderInfo] = useState<OrderInfo | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<'gantt' | 'table'>('gantt');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [recentOrders, setRecentOrders] = useState<SearchOrder[]>([]);
   const [recentLoading, setRecentLoading] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const displayOrders = query.length >= 2 ? results : recentOrders;
 
@@ -76,51 +84,56 @@ export default function AnalisaClient() {
   }, []);
 
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
+    clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => search(query), 400);
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+    return () => clearTimeout(debounceRef.current);
   }, [query, search]);
 
+  const loadRecentOrders = useCallback(async () => {
+    setRecentLoading(true);
+    try {
+      const res = await fetch('/api/jurnal-harian-produksi/analisa?recent=true');
+      const data = await res.json();
+      setRecentOrders(data.orders || []);
+    } catch { setRecentOrders([]); }
+    finally { setRecentLoading(false); }
+  }, []);
+
+  const openDropdown = () => {
+    setIsDropdownOpen(true);
+    if (query.length < 2 && recentOrders.length === 0) {
+      loadRecentOrders();
+    }
+  };
+
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
+    const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setIsDropdownOpen(false);
       }
-    }
+    };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const openDropdown = useCallback(async () => {
-    setIsDropdownOpen(true);
-    if (recentOrders.length === 0 && query.length < 2) {
-      setRecentLoading(true);
-      try {
-        const res = await fetch('/api/jurnal-harian-produksi/analisa?recent=true');
-        const data = await res.json();
-        setRecentOrders(data.orders || []);
-      } catch { setRecentOrders([]); }
-      finally { setRecentLoading(false); }
-    }
-  }, [recentOrders.length, query.length]);
-
   const selectOrder = async (noOrder: string) => {
     setSelectedOrder(noOrder);
-    localStorage.setItem('analisa_selected_order', noOrder);
     setIsDropdownOpen(false);
     setQuery('');
     setResults([]);
+    localStorage.setItem('analisa_selected_order', noOrder);
     setDetailLoading(true);
     try {
       const res = await fetch(`/api/jurnal-harian-produksi/analisa?no_order=${encodeURIComponent(noOrder)}`);
       const data = await res.json();
       setEntries(data.entries || []);
-      setOrderInfo(data.order);
+      setOrderInfo(data.order || null);
     } catch {
       setEntries([]);
       setOrderInfo(null);
+    } finally {
+      setDetailLoading(false);
     }
-    finally { setDetailLoading(false); }
   };
 
   const refreshEntries = useCallback(async () => {
@@ -130,12 +143,13 @@ export default function AnalisaClient() {
       const res = await fetch(`/api/jurnal-harian-produksi/analisa?no_order=${encodeURIComponent(selectedOrder)}`);
       const data = await res.json();
       setEntries(data.entries || []);
-      setOrderInfo(data.order);
+      setOrderInfo(data.order || null);
     } catch {
       setEntries([]);
       setOrderInfo(null);
+    } finally {
+      setDetailLoading(false);
     }
-    finally { setDetailLoading(false); }
   }, [selectedOrder]);
 
   const clearSelection = () => {
@@ -162,15 +176,14 @@ export default function AnalisaClient() {
   };
 
   const bagianColor = (bagian: string) => {
-    const colors: Record<string, string> = {
-      'SETTING': 'bg-blue-100 text-blue-800 border-blue-200',
-      'QC': 'bg-purple-100 text-purple-800 border-purple-200',
-      'CETAK': 'bg-amber-100 text-amber-800 border-amber-200',
-      'FINISHING': 'bg-emerald-100 text-emerald-800 border-emerald-200',
-      'GUDANG': 'bg-slate-100 text-slate-800 border-slate-200',
-      'TEKNISI': 'bg-rose-100 text-rose-800 border-rose-200',
-    };
-    return colors[bagian] || 'bg-gray-100 text-gray-800 border-gray-200';
+    const b = (bagian || '').toUpperCase();
+    if (b.includes('SETTING')) return 'bg-blue-100 text-blue-800 border-blue-200';
+    if (b.includes('QC') || b.includes('QUALITY CONTROL')) return 'bg-purple-100 text-purple-800 border-purple-200';
+    if (b.includes('CETAK')) return 'bg-amber-100 text-amber-800 border-amber-200';
+    if (b.includes('FINISHING')) return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+    if (b.includes('GUDANG')) return 'bg-slate-100 text-slate-800 border-slate-200';
+    if (b.includes('TEKNISI')) return 'bg-rose-100 text-rose-800 border-rose-200';
+    return 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
   const uniqueBagian = [...new Set(entries.map(e => e.bagian))];
@@ -181,6 +194,7 @@ export default function AnalisaClient() {
 
   return (
     <div className="w-full flex-1 min-h-0 flex flex-col gap-6">
+      {/* Search Input & Dropdown */}
       <div className="relative max-w-lg shrink-0" ref={dropdownRef}>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -253,130 +267,181 @@ export default function AnalisaClient() {
         {selectedOrder ? (
           <>
             {orderInfo && (
-              <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 flex flex-wrap gap-x-8 gap-y-2 text-sm">
+              <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 flex flex-wrap items-center gap-x-8 gap-y-2 text-sm">
                 <div className="flex items-center gap-2">
                   <Hash size={16} className="text-gray-400" />
-                  <span className="font-medium">{orderInfo.faktur}</span>
+                  <span className="font-semibold text-gray-900">{orderInfo.faktur}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Package size={16} className="text-gray-400" />
-                  <span>{orderInfo.nama_prd}</span>
+                  <span className="text-gray-700">{orderInfo.nama_prd}</span>
                 </div>
                 {orderInfo.nama_pelanggan && (
                   <div className="flex items-center gap-2">
                     <Users size={16} className="text-gray-400" />
-                    <span>{orderInfo.nama_pelanggan}</span>
+                    <span className="text-gray-600">{orderInfo.nama_pelanggan}</span>
                   </div>
                 )}
                 {orderInfo.qty && (
                   <div className="flex items-center gap-2">
                     <Target size={16} className="text-gray-400" />
-                    <span>{orderInfo.qty} {orderInfo.satuan || ''}</span>
+                    <span className="text-gray-700 font-medium">{orderInfo.qty.toLocaleString('id-ID')} {orderInfo.satuan || ''}</span>
                   </div>
                 )}
-                <button
-                  onClick={refreshEntries}
-                  className="ml-auto p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                  title="Muat Ulang Data"
-                >
-                  <RefreshCw size={16} className={detailLoading ? 'animate-spin' : ''} />
-                </button>
-                <button
-                  onClick={clearSelection}
-                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Hapus Pilihan"
-                >
-                  <X size={16} />
-                </button>
+                {orderInfo.deadline_date && (
+                  <div className="flex items-center gap-1.5 text-amber-800 bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-200 text-xs">
+                    <Flag size={14} className="text-amber-600" />
+                    <span className="font-semibold">Deadline: {orderInfo.deadline_date}</span>
+                  </div>
+                )}
+                <div className="ml-auto flex items-center gap-2">
+                  <button
+                    onClick={refreshEntries}
+                    className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
+                    title="Muat Ulang Data"
+                  >
+                    <RefreshCw size={16} className={detailLoading ? 'animate-spin' : ''} />
+                  </button>
+                  <button
+                    onClick={clearSelection}
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                    title="Hapus Pilihan"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
               </div>
             )}
 
             {detailLoading && (
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <Loader2 size={16} className="animate-spin" /> Memuat data...
+              <div className="flex items-center gap-2 text-sm text-gray-500 py-6">
+                <Loader2 size={16} className="animate-spin text-emerald-600" /> Memuat riwayat produksi...
               </div>
             )}
 
             {!detailLoading && entries.length > 0 && (
-              <div className="flex-1 min-h-0 flex flex-col xl:flex-row gap-4">
-                <div className="flex-1 min-h-0 flex flex-col bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-                  <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50 shrink-0">
-                    <h3 className="text-sm font-semibold text-gray-700">Riwayat Produksi</h3>
-                  </div>
-                  <div className="flex-1 min-h-0 overflow-auto">
-                    <table className="w-full text-sm">
-                      <thead className="sticky top-0 z-10 bg-white shadow-sm">
-                        <tr className="border-b border-gray-100 bg-gray-50/30">
-                            <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">Tgl</th>
-                            <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">Shift</th>
-                            <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">Bagian</th>
-                            <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">Karyawan</th>
-                            <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">Pekerjaan Target</th>
-                            <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">Pekerjaan Realisasi</th>
-                            <th className="text-right px-3 py-2.5 text-xs font-medium text-gray-500">Target</th>
-                            <th className="text-right px-3 py-2.5 text-xs font-medium text-gray-500">Realisasi</th>
-                            <th className="text-left px-3 py-2.5 text-xs font-medium text-gray-500">Keterangan</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
-                          {entries.map((entry) => (
-                            <tr key={entry.id} className="hover:bg-gray-50/50">
-                              <td className="px-4 py-2.5 text-gray-600 whitespace-nowrap">{entry.tgl}</td>
-                              <td className="px-4 py-2.5 text-gray-600">{entry.shift}</td>
-                              <td className="px-4 py-2.5">
-                                <span className={`inline-block px-2 py-0.5 rounded-lg text-xs font-medium border ${bagianColor(entry.bagian)}`}>
-                                  {entry.bagian}
-                                </span>
-                              </td>
-                              <td className="px-4 py-2.5 text-gray-800">{entry.nama_karyawan || '-'}</td>
-                              <td className="px-4 py-2.5 text-gray-800">{entry.pekerjaan_target || '-'}</td>
-                              <td className="px-4 py-2.5 text-gray-800">{entry.pekerjaan_realisasi || '-'}</td>
-                              <td className="px-3 py-2.5 text-right text-gray-700 font-medium">{entry.target ?? '-'}</td>
-                              <td className="px-3 py-2.5 text-right text-gray-700 font-medium">{entry.realisasi ?? '-'}</td>
-                              <td className="px-3 py-2.5 text-gray-500 text-xs max-w-[200px] truncate">{entry.keterangan || '-'}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+              <div className="flex flex-col gap-4">
+                {/* View Switcher Toolbar */}
+                <div className="flex items-center justify-between bg-white border border-gray-200 rounded-2xl px-4 py-2.5 shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-gray-800">
+                      {viewMode === 'gantt' ? 'Gantt Timeline Produksi' : 'Riwayat Produksi'}
+                    </h3>
+                    <span className="text-xs text-gray-400 font-medium">({entries.length} baris JHP)</span>
                   </div>
 
-                <div className="xl:w-80 shrink-0">
-                  <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                      <Layers size={16} /> Alur Bagian
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {uniqueBagian.map((bagian, i) => (
-                        <div key={bagian} className="flex items-center gap-1">
-                          <span className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${bagianColor(bagian)}`}>
-                            {bagian}
-                          </span>
-                          {i < uniqueBagian.length - 1 && (
-                            <span className="text-gray-300 text-xs">&rarr;</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-4 space-y-2">
-                      {uniqueBagian.map((bagian) => (
-                        <div key={bagian} className="flex items-center justify-between text-xs text-gray-600">
-                          <span className="font-medium">{bagian}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="flex items-center gap-0.5">
-                              <Target size={12} className="text-gray-400" />
-                              {totalTargetByBagian(bagian)}
-                            </span>
-                            <span className="flex items-center gap-0.5">
-                              <CheckCircle2 size={12} className="text-emerald-500" />
-                              {totalRealisasiByBagian(bagian)}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                  <div className="flex items-center bg-gray-100 p-0.5 rounded-xl border border-gray-200">
+                    <button
+                      onClick={() => setViewMode('gantt')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        viewMode === 'gantt'
+                          ? 'bg-white text-emerald-700 shadow-xs font-semibold'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      <BarChart3 size={14} />
+                      <span>Gantt Timeline</span>
+                    </button>
+                    <button
+                      onClick={() => setViewMode('table')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        viewMode === 'table'
+                          ? 'bg-white text-emerald-700 shadow-xs font-semibold'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      <TableProperties size={14} />
+                      <span>Tabel Riwayat</span>
+                    </button>
                   </div>
                 </div>
+
+                {/* Content: Gantt View or Table View */}
+                {viewMode === 'gantt' ? (
+                  <OrderGanttChart entries={entries} orderInfo={orderInfo} />
+                ) : (
+                  <div className="flex-1 min-h-0 flex flex-col xl:flex-row gap-4">
+                    <div className="flex-1 min-h-0 flex flex-col bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                      <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50 shrink-0">
+                        <h3 className="text-sm font-semibold text-gray-700">Tabel Transaksi JHP</h3>
+                      </div>
+                      <div className="flex-1 min-h-0 overflow-auto">
+                        <table className="w-full text-sm">
+                          <thead className="sticky top-0 z-10 bg-white shadow-sm">
+                            <tr className="border-b border-gray-100 bg-gray-50/30">
+                              <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">Tgl</th>
+                              <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">Shift</th>
+                              <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">Bagian</th>
+                              <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">Karyawan</th>
+                              <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">Pekerjaan Target</th>
+                              <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500">Pekerjaan Realisasi</th>
+                              <th className="text-right px-3 py-2.5 text-xs font-medium text-gray-500">Target</th>
+                              <th className="text-right px-3 py-2.5 text-xs font-medium text-gray-500">Realisasi</th>
+                              <th className="text-left px-3 py-2.5 text-xs font-medium text-gray-500">Keterangan</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-50">
+                            {entries.map((entry) => (
+                              <tr key={entry.id} className="hover:bg-gray-50/50">
+                                <td className="px-4 py-2.5 text-gray-600 whitespace-nowrap">{entry.tgl}</td>
+                                <td className="px-4 py-2.5 text-gray-600">{entry.shift}</td>
+                                <td className="px-4 py-2.5">
+                                  <span className={`inline-block px-2 py-0.5 rounded-lg text-xs font-medium border ${bagianColor(entry.bagian)}`}>
+                                    {entry.bagian}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-2.5 text-gray-800">{entry.nama_karyawan || '-'}</td>
+                                <td className="px-4 py-2.5 text-gray-800">{entry.pekerjaan_target || '-'}</td>
+                                <td className="px-4 py-2.5 text-gray-800">{entry.pekerjaan_realisasi || '-'}</td>
+                                <td className="px-3 py-2.5 text-right text-gray-700 font-medium">{entry.target ?? '-'}</td>
+                                <td className="px-3 py-2.5 text-right text-gray-700 font-medium">{entry.realisasi ?? '-'}</td>
+                                <td className="px-3 py-2.5 text-gray-500 text-xs max-w-[200px] truncate">{entry.keterangan || '-'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* Bagian Flow Summary */}
+                    <div className="xl:w-80 shrink-0">
+                      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
+                        <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                          <Layers size={16} /> Alur Bagian
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {uniqueBagian.map((bagian, i) => (
+                            <div key={bagian} className="flex items-center gap-1">
+                              <span className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${bagianColor(bagian)}`}>
+                                {bagian}
+                              </span>
+                              {i < uniqueBagian.length - 1 && (
+                                <span className="text-gray-300 text-xs">&rarr;</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-4 space-y-2">
+                          {uniqueBagian.map((bagian) => (
+                            <div key={bagian} className="flex items-center justify-between text-xs text-gray-600">
+                              <span className="font-medium">{bagian}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="flex items-center gap-0.5">
+                                  <Target size={12} className="text-gray-400" />
+                                  {totalTargetByBagian(bagian)}
+                                </span>
+                                <span className="flex items-center gap-0.5">
+                                  <CheckCircle2 size={12} className="text-emerald-500" />
+                                  {totalRealisasiByBagian(bagian)}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -391,7 +456,7 @@ export default function AnalisaClient() {
           <div className="flex-1 flex items-center justify-center">
             <div className="text-sm text-gray-400 text-center">
               <Search size={48} className="mx-auto mb-3 text-gray-200" />
-              Ketik no order atau nama order untuk mulai analisa.
+              Ketik nomor order atau nama order di kolom pencarian di atas untuk menganalisis alur produksi.
             </div>
           </div>
         )}

@@ -36,8 +36,20 @@ export async function GET(request: NextRequest) {
       });
 
       const orderInfo = await db.execute({
-        sql: `SELECT faktur, nama_prd, qty, satuan, nama_pelanggan FROM orders WHERE faktur = ?`,
-        args: [noOrder]
+        sql: `SELECT 
+                COALESCE(o.faktur, s.no_sopd, ?) as faktur,
+                COALESCE(o.nama_prd, s.nama_order) as nama_prd,
+                COALESCE(o.qty, s.qty_sopd) as qty,
+                COALESCE(o.satuan, s.unit) as satuan,
+                o.nama_pelanggan,
+                COALESCE(o.tgl, s.tgl) as tgl_order,
+                sh.deadline_date,
+                sh.finished_date
+              FROM (SELECT ? as req_no) r
+              LEFT JOIN orders o ON o.faktur = r.req_no
+              LEFT JOIN sopd s ON s.no_sopd = r.req_no
+              LEFT JOIN sopd_harga sh ON sh.no_sopd = r.req_no`,
+        args: [noOrder, noOrder]
       });
 
       return NextResponse.json({
