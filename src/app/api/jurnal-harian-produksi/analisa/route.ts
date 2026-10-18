@@ -5,8 +5,8 @@ import { requireApiPermission } from "@/lib/api-guard";
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-  // Guard: samakan dengan halaman (permission produksi_jhp_analisa)
-  const gate = await requireApiPermission('produksi_jhp_analisa');
+  // Guard: allow either produksi_jhp_analisa or produksi_rencana_produksi
+  const gate = await requireApiPermission(['produksi_jhp_analisa', 'produksi_rencana_produksi']);
   if (gate.error) return gate.error;
   try {
     const searchParams = request.nextUrl.searchParams;

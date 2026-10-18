@@ -37,6 +37,7 @@ import {
   MessageSquare,
   Sparkles,
   FileSpreadsheet,
+  CalendarRange,
 } from 'lucide-react';
 import { MODULE_REGISTRY, type PermissionMap } from '@/lib/permissions-constants';
 
@@ -648,12 +649,17 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
               />
             )}
 
-            {(canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil') || canAccess('produksi_jhp_analisa') || canAccess('produksi_laporan_pekerjaan') || canAccess('produksi_penonaktifan_master')) && (
+            {(canAccess('produksi_rencana_produksi') || canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_hasil') || canAccess('produksi_jhp_analisa') || canAccess('produksi_laporan_pekerjaan') || canAccess('produksi_penonaktifan_master')) && (
               <AccordionMenu
                 id="produksi-sistem"
                 label="Produksi"
                 icon={<Package size={18} />}
                 items={[
+                  ...((canAccess('produksi_rencana_produksi') || canAccess('produksi_jhp_analisa')) ? [{
+                    label: 'Rencana Produksi',
+                    href: '/rencana-produksi',
+                    icon: <CalendarRange size={16} />,
+                  }] : []),
                   ...((canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_jhp_analisa')) ? [{
                     label: 'Jurnal Harian Produksi',
                     icon: <ClipboardList size={16} />,

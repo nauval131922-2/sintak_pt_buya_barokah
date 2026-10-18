@@ -60,6 +60,7 @@ export const searchableMenuItems: SearchableMenuItem[] = [
   { label: 'Jurnal Harian Produksi', href: '/jurnal-harian-produksi', category: 'Sistem', keywords: 'jhp daily production journal', permission: 'produksi_jhp' },
   { label: 'Target Harian JHP', href: '/jurnal-harian-produksi/target', category: 'Sistem', keywords: 'target jhp harian produksi', permission: 'produksi_jhp_target' },
   { label: 'Analisa Produksi JHP', href: '/jurnal-harian-produksi/analisa', category: 'Sistem', keywords: 'analisa grafik performa jhp', permission: 'produksi_jhp_analisa' },
+  { label: 'Rencana Produksi', href: '/rencana-produksi', category: 'Sistem', keywords: 'rencana produksi jadwal gantt timeline wbs', permission: 'produksi_rencana_produksi' },
   { label: 'SOPd Produksi', href: '/jurnal-harian-produksi/data/excel-sopd', category: 'Sistem', keywords: 'sopd excel data jurnal produksi', permission: 'produksi_jhp_sopd' },
   { label: 'Master Pekerjaan', href: '/jurnal-harian-produksi/data/master-pekerjaan', category: 'Sistem', keywords: 'master pekerjaan setting cetak finishing', permission: 'produksi_jhp_master_pekerjaan' },
   { label: 'Master Pekerjaan Jurnal Produksi', href: '/jurnal-harian-produksi/data/master-pekerjaan-jurnal-produksi', category: 'Sistem', keywords: 'master pekerjaan jurnal produksi kategori target', permission: 'produksi_jhp_master_pekerjaan_jurnal_produksi' },
