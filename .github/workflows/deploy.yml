@@ -33,7 +33,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           timeout: 120s
           command_timeout: 10m
-          source: .next/
+          source: ".next/,package.json,package-lock.json"
           target: /var/www/sintak/.next-tmp/
           strip_components: 0
 
@@ -64,6 +64,11 @@ jobs:
 
             touch .maintenance
 
+            # Sinkronkan kode dan dependensi node_modules jika package.json berubah
+            git pull origin master 2>/dev/null || true
+            cp -f .next-tmp/package.json .next-tmp/package-lock.json ./ 2>/dev/null || true
+            npm install --omit=dev --prefer-offline --no-audit || true
+
             # Backup current build (jangan hapus sampai health check lolos)
             rm -rf .next.bak
             [ -d ".next" ] && mv .next .next.bak
@@ -72,13 +77,15 @@ jobs:
 
             # Swap new build
             mv .next-tmp/.next .next
-            rmdir .next-tmp 2>/dev/null
+            rm -rf .next-tmp 2>/dev/null
 
             pm2 reload ecosystem.config.js --only sintak-prod
 
-            for i in $(seq 1 30); do
-              sleep 1
+            echo "Menunggu Next.js siap (cold start)..."
+            for i in $(seq 1 60); do
+              sleep 2
               code=$(curl -s -o /dev/null -w "%{http_code}" -m 10 http://localhost:3000/login 2>/dev/null || true)
+              echo "Health check attempt $i/60: HTTP $code"
               if [ "$code" = "200" ]; then
                 rm -f .maintenance
                 rm -rf .next.bak 2>/dev/null
@@ -87,7 +94,13 @@ jobs:
               fi
             done
 
-            echo "Health FAILED - rolling back"
+            echo "Health FAILED after 60 attempts (120s) - dumping logs before rollback:"
+            pm2 status || true
+            pm2 logs sintak-prod --lines 40 --nostream || true
+            tail -n 40 logs/pm2-error.log 2>/dev/null || true
+            curl -v -m 10 http://localhost:3000/login 2>&1 || true
+
+            echo "Rolling back to previous build..."
             rm -rf .next-failed 2>/dev/null
             mv .next .next-failed
             if [ -d ".next.bak" ]; then
