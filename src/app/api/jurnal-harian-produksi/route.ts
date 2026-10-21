@@ -162,14 +162,9 @@ export async function GET(request: NextRequest) {
       ? `SELECT COUNT(*) as count, COALESCE(SUM(COALESCE(realisasi, 0)), 0) as totalRealisasi, COALESCE(SUM(COALESCE(rijek, 0)), 0) as totalRijek FROM ${mainFrom} WHERE deleted_at IS NULL ${additionalWhere}`
       : `SELECT COUNT(*) as count FROM ${mainFrom} WHERE deleted_at IS NULL ${additionalWhere}`;
 
-    const sqlLastUpdated = `SELECT strftime('%Y-%m-%dT%H:%M:%SZ', MAX(created_at)) as lastUpdated
-          FROM activity_logs
-          WHERE table_name = 'jurnal_harian_produksi' AND action_type = 'UPLOAD'`;
-
     const runBatch = (from: string) => db.batch([
       { sql: sqlDataFor(from), args: [...args, limit, offset] },
       { sql: from === mainFrom ? sqlCount : sqlCount.replace(mainFrom, from), args },
-      { sql: sqlLastUpdated, args: [] },
     ], "read");
 
     let batchResults;
@@ -192,10 +187,7 @@ export async function GET(request: NextRequest) {
       totalRealisasi = Number(row?.totalRealisasi || 0);
       totalRijek = Number(row?.totalRijek || 0);
     }
-    const lastUpdated = batchResults[2].rows[0] as any;
-    const lastUpdatedVal = lastUpdated?.lastUpdated || null;
-
-    return NextResponse.json({ success: true, data, total, page, limit, lastUpdated: lastUpdatedVal, totalRealisasi, totalRijek });
+    return NextResponse.json({ success: true, data, total, page, limit, totalRealisasi, totalRijek });
 
 
   } catch (error: any) {

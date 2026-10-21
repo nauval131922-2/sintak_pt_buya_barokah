@@ -510,23 +510,23 @@ export default function JurnalClient({
      return () => { active = false; };
    }, [noOrderFilter, startDate, endDate, bagianFilter, namaKaryawanFilter, belumRealisasiFilter]);
 
-  // Fetch SOPD list for filter dropdown & form
+  // ponytail: daftar order (~6.5k baris, 628 KB) hanya ditarik saat dibutuhkan — tab form
+  // dibuka atau dropdown No. Order di filter disentuh. Dulu ikut refreshKey sehingga
+  // terunduh ulang tiap simpan/hapus. Ceiling: data order basi maks 5 menit dalam sesi.
+  const sopdFetchedAt = useRef(0);
+  const ensureSopd = useCallback(() => {
+    if (Date.now() - sopdFetchedAt.current < 5 * 60 * 1000) return;
+    sopdFetchedAt.current = Date.now();
+    // filter + form order list (union sopd/orders ~6.5k; cap for payload)
+    fetch('/api/sopd?all=true&limit=5000')
+      .then(r => { if (!r.ok) throw new Error('sopd'); return r.json(); })
+      .then(j => setSopdList(j.data || []))
+      .catch(() => { sopdFetchedAt.current = 0; });
+  }, []);
+
   useEffect(() => {
-    let active = true;
-    async function loadSopd() {
-      try {
-        // filter + form order list (union sopd/orders ~6.5k; cap for payload)
-        const res = await fetch('/api/sopd?all=true&limit=5000');
-        if (!active) return;
-        if (res.ok) {
-          const j = await res.json();
-          setSopdList(j.data || []);
-        }
-      } catch {}
-    }
-    loadSopd();
-    return () => { active = false; };
-  }, [refreshKey]);
+    if (activeTab === 'form') ensureSopd();
+  }, [activeTab, ensureSopd]);
 
   // Fetch employees for form dropdown (only when form is open)
   useEffect(() => {
@@ -1819,7 +1819,7 @@ export default function JurnalClient({
               {/* Baris 2 Filter Tablet */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 w-full">
                 <div className="flex flex-col sm:flex-row sm:flex-1 items-center gap-2 w-full">
-                  <div className="w-full sm:flex-[1.5]">
+                  <div className="w-full sm:flex-[1.5]" onPointerDown={ensureSopd}>
                     <SearchableDropdown
                       id="jurnal-no-order"
                       value={noOrderFilter}
@@ -1933,7 +1933,7 @@ export default function JurnalClient({
               </div>
 
               {/* Order Filter (Dibuat paling lebar) */}
-              <div className="flex-[2] min-w-[160px]">
+              <div className="flex-[2] min-w-[160px]" onPointerDown={ensureSopd}>
                 <SearchableDropdown
                   id="jurnal-no-order"
                   value={noOrderFilter}
