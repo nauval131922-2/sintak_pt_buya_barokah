@@ -45,6 +45,851 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'jurnal-harian-produksi-2026-10-21': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    permissionKeys: ['produksi_jhp'],
+    sortDate: '2026-10-21',
+    date: '21 Okt 2026',
+    version: '2026-10-21-1',
+    items: [
+      "Perbaiki performa input form Jurnal Harian Produksi",
+      "Hemat beban JHP: hapus query unfilled lastUpdated, tarik daftar order secara lazy",
+    ],
+  }),
+
+  'rencana-produksi-2026-10-18': entry({
+    pageKey: 'rencana-produksi',
+    title: 'Rencana Produksi',
+    permissionKeys: ['produksi_rencana_produksi'],
+    sortDate: '2026-10-18',
+    date: '18 Okt 2026',
+    version: '2026-10-18-1',
+    items: [
+      "Rombak total Rencana Produksi jadi Master Scheduling Multi-Order Dashboard",
+      "Tambah menu mandiri Rencana Produksi dengan visualisasi Gantt Chart",
+    ],
+  }),
+
+  'jurnal-harian-produksi-analisa-2026-10-18': entry({
+    pageKey: 'jurnal-harian-produksi-analisa',
+    title: 'Analisa Jurnal Harian Produksi',
+    permissionKeys: ['produksi_jhp_analisa'],
+    sortDate: '2026-10-18',
+    date: '18 Okt 2026',
+    version: '2026-10-18-1',
+    items: [
+      "Optimasi subquery recent-search dan eliminasi duplikasi DOM grid Gantt",
+      "Implement Gantt Chart per nomor order pada modul Analisa Produksi",
+      "Tambah menu mandiri Rencana Produksi dengan visualisasi Gantt Chart",
+    ],
+  }),
+
+  'saldo-barang-2026-10-17': entry({
+    pageKey: 'saldo-barang',
+    title: 'Laporan Saldo Barang',
+    permissionKeys: ['stok_saldo_barang'],
+    sortDate: '2026-10-17',
+    date: '17 Okt 2026',
+    version: '2026-10-17-1',
+    items: [
+      "Tambah query fallback UNION ke stok_master_barang dan default options agar filter golongan & status tidak pernah kosong",
+    ],
+  }),
+
+  'sync-2026-10-15': entry({
+    pageKey: 'sync',
+    title: 'Sinkronisasi All Data',
+    permissionKeys: ['sync'],
+    sortDate: '2026-10-15',
+    date: '15 Okt 2026',
+    version: '2026-10-15-1',
+    items: [
+      "Posisikan kolom Aksi di paling kiri dan aktifkan sort pada seluruh kolom",
+    ],
+  }),
+
+  'penonaktifan-routine-2026-10-15': entry({
+    pageKey: 'penonaktifan-routine',
+    title: 'Generator Kode Rutin Penonaktifan',
+    permissionKeys: ['produksi_penonaktifan_master'],
+    sortDate: '2026-10-15',
+    date: '15 Okt 2026',
+    version: '2026-10-15-1',
+    items: [
+      "Pencocokan langsung kode barang fallback nama barang bersih tanpa hardcode varian, hapus modal panduan lokal duplikat, dan tambah feedback status generate",
+      "Gunakan dynamic import ssr: false untuk eliminasi hydration mismatch error",
+      "Tambah kolom & filter frekuensi transaksi Pembelian (Beli) dari rekap_pembelian_barang",
+      "Eliminasi kedipan placeholder reload via lazy state initializer dan tambahkan filter rokok, notebook, ptyq",
+      "Pisahkan produk custom/pemesan ke kategori custom & samakan seleksi baris persis useTableSelection Lap. Penonaktifan",
+      "Optimasi rendering via memoized CandidateRow, debounced localStorage, dan kalkulasi memoized stats",
+      "Klasifikasikan Buku Soft/Hard Cover, Album Kenangan, dan medsos ke kategori custom",
+      "Tambah tombol copy pada kolom kode dan nama di tabel kandidat",
+      "Tata letak full-height 1 halaman dan multi-select row (Shift+klik range & select-all)",
+      "Pindahkan menu Generator Kode Rutin ke Settings > Produksi > Lap. Penonaktifan Master Barang & terapkan 3 kriteria komersial (Beli, SO, Jual) tanpa BOM/SPK",
+      "Tambah kolom & filter frekuensi Sales Order (SO) dan Penjualan (Jual) ke tabel generator",
+      "Seleksi hybrid (Ctrl+klik, Shift+klik range, checkbox aditif) & persistensi localStorage agar data tidak hilang saat refresh",
+      "Pasang komponen baku SearchAndReload per tabel dan tambahkan filter ponpes, spp, tabungan, setoran, hafalan",
+      "Tambah tombol & modal Panduan lengkap untuk penjelasan rinci halaman Generator Kode Rutin",
+      "Kembalikan direct import dan gunakan isMounted guard untuk eliminasi build error & hydration mismatch",
+    ],
+  }),
+
+  'saldo-barang-2026-10-15': entry({
+    pageKey: 'saldo-barang',
+    title: 'Laporan Saldo Barang',
+    permissionKeys: ['stok_saldo_barang'],
+    sortDate: '2026-10-15',
+    date: '15 Okt 2026',
+    version: '2026-10-15-1',
+    items: [
+      "Samakan style toolbar reload, search, dan filter persis Laporan Pekerjaan (SquareDropdown & dual-row)",
+      "Susun toolbar 1 baris mengalir dengan filter Golongan & Status setelah Search Bar",
+      "Tambah dropdown filter Golongan dan Status di toolbar",
+      "Tambah kolom Golongan Barang dan dukungan sort/search kd_golongan",
+    ],
+  }),
+
+  'sync-2026-10-14': entry({
+    pageKey: 'sync',
+    title: 'Sinkronisasi All Data',
+    permissionKeys: ['sync'],
+    sortDate: '2026-10-14',
+    date: '14 Okt 2026',
+    version: '2026-10-14-1',
+    items: [
+      "Tambah tombol reload icon di samping kiri search bar untuk muat ulang status sinkronisasi",
+      "Tingkatkan alur review usulan, modal rekap koreksi dengan batch decision, dan badge warna kategori sync",
+      "Redesign halaman Sinkronisasi All Data dari card grid menjadi data-table modern ber-filter tab",
+      "Selaraskan halaman sinkronisasi all data ke pola baku DataTable & TableFooter SINTAK",
+      "Gunakan DateRangeCard baku SINTAK & pastikan reaktivitas status sinkronisasi tabel",
+      "Buat filter kategori toggleable (klik ulang kategori aktif kembali ke Semua)",
+    ],
+  }),
+
+  'penonaktifan-review-2026-10-14': entry({
+    pageKey: 'penonaktifan-review',
+    title: 'Review Penonaktifan Master Barang Jadi',
+    permissionKeys: [],
+    sortDate: '2026-10-14',
+    date: '14 Okt 2026',
+    version: '2026-10-14-1',
+    items: [
+      "Tingkatkan alur review usulan, modal rekap koreksi dengan batch decision, dan badge warna kategori sync",
+      "Implementasikan seleksi hybrid, perbesar modal rekap, dan letakkan tombol reload di kiri search bar",
+      "Dukung klik baris penuh untuk seleksi multi-row dan range Shift+Click",
+      "Tambahkan Shift+Click range selection dan fitur pencarian di usulan review & modal rekap",
+    ],
+  }),
+
+  'penonaktifan-master-2026-10-14': entry({
+    pageKey: 'penonaktifan-master',
+    title: 'Laporan Penonaktifan Master Barang Jadi',
+    permissionKeys: ['produksi_penonaktifan_master'],
+    sortDate: '2026-10-14',
+    date: '14 Okt 2026',
+    version: '2026-10-14-1',
+    items: [
+      "Tingkatkan alur review usulan, modal rekap koreksi dengan batch decision, dan badge warna kategori sync",
+      "Hapus offset +7 hari pada sinkronisasi & evaluasi penonaktifan master barang",
+      "Rename pilar ke tahap & tampilkan timestamp sync real server",
+      "Implementasikan seleksi hybrid, perbesar modal rekap, dan letakkan tombol reload di kiri search bar",
+      "Posisikan DatePicker di awal agar lurus di bawah label Tanggal cutoff",
+      "Ubah tombol reload di samping search bar menjadi icon-only",
+      "Dukung klik baris penuh untuk seleksi multi-row dan range Shift+Click",
+      "Tambahkan Shift+Click range selection dan fitur pencarian di usulan review & modal rekap",
+      "Cegah modal rekap tertutup saat klik luar, hapus reload ganda, dan perbaiki onChange checkbox",
+    ],
+  }),
+
+  'sync-2026-10-13': entry({
+    pageKey: 'sync',
+    title: 'Sinkronisasi All Data',
+    permissionKeys: ['sync'],
+    sortDate: '2026-10-13',
+    date: '13 Okt 2026',
+    version: '2026-10-13-1',
+    items: [
+      "Sync 8 tahap paralel + fix tanggal kartu saldo",
+    ],
+  }),
+
+  'penonaktifan-review-2026-10-13': entry({
+    pageKey: 'penonaktifan-review',
+    title: 'Review Penonaktifan Master Barang Jadi',
+    permissionKeys: [],
+    sortDate: '2026-10-13',
+    date: '13 Okt 2026',
+    version: '2026-10-13-1',
+    items: [
+      "Full 1 layar + sanitize label lama penawaran batal",
+      "Search+suggest+tongsampah review, lindungi rutin multi-select",
+      "Ui(penonaktifan): kolom rutin & tong sampah pindah paling kiri",
+      "Ui(review): tampilkan alasan penonaktifan di tiap row",
+      "Ui(penonaktifan): tombol sampah & lindungi berwarna permanen",
+      "Ui(review): 1 layar tanpa scroll halaman + alasan ramping; label batal->hanya penawaran",
+    ],
+  }),
+
+  'penonaktifan-master-2026-10-13': entry({
+    pageKey: 'penonaktifan-master',
+    title: 'Laporan Penonaktifan Master Barang Jadi',
+    permissionKeys: ['produksi_penonaktifan_master'],
+    sortDate: '2026-10-13',
+    date: '13 Okt 2026',
+    version: '2026-10-13-1',
+    items: [
+      "Search+suggest+tongsampah review, lindungi rutin multi-select",
+      "Implementasi sync inkremental 30 hari (otomatis pangkas 10 bulan)",
+      "Ui(penonaktifan): kolom rutin & tong sampah pindah paling kiri",
+      "Sync 8 tahap paralel + fix tanggal kartu saldo",
+      "Saldo jalan duluan + retry 1x 401; sinkron kredensial dev",
+      "Ui(penonaktifan): tombol sampah & lindungi berwarna permanen",
+      "Limit kandidat 5000->20000, 810 kode tak lagi terpotong",
+      "Ui(review): 1 layar tanpa scroll halaman + alasan ramping; label batal->hanya penawaran",
+    ],
+  }),
+
+  'global-2026-10-13': entry({
+    pageKey: 'global',
+    title: 'Perubahan Umum',
+    permissionKeys: [],
+    sortDate: '2026-10-13',
+    date: '13 Okt 2026',
+    version: '2026-10-13-1',
+    items: [
+      "Link review publik tanpa login",
+    ],
+  }),
+
+  'penonaktifan-review-2026-10-12': entry({
+    pageKey: 'penonaktifan-review',
+    title: 'Review Penonaktifan Master Barang Jadi',
+    permissionKeys: [],
+    sortDate: '2026-10-12',
+    date: '12 Okt 2026',
+    version: '2026-10-12-1',
+    items: [
+      "Keyword exclude + share link review berlapis + tambah manual + rekap koreksi",
+    ],
+  }),
+
+  'penonaktifan-master-2026-10-12': entry({
+    pageKey: 'penonaktifan-master',
+    title: 'Laporan Penonaktifan Master Barang Jadi',
+    permissionKeys: ['produksi_penonaktifan_master'],
+    sortDate: '2026-10-12',
+    date: '12 Okt 2026',
+    version: '2026-10-12-1',
+    items: [
+      "Dropdown saran absolute di wrapper input, tidak tutupi textbox",
+      "Pisahkan baris label info dan kontrol input cutoff",
+      "Modal pengaturan tidak tertutup saat klik backdrop",
+      "Urutan toolbar sync sebelum generate",
+      "Keyword rutin + kartu ditolak klik + cutoff dd-mmm-yyyy + datepicker ramping",
+      "Suggest item 2 baris, nama tidak kepotong",
+      "Export POST baris terkoreksi via builder bersama",
+      "Reload ikon kiri + dropdown manual z-50 solid",
+      "Manual jadi modal, reload+search di atas tabel, saran in-flow",
+      "Kartu manual relative z-30 di atas header tabel",
+      "Timestamp full samping label, wadah kunci w-44 truncate",
+      "Simpan pengaturan manual, tanpa auto-generate",
+      "Matrix 13 cek visual umum + pulihkan header client",
+      "Keyword exclude + share link review berlapis + tambah manual + rekap koreksi",
+      "Polling rekap 30 detik bolak-balik + timestamp",
+      "Tutup modal + dialog sukses saat simpan pengaturan",
+      "Generate ulang otomatis habis simpan pengaturan",
+      "Guard unmount di decide",
+      "Suggest pick onMouseDown + shareToken persist",
+      "Hapus tombol tambah manual ganda, sisa satu di atas tabel",
+      "UI exclude keywords + modal ditolak + manual search + toolbar rapi tanpa kartu",
+      "Timestamp samping label cutoff, picker tetap w-44",
+      "Tombol simpan pengaturan di footer sticky + batal",
+      "Ditolak antara generate-bagikan + search kontras",
+      "Guard unmount di loadRekap polling",
+      "Buang truncate, timestamp full w-max",
+    ],
+  }),
+
+  'sync-2026-10-11': entry({
+    pageKey: 'sync',
+    title: 'Sinkronisasi All Data',
+    permissionKeys: ['sync'],
+    sortDate: '2026-10-11',
+    date: '11 Okt 2026',
+    version: '2026-10-11-1',
+    items: [
+      "Urutan ikut sidebar, persist hasil, timestamp, nama rutin",
+      "Perjelas Lap Penonaktifan 10 langkah + 4 pilar",
+    ],
+  }),
+
+  'penonaktifan-routine-2026-10-11': entry({
+    pageKey: 'penonaktifan-routine',
+    title: 'Generator Kode Rutin Penonaktifan',
+    permissionKeys: ['produksi_penonaktifan_master'],
+    sortDate: '2026-10-11',
+    date: '11 Okt 2026',
+    version: '2026-10-11-1',
+    items: [
+      "Hasil audit 3 subagent — SO mati, cache cutoff, chip nama, SPK join",
+      "Generator kode rutin penonaktifan + link sidebar",
+    ],
+  }),
+
+  'penonaktifan-master-2026-10-11': entry({
+    pageKey: 'penonaktifan-master',
+    title: 'Laporan Penonaktifan Master Barang Jadi',
+    permissionKeys: ['produksi_penonaktifan_master'],
+    sortDate: '2026-10-11',
+    date: '11 Okt 2026',
+    version: '2026-10-11-1',
+    items: [
+      "Hasil audit 3 subagent — SO mati, cache cutoff, chip nama, SPK join",
+      "Urutan ikut sidebar, persist hasil, timestamp, nama rutin",
+      "Timer per-tahap sync + rincian di dialog",
+      "Modal 3xl search di atas chip, WIB, bersih OP",
+    ],
+  }),
+
+  'saldo-barang-2026-10-11': entry({
+    pageKey: 'saldo-barang',
+    title: 'Laporan Saldo Barang',
+    permissionKeys: ['stok_saldo_barang'],
+    sortDate: '2026-10-11',
+    date: '11 Okt 2026',
+    version: '2026-10-11-1',
+    items: [
+      "Progress jujur per-page + guard permission jalur scrape",
+      "Sort global server-side + hapus header box redundan",
+      "Tampilkan Update di bawah tanggal posisi",
+      "Progres awal page-0 + batas polling 5 menit",
+      "Signer Excel nama lengkap + toolbar saldo rapat kiri",
+      "Kembalikan tombol hijau standar scraper",
+      "Info Update sebaris label tanggal posisi",
+      "Kembalikan import highlightText",
+      "Toolbar proporsional, kontrol sebaris search",
+      "Label Update zona WIB via formatLastUpdate",
+    ],
+  }),
+
+  'penonaktifan-master-2026-10-10': entry({
+    pageKey: 'penonaktifan-master',
+    title: 'Laporan Penonaktifan Master Barang Jadi',
+    permissionKeys: ['produksi_penonaktifan_master'],
+    sortDate: '2026-10-10',
+    date: '10 Okt 2026',
+    version: '2026-10-10-1',
+    items: [
+      "DataTable + DatePicker + sync URL + loadTime + ConfirmDialog (parity scraper)",
+      "Lap. Penonaktifan Master Barang Jadi (SISTEM>Produksi, usulan Excel 4 pilar)",
+      "Tombol Sync semua & Generate + progress bar 9 tahap",
+      "Panduan alur kerja + gabung sync saldo ke sync semua",
+      "Pengaturan kode rutin + search, signer Excel = user login",
+      "Scrape saldo Digit r_brg_s + gate saldo/N PERSD + tombol sync",
+      "Pengaturan rutin + outflow usr_log PJ/SM/SV + idle kategori B",
+      "Search kode rutin dari master + hapus ketik manual",
+      "Selaraskan penonaktifan + saldo ke pola Master Barang (Portal, TableFooter, SearchAndReload, guard Stok)",
+    ],
+  }),
+
+  'saldo-barang-2026-10-10': entry({
+    pageKey: 'saldo-barang',
+    title: 'Laporan Saldo Barang',
+    permissionKeys: ['stok_saldo_barang'],
+    sortDate: '2026-10-10',
+    date: '10 Okt 2026',
+    version: '2026-10-10-1',
+    items: [
+      "Menu Saldo Barang DATA DIGIT Stok > Laporan (tabel + sync Digit)",
+      "DataTable + DatePicker + seleksi + highlight + sync URL + ConfirmDialog (parity scraper)",
+      "Selaraskan penonaktifan + saldo ke pola Master Barang (Portal, TableFooter, SearchAndReload, guard Stok)",
+    ],
+  }),
+
+  'spph-out-2026-10-08': entry({
+    pageKey: 'spph-out',
+    title: 'SPPH Keluar',
+    permissionKeys: ['pembelian_spph'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 13 rute pembelian + penjualan ke permission halaman",
+    ],
+  }),
+
+  'sph-out-2026-10-08': entry({
+    pageKey: 'sph-out',
+    title: 'SPH Keluar',
+    permissionKeys: ['penjualan_sph_out'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 13 rute pembelian + penjualan ke permission halaman",
+    ],
+  }),
+
+  'sph-in-2026-10-08': entry({
+    pageKey: 'sph-in',
+    title: 'SPH Masuk',
+    permissionKeys: ['pembelian_sph_in'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 13 rute pembelian + penjualan ke permission halaman",
+    ],
+  }),
+
+  'sales-orders-2026-10-08': entry({
+    pageKey: 'sales-orders',
+    title: 'Sales Order',
+    permissionKeys: ['penjualan_so'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 13 rute pembelian + penjualan ke permission halaman",
+    ],
+  }),
+
+  'sales-2026-10-08': entry({
+    pageKey: 'sales',
+    title: 'Laporan Penjualan',
+    permissionKeys: ['penjualan_laporan'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 13 rute pembelian + penjualan ke permission halaman",
+    ],
+  }),
+
+  'rekap-sales-order-2026-10-08': entry({
+    pageKey: 'rekap-sales-order',
+    title: 'Rekap Sales Order',
+    permissionKeys: ['kalkulasi_rekap_so'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 13 rute pembelian + penjualan ke permission halaman",
+    ],
+  }),
+
+  'rekap-pembelian-barang-2026-10-08': entry({
+    pageKey: 'rekap-pembelian-barang',
+    title: 'Rekap Pembelian Barang',
+    permissionKeys: ['pembelian_rekap'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 13 rute pembelian + penjualan ke permission halaman",
+    ],
+  }),
+
+  'purchase-orders-2026-10-08': entry({
+    pageKey: 'purchase-orders',
+    title: 'Purchase Order (PO)',
+    permissionKeys: ['pembelian_po'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 13 rute pembelian + penjualan ke permission halaman",
+    ],
+  }),
+
+  'pricelist-2026-10-08': entry({
+    pageKey: 'pricelist',
+    title: 'Kalkulasi Harga (Buku Tulis Mesin Cover SM 102 4W, Auto-Persist, & Parity Benchmark)',
+    permissionKeys: ["pricelist_kalkulasi"],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Konversi batch A ke grup-filter + search ala Majalah",
+      "Konversi batch B-2 ke grup-filter + search ala Majalah",
+      "Konversi batch D ke grup-filter + search ala Majalah",
+      "Konversi batch C (Brosur, BukuTulis, Nota, Manasik, Yasin) ke grup-filter + search ala Majalah",
+      "Rapikan sisa simulator, chip berurutan, tombol netral, grid mobile 2 kolom",
+    ],
+  }),
+
+  'pr-2026-10-08': entry({
+    pageKey: 'pr',
+    title: 'Purchase Request (PR)',
+    permissionKeys: ['pembelian_pr'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 13 rute pembelian + penjualan ke permission halaman",
+    ],
+  }),
+
+  'pengiriman-2026-10-08': entry({
+    pageKey: 'pengiriman',
+    title: 'Pengiriman',
+    permissionKeys: ['penjualan_pengiriman'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 13 rute pembelian + penjualan ke permission halaman",
+    ],
+  }),
+
+  'penerimaan-pembelian-2026-10-08': entry({
+    pageKey: 'penerimaan-pembelian',
+    title: 'Penerimaan Barang Pembelian',
+    permissionKeys: ['pembelian_penerimaan'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 13 rute pembelian + penjualan ke permission halaman",
+    ],
+  }),
+
+  'pelunasan-piutang-2026-10-08': entry({
+    pageKey: 'pelunasan-piutang',
+    title: 'Pelunasan Piutang',
+    permissionKeys: ['penjualan_piutang'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 13 rute pembelian + penjualan ke permission halaman",
+    ],
+  }),
+
+  'pelunasan-hutang-2026-10-08': entry({
+    pageKey: 'pelunasan-hutang',
+    title: 'Pelunasan Hutang',
+    permissionKeys: ['pembelian_hutang'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 13 rute pembelian + penjualan ke permission halaman",
+    ],
+  }),
+
+  'orders-2026-10-08': entry({
+    pageKey: 'orders',
+    title: 'Order Produksi',
+    permissionKeys: ['produksi_orders'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 6 rute produksi ke permission halaman masing-masing",
+    ],
+  }),
+
+  'log-aktivitas-2026-10-08': entry({
+    pageKey: 'log-aktivitas',
+    title: 'Log Aktivitas',
+    permissionKeys: ['activity_log_view', 'activity_log'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Tambah gate otorisasi level-rute: settings+HPP+import+activity-log+revert+debug",
+    ],
+  }),
+
+  'laporan-pekerjaan-2026-10-08': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 6 rute produksi ke permission halaman masing-masing",
+    ],
+  }),
+
+  'master-pekerjaan-jurnal-produksi-2026-10-08': entry({
+    pageKey: 'master-pekerjaan-jurnal-produksi',
+    title: 'Master Pekerjaan Jurnal Produksi',
+    permissionKeys: ["produksi_jhp_master_pekerjaan_jurnal_produksi"],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Master pekerjaan chunked: parse browser + JSON per chunk, sandi tetap via server",
+      "Hardening auth sesi dan upload: login oracle, timing-safe cron, cookie, batas upload",
+    ],
+  }),
+
+  'jurnal-harian-produksi-analisa-2026-10-08': entry({
+    pageKey: 'jurnal-harian-produksi-analisa',
+    title: 'Analisa Jurnal Harian Produksi',
+    permissionKeys: ['produksi_jhp_analisa'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 10 rute jurnal (JHP + jurnal-umum + rek-akuntansi) ke permission halaman",
+    ],
+  }),
+
+  'jurnal-harian-produksi-2026-10-08': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    permissionKeys: ['produksi_jhp'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Sapu luas: details generik, rate-limit log berat, bound push fan-out",
+    ],
+  }),
+
+  'hpp-kalkulasi-2026-10-08': entry({
+    pageKey: 'hpp-kalkulasi',
+    title: 'HPP Kalkulasi',
+    permissionKeys: ['hpp_kalkulasi'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Penutup audit: env example, HSTS, 500 generik",
+      "Tambah gate otorisasi level-rute: settings+HPP+import+activity-log+revert+debug",
+    ],
+  }),
+
+  'bom-2026-10-08': entry({
+    pageKey: 'bom',
+    title: 'Bill of Materials (BOM)',
+    permissionKeys: ['produksi_bom'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 6 rute produksi ke permission halaman masing-masing",
+    ],
+  }),
+
+  'barang-jadi-2026-10-08': entry({
+    pageKey: 'barang-jadi',
+    title: 'Penerimaan Barang Hasil Produksi',
+    permissionKeys: ['produksi_barang_jadi'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 4 rute inventori ke permission halaman masing-masing",
+      "Sapu luas: details generik, rate-limit log berat, bound push fan-out",
+    ],
+  }),
+
+  'bahan-baku-2026-10-08': entry({
+    pageKey: 'bahan-baku',
+    title: 'BBB Produksi',
+    permissionKeys: ['produksi_bahan_baku'],
+    sortDate: '2026-10-08',
+    date: '8 Okt 2026',
+    version: '2026-10-08-1',
+    items: [
+      "Gate 4 rute inventori ke permission halaman masing-masing",
+      "Sapu luas: details generik, rate-limit log berat, bound push fan-out",
+    ],
+  }),
+
+  'sph-out-2026-10-07': entry({
+    pageKey: 'sph-out',
+    title: 'SPH Keluar',
+    permissionKeys: ['penjualan_sph_out'],
+    sortDate: '2026-10-07',
+    date: '7 Okt 2026',
+    version: '2026-10-07-1',
+    items: [
+      "Filter hak akses role, sinkronisasi tanggal transaksi, cegah race condition, dan shortcut Ctrl+K",
+    ],
+  }),
+
+  'sales-orders-2026-10-07': entry({
+    pageKey: 'sales-orders',
+    title: 'Sales Order',
+    permissionKeys: ['penjualan_so'],
+    sortDate: '2026-10-07',
+    date: '7 Okt 2026',
+    version: '2026-10-07-1',
+    items: [
+      "Filter hak akses role, sinkronisasi tanggal transaksi, cegah race condition, dan shortcut Ctrl+K",
+    ],
+  }),
+
+  'sales-2026-10-07': entry({
+    pageKey: 'sales',
+    title: 'Laporan Penjualan',
+    permissionKeys: ['penjualan_laporan'],
+    sortDate: '2026-10-07',
+    date: '7 Okt 2026',
+    version: '2026-10-07-1',
+    items: [
+      "Filter hak akses role, sinkronisasi tanggal transaksi, cegah race condition, dan shortcut Ctrl+K",
+    ],
+  }),
+
+  'purchase-orders-2026-10-07': entry({
+    pageKey: 'purchase-orders',
+    title: 'Purchase Order (PO)',
+    permissionKeys: ['pembelian_po'],
+    sortDate: '2026-10-07',
+    date: '7 Okt 2026',
+    version: '2026-10-07-1',
+    items: [
+      "Filter hak akses role, sinkronisasi tanggal transaksi, cegah race condition, dan shortcut Ctrl+K",
+    ],
+  }),
+
+  'pricelist-2026-10-07': entry({
+    pageKey: 'pricelist',
+    title: 'Kalkulasi Harga (Buku Tulis Mesin Cover SM 102 4W, Auto-Persist, & Parity Benchmark)',
+    permissionKeys: ["pricelist_kalkulasi"],
+    sortDate: '2026-10-07',
+    date: '7 Okt 2026',
+    version: '2026-10-07-1',
+    items: [
+      "Audit 100% 160 tier Excel Rp 0, direct binding kalkulator, dan dual-scroll simulator",
+      "Perbaiki format teks formula JSX pada modal panduan PosterMasterParameter",
+      "Standarisasi UI Pos 4 & Pos 5 (ThousandInput, badge warna, tombol simpan full-width kanan & selektor mesin)",
+      "Standardisasi UI stiker gold standard, pembersihan total sel excel, dan instalasi 10-point gate checklist",
+      "Rapikan layout shell, varian toolbar, dan filter riwayat",
+      "Tuntaskan standarisasi tab kalkulasi seluruh 26 produk ke gold standard viewport, sticky 3 kartu, dan stepChip",
+      "Standarisasi penuh kiblat Buku Hard/Soft Cover, eliminasi total kebocoran sel backend src/lib, dan pembersihan header form",
+      "Standarisasi Batch 2 simulator (Stopmap, Syahadah, Raport Kaleb, Label KHQ) ke gold standard 3 kartu dan stepChip",
+      "Standarisasi Batch 1 simulator (Manasik, Nota, Brosur, Buku Tulis) ke gold standard 3 kartu dan stepChip",
+      "Standarisasi menyeluruh konsistensi UI 26 simulator produk ke gold standard",
+      "Tambahkan import Share2 dari lucide-react",
+      "Perbaiki import ThousandInput default dan tambahkan export named pada ThousandInput",
+      "Standarisasi master parameter gelombang 2 ke sticky action bar",
+      "Hapus banner header hijau besar pada Poster, Majalah, dan Riwayat untuk Clean UI",
+      "Bersihkan header banner modul utama dan standardisasi posisi tombol simpan",
+      "Audit dan standarisasi UI simulator sesuai SOP Tahap 5 (stepChip, optBtn, 3 kartu metrik baku)",
+      "Standarisasi penuh simulator Yasin ke gold standard 3 kartu dan stepChip",
+      "Standarisasi Batch 3 simulator (Tabungan NS, Security, Kartu Koperasi, Lebel Obat) ke gold standard 3 kartu dan stepChip",
+      "Selaraskan UI simulator dengan 3-kartu metrik baku, stepChip penomoran, dan gaya tombol opsi netral",
+      "Standarisasi master parameter gelombang 1 ke sticky action bar",
+      "Selesaikan audit 6 Pos Excel Poster (44 tiers acuan Rp 0, reaktivitas, UI Pos 4 & 5)",
+      "Hapus reference cellRef yang tidak terdefinisi di RaportKalebMasterParameter",
+      "Standarisasi master parameter gelombang 4 ke sticky action bar",
+    ],
+  }),
+
+  'pr-2026-10-07': entry({
+    pageKey: 'pr',
+    title: 'Purchase Request (PR)',
+    permissionKeys: ['pembelian_pr'],
+    sortDate: '2026-10-07',
+    date: '7 Okt 2026',
+    version: '2026-10-07-1',
+    items: [
+      "Filter hak akses role, sinkronisasi tanggal transaksi, cegah race condition, dan shortcut Ctrl+K",
+    ],
+  }),
+
+  'orders-2026-10-07': entry({
+    pageKey: 'orders',
+    title: 'Order Produksi',
+    permissionKeys: ['produksi_orders'],
+    sortDate: '2026-10-07',
+    date: '7 Okt 2026',
+    version: '2026-10-07-1',
+    items: [
+      "Filter hak akses role, sinkronisasi tanggal transaksi, cegah race condition, dan shortcut Ctrl+K",
+    ],
+  }),
+
+  'jurnal-harian-produksi-2026-10-07': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    permissionKeys: ['produksi_jhp'],
+    sortDate: '2026-10-07',
+    date: '7 Okt 2026',
+    version: '2026-10-07-1',
+    items: [
+      "Filter hak akses role, sinkronisasi tanggal transaksi, cegah race condition, dan shortcut Ctrl+K",
+    ],
+  }),
+
+  'global-2026-10-07': entry({
+    pageKey: 'global',
+    title: 'Perubahan Umum',
+    permissionKeys: [],
+    sortDate: '2026-10-07',
+    date: '7 Okt 2026',
+    version: '2026-10-07-1',
+    items: [
+      "Filter hak akses role, sinkronisasi tanggal transaksi, cegah race condition, dan shortcut Ctrl+K",
+    ],
+  }),
+
+  'produksi-selesai-2026-10-07': entry({
+    pageKey: 'produksi-selesai',
+    title: 'Produksi Selesai',
+    permissionKeys: ['produksi_selesai'],
+    sortDate: '2026-10-07',
+    date: '7 Okt 2026',
+    version: '2026-10-07-1',
+    items: [
+      "Filter hak akses role, sinkronisasi tanggal transaksi, cegah race condition, dan shortcut Ctrl+K",
+    ],
+  }),
+
+  'barang-jadi-2026-10-07': entry({
+    pageKey: 'barang-jadi',
+    title: 'Penerimaan Barang Hasil Produksi',
+    permissionKeys: ['produksi_barang_jadi'],
+    sortDate: '2026-10-07',
+    date: '7 Okt 2026',
+    version: '2026-10-07-1',
+    items: [
+      "Filter hak akses role, sinkronisasi tanggal transaksi, cegah race condition, dan shortcut Ctrl+K",
+    ],
+  }),
+
+  'jurnal-umum-2026-10-07': entry({
+    pageKey: 'jurnal-umum',
+    title: 'Jurnal Umum',
+    permissionKeys: ['akt_jurnal_umum'],
+    sortDate: '2026-10-07',
+    date: '7 Okt 2026',
+    version: '2026-10-07-1',
+    items: [
+      "Ubah default sort data ke urutan tanggal transaksi (tgl ASC)",
+      "Filter hak akses role, sinkronisasi tanggal transaksi, cegah race condition, dan shortcut Ctrl+K",
+    ],
+  }),
+
+  'pricelist-2026-10-06': entry({
+    pageKey: 'pricelist',
+    title: 'Kalkulasi Harga (Buku Tulis Mesin Cover SM 102 4W, Auto-Persist, & Parity Benchmark)',
+    permissionKeys: ["pricelist_kalkulasi"],
+    sortDate: '2026-10-06',
+    date: '6 Okt 2026',
+    version: '2026-10-06-1',
+    items: [
+      "Engine fisik utuh 100% workbook sumber (20 tier), reaktivitas parameter & layout dual scroll",
+      "Audit buku hard cover unified 1:1 excel (3 ukuran, master parameter, simulator, matrix view, benchmark 100% pass)",
+      "Unifikasi entri buku hard cover ke 1 produk dengan selektor ukuran di UI",
+      "Kelompokkan dropdown jenis produk per keluarga produk",
+      "Bakukan standar form simulator (oplah no.2, desain netral tanpa kotakan warna, validasi anti-dark header di linter)",
+      "Selaraskan desain tab kalkulasi simulator 100% konsisten dengan softcover & produk lain",
+      "Sambungkan modul Majalah, Poster & Stiker ke tab renderer dan loader simulasi",
+      "Bulatkan nominal biaya breakdown dan total harga jual di simulator agar bebas desimal",
+      "Unifikasi opsi dropdown buku tabungan dan kalender di selector produk dan filter riwayat",
+    ],
+  }),
+
   'jurnal-umum-2026-10-03': entry({
     pageKey: 'jurnal-umum',
     title: "Jurnal Umum",
@@ -1901,6 +2746,7 @@ export const PAGE_CHANGELOG_PATHS: Record<string, string> = {
   '/barang-jadi': 'barang-jadi',
   '/data-digit/produksi/produksi-selesai': 'produksi-selesai',
   '/data-digit/stok/master-barang': 'master-barang',
+  '/data-digit/stok/saldo-barang': 'saldo-barang',
   '/data-digit/sistem/log-aktivitas-user': 'log-aktivitas-user',
   '/hpp-kalkulasi': 'hpp-kalkulasi',
   '/orders': 'orders',
@@ -1909,16 +2755,20 @@ export const PAGE_CHANGELOG_PATHS: Record<string, string> = {
   '/penerimaan-pembelian': 'penerimaan-pembelian',
   '/pengiriman': 'pengiriman',
   '/pr': 'pr',
+  '/penonaktifan-master-barang': 'penonaktifan-master',
+  '/penonaktifan-review/[token]': 'penonaktifan-review',
   '/pricelist': 'pricelist',
   '/profile': 'profile',
   '/purchase-orders': 'purchase-orders',
   '/rekap-pembelian-barang': 'rekap-pembelian-barang',
   '/rekap-sales-order': 'rekap-sales-order',
+  '/rencana-produksi': 'rencana-produksi',
   '/roles': 'roles',
   '/sales': 'sales',
   '/sales-orders': 'sales-orders',
   '/settings/konversi-data/kalkulasi/hpp-kalkulasi': 'konversi-hpp',
   '/settings/telegram-users': 'telegram-users',
+  '/settings/penonaktifan-routine': 'penonaktifan-routine',
   '/sph-in': 'sph-in',
   '/sph-out': 'sph-out',
   '/spph-out': 'spph-out',
