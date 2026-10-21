@@ -64,13 +64,12 @@ jobs:
 
             touch .maintenance
 
-            # Sinkronkan kode dan dependensi node_modules hanya jika package.json berubah
+            # Sinkronkan kode dan perbarui dependensi node_modules di VPS
             git pull origin master 2>/dev/null || true
-            if ! cmp -s package.json .next-tmp/package.json 2>/dev/null; then
-              echo "package.json berubah, memperbarui node_modules di VPS..."
-              cp -f .next-tmp/package.json .next-tmp/package-lock.json ./ 2>/dev/null || true
-              npm install --omit=dev --prefer-offline --no-audit || true
-            fi
+            cp -f .next-tmp/package.json .next-tmp/package-lock.json ./ 2>/dev/null || true
+            echo "Memperbarui dependensi node_modules di VPS..."
+            npm install --omit=dev --prefer-offline --no-audit || true
+            npx tsx scripts/init-db.ts 2>/dev/null || true
             # Backup current build (jangan hapus sampai health check lolos)
             rm -rf .next.bak
             [ -d ".next" ] && mv .next .next.bak
