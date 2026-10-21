@@ -116,7 +116,7 @@ export default function LogPerubahanClient({ entries }: { entries: Entry[] }) {
                         className={`text-gray-400 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                       />
                     </button>
-                    {e.path && (
+                    {e.path && !e.path.includes('[') && (
                       <Link
                         href={e.path}
                         className="shrink-0 inline-flex items-center gap-1 px-2.5 h-8 text-[11px] font-bold text-emerald-700 hover:bg-emerald-50 border border-emerald-100 rounded-lg transition-colors"

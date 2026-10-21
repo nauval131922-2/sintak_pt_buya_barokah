@@ -45,6 +45,18 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'log-perubahan-2026-10-21': entry({
+    pageKey: 'log-perubahan',
+    title: 'Log Perubahan',
+    permissionKeys: [],
+    sortDate: '2026-10-21',
+    date: '21 Okt 2026',
+    version: '2026-10-21-1',
+    items: [
+      "Proteksi link rute dinamis: mengabaikan tautan langsung pada rute berparameter token agar terbebas dari runtime error Next.js App Router.",
+    ],
+  }),
+
   'jurnal-harian-produksi-2026-10-21': entry({
     pageKey: 'jurnal-harian-produksi',
     title: 'Jurnal Harian Produksi',
@@ -2833,7 +2845,12 @@ export function getAllPageChangelogsByPath(pathname: string | null): PageChangel
 
 export function getPathForPageKey(pageKey: string): string | null {
   for (const [path, key] of Object.entries(PAGE_CHANGELOG_PATHS)) {
-    if (key === pageKey) return path;
+    if (key === pageKey) {
+      // Abaikan rute dinamis ber-parameter kurung siku (seperti /route/[token])
+      // karena Next.js App Router melarang dynamic segment pada <Link>
+      if (path.includes('[') || path.includes(']')) return null;
+      return path;
+    }
   }
   return null;
 }
