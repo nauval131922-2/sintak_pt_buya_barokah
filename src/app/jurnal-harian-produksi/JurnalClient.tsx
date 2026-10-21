@@ -192,6 +192,9 @@ export default function JurnalClient({
     const s = sopdList.find(x => x.no_sopd === no);
     return s ? sopdLabel(s) : no;
   };
+  // ponytail: label 5.000 SOPD dihitung sekali, bukan tiap ketikan (useMemo di SearchableDropdown bergantung identitas items)
+  const sopdItems = useMemo(() => sopdList.map(sopdLabel), [sopdList]);
+  const employeeNames = useMemo(() => employees.map((e: any) => e.name).filter(Boolean), [employees]);
   // ponytail: render 3 gaya — faktur tegas, nama redup, qty jadi badge hijau
   const renderSopdItem = (item: string) => {
     const [noNama, qty] = item.split(' • ');
@@ -1726,8 +1729,9 @@ export default function JurnalClient({
         </button>
       </div>
 
-      {/* TAB CONTENT: LIST */}
-      <div className={`flex-1 min-h-0 flex flex-col gap-4 overflow-hidden ${activeTab === 'list' ? 'flex' : 'hidden'}`}>
+      {/* TAB CONTENT: LIST — dilepas saat tab form aktif agar ketikan form tidak me-render ulang tabel */}
+      {activeTab === 'list' && (
+      <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden flex">
         {/* Top Filter Bar */}
         <div className="shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl px-2.5 sm:px-4 py-2 sm:py-3 shadow-sm shadow-emerald-900/5 relative z-50 overflow-visible text-[11px] xl:text-xs">
           {/* Header Mobile Toggle (< sm) */}
@@ -1819,7 +1823,7 @@ export default function JurnalClient({
                     <SearchableDropdown
                       id="jurnal-no-order"
                       value={noOrderFilter}
-                      items={sopdList.map(sopdLabel)}
+                      items={sopdItems}
                       renderItem={renderSopdItem}
                       allLabel="Semua Order"
                       searchPlaceholder="Cari no. order..."
@@ -1933,7 +1937,7 @@ export default function JurnalClient({
                 <SearchableDropdown
                   id="jurnal-no-order"
                   value={noOrderFilter}
-                  items={sopdList.map(sopdLabel)}
+                  items={sopdItems}
                   renderItem={renderSopdItem}
                   allLabel="Semua Order"
                   searchPlaceholder="Cari no. order..."
@@ -2369,7 +2373,8 @@ export default function JurnalClient({
           onPageChange={setPage}
         />
       </div> {/* CLOSES Table Area */}
-      </div> {/* CLOSES activeTab === 'list' */}
+      </div>
+      )}
 
       {/* TAB CONTENT: FORM */}
       <div className={`flex-1 min-h-0 ${activeTab === 'form' ? 'flex flex-col' : 'hidden'}`}>
@@ -2482,7 +2487,7 @@ export default function JurnalClient({
                       <SearchableDropdown
                         id="form-karyawan"
                         value={formData.nama_karyawan || ''}
-                        items={employees.map(e => e.name).filter(Boolean)}
+                        items={employeeNames}
                         placeholder="-- Pilih Karyawan --"
                         allLabel="-- Pilih Karyawan --"
                         triggerWidth="w-full"
@@ -2516,7 +2521,7 @@ export default function JurnalClient({
                       <SearchableDropdown
                         id="form-no-order"
                         value={sopdLabelByNo(formData.no_order)}
-                        items={sopdList.map(sopdLabel)}
+                        items={sopdItems}
                         renderItem={renderSopdItem}
                         placeholder="-- Pilih No. Order --"
                         allLabel="-- Pilih No. Order --"
@@ -2704,7 +2709,7 @@ export default function JurnalClient({
                           <SearchableDropdown
                             id={`form-no-order-2-${rIndex}`}
                             value={sopdLabelByNo(rData.no_order_2)}
-                            items={sopdList.map(sopdLabel)}
+                            items={sopdItems}
                             renderItem={renderSopdItem}
                             placeholder="-- Pilih No. Order --"
                             allLabel="-- Pilih No. Order --"
