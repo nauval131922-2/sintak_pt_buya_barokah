@@ -36,7 +36,7 @@ export default function RencanaProduksiClient() {
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'CRITICAL' | 'COMPLETED'>('ACTIVE');
   const [bagianFilter, setBagianFilter] = useState<string>('ALL');
   const [search, setSearch] = useState('');
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Detail Drilldown
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);

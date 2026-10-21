@@ -616,7 +616,7 @@ export default function ReviewTokenClient({ token }: { token: string }) {
           <div key={`${a.kode}-${i}`} className="px-4 py-2 flex items-center gap-2.5 text-xs border-t border-slate-100 bg-emerald-50/50">
             <span className="font-mono font-bold text-emerald-700">+{a.kode}</span>
             <span className="text-slate-800 font-semibold">{a.nama || '—'}</span>
-            <span className="text-slate-500 flex-1 truncate italic">"{a.alasan}"</span>
+            <span className="text-slate-500 flex-1 truncate italic">&ldquo;{a.alasan}&rdquo;</span>
             <button
               type="button"
               onClick={() => setAdds((p) => p.filter((_, j) => j !== i))}
@@ -688,7 +688,7 @@ export default function ReviewTokenClient({ token }: { token: string }) {
 
                     {it.alasan && (
                       <span className="text-slate-400 italic text-[11px] truncate max-w-xs" title={it.alasan}>
-                        "{it.alasan}"
+                        &ldquo;{it.alasan}&rdquo;
                       </span>
                     )}
 

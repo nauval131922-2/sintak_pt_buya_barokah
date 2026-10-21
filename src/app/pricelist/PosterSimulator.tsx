@@ -54,9 +54,11 @@ export type SavedPosterSimulationItem = {
 
 interface PosterSimulatorProps {
   customParams: PosterMasterParams;
+  setCustomParams?: React.Dispatch<React.SetStateAction<PosterMasterParams>>;
   onOpenMasterParam?: () => void;
   activeSimulationId?: string | null;
   setActiveSimulationId?: (id: string | null) => void;
+  activeSimulationTitle?: string | null;
   setActiveSimulationTitle?: (title: string | null) => void;
 }
 

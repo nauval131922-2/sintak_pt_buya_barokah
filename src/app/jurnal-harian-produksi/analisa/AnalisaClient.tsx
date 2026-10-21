@@ -62,7 +62,7 @@ export default function AnalisaClient() {
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const displayOrders = query.length >= 2 ? results : recentOrders;
 

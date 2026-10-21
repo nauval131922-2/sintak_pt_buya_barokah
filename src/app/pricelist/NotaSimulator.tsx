@@ -545,7 +545,7 @@ _Kualitas cetak tajam & tembusan NCR pekat. Desain dibantu layouting standar._`;
                     Rp {Math.round(result.summary.hppPerRim).toLocaleString('id-ID')}
                   </span>
                   <span className="block text-[10px] text-slate-400 mt-0.5">
-                    Total HPP: Rp {Math.round(result.totalHpp).toLocaleString('id-ID')}
+                    Total HPP: Rp {Math.round(result.summary.totalHpp).toLocaleString('id-ID')}
                   </span>
                 </div>
               </div>

@@ -45,6 +45,66 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'penonaktifan-master-2026-10-21': entry({
+    pageKey: 'penonaktifan-master',
+    title: 'Laporan Penonaktifan Master Barang Jadi',
+    permissionKeys: ['produksi_penonaktifan_master'],
+    sortDate: '2026-10-21',
+    date: '21 Okt 2026',
+    version: '2026-10-21-1',
+    items: [
+      "Perbaikan sintaks JSX unescaped quotes pada modal review dan pratinjau barang jadi.",
+    ],
+  }),
+
+  'penonaktifan-review-2026-10-21': entry({
+    pageKey: 'penonaktifan-review',
+    title: 'Review Penonaktifan Master Barang Jadi',
+    permissionKeys: [],
+    sortDate: '2026-10-21',
+    date: '21 Okt 2026',
+    version: '2026-10-21-1',
+    items: [
+      "Perbaikan tampilan kutipan alasan penolakan dan penambahan kode barang tanpa error karakter JSX.",
+    ],
+  }),
+
+  'pricelist-2026-10-21': entry({
+    pageKey: 'pricelist',
+    title: 'Kalkulasi Harga (Buku Tulis Mesin Cover SM 102 4W, Auto-Persist, & Parity Benchmark)',
+    permissionKeys: ['kalkulasi_pricelist'],
+    sortDate: '2026-10-21',
+    date: '21 Okt 2026',
+    version: '2026-10-21-1',
+    items: [
+      "Penyempurnaan tipe data kategori riwayat simulasi Buku Hard Cover & Buku Tabungan, resolusi sintaks parameter Packaging & Paperbag, serta penambahan helper tombol spesifikasi Undangan dan Kop Surat.",
+    ],
+  }),
+
+  'rencana-produksi-2026-10-21': entry({
+    pageKey: 'rencana-produksi',
+    title: 'Rencana Produksi',
+    permissionKeys: ['produksi_rencana_produksi'],
+    sortDate: '2026-10-21',
+    date: '21 Okt 2026',
+    version: '2026-10-21-1',
+    items: [
+      "Perbaikan penanganan timer debounce pencarian pada filter status dan stasiun mesin.",
+    ],
+  }),
+
+  'jurnal-harian-produksi-analisa-2026-10-21': entry({
+    pageKey: 'jurnal-harian-produksi-analisa',
+    title: 'Analisa Jurnal Harian Produksi',
+    permissionKeys: ['produksi_jhp_analisa'],
+    sortDate: '2026-10-21',
+    date: '21 Okt 2026',
+    version: '2026-10-21-1',
+    items: [
+      "Perbaikan penanganan timer debounce pencarian nomor order dan flow analysis timeline Gantt Chart.",
+    ],
+  }),
+
   'log-perubahan-2026-10-21': entry({
     pageKey: 'log-perubahan',
     title: 'Log Perubahan',

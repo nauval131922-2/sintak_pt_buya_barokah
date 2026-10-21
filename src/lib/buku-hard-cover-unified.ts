@@ -409,7 +409,7 @@ export function calculateBukuHardCoverUnified(
   const lbrCetakCover = lbrPlanoCover * planoCoverN; // BUKU!P7
 
   let biayaKertasCover = 0;
-  let biayaDesainCover = params.biayaDesainCover; // BUKU!U7
+  const biayaDesainCover = params.biayaDesainCover; // BUKU!U7
   let biayaPlatCover = 0;
   let biayaCetakCover = 0;
 
@@ -531,7 +531,7 @@ export function calculateBukuHardCoverUnified(
   const lbrPlanoIsi = (oplah / dm) * cuttern + (insheetIsi / dm) * do6; // BUKU!DR7
 
   let biayaKertasIsi = 0;
-  let biayaDesainIsi = params.biayaDesainIsiPerLbr * (halaman / 4); // BUKU!DU7
+  const biayaDesainIsi = params.biayaDesainIsiPerLbr * (halaman / 4); // BUKU!DU7
   let biayaPlatIsi = 0;
   let biayaCetakIsi = 0;
 

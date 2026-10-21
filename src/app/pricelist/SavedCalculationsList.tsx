@@ -70,7 +70,7 @@ import { SavedPaperbagSimulationItem } from './PaperbagSimulator';
 
 export type UnifiedCalculationItem = {
   id: string;
-  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag';
+  category: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag';
   savedAt: string;
   title: string;
   oplah: number;
@@ -114,7 +114,7 @@ export type UnifiedCalculationItem = {
 };
 
 interface SavedCalculationsListProps {
-  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag';
+  selectedCategory: 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag';
   onLoadSimulation: (item: UnifiedCalculationItem) => void;
   activeSimulationId?: string | null;
 }
@@ -125,9 +125,9 @@ export default function SavedCalculationsList({
   activeSimulationId,
 }: SavedCalculationsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag'>('ALL');
+  const [filterCategory, setFilterCategory] = useState<'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag'>('ALL');
   
-  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag') => {
+  const handleFilterChange = (val: 'ALL' | 'Kalender' | 'Buku Manasik' | 'Buku Yasin' | 'Nota 1 Warna' | 'Brosur 2026' | 'Label KHQ' | 'Buku Tulis' | 'Stopmap' | 'Syahadah' | 'Raport Kaleb' | 'Kop Surat' | 'Amplop' | 'Sertifikat' | 'Undangan' | 'Buku Tabungan' | 'Buku Tabungan NS' | 'Buku Tabungan Security' | 'Kartu Koperasi Promise' | 'Lebel Kartu Obat' | 'Buku Soft Cover' | 'Buku Soft Cover 14,5×20,25' | 'Buku Soft Cover Oliver-Oliver' | 'Buku Soft Cover Print-Oliver' | 'Buku Soft Cover Print-Print' | 'Buku Hard Cover' | 'Buku Hard Cover 10,5×14,8' | 'Poster' | 'Majalah 14,5×20,25' | 'Stiker' | 'Buku Soft Cover 10,5×14,8' | 'Buku Hard Cover 14,5×20,25' | 'Buku Hard Cover 21×29,7' | 'Kalender Kop' | 'Packaging' | 'Paperbag') => {
     setFilterCategory(val);
     try {
       localStorage.setItem('sintak_pricelist_saved_list_filter', val);
@@ -1100,6 +1100,8 @@ export default function SavedCalculationsList({
         hppUnit: res.hppPerExp || b.hppUnit || 0,
         hargaJualUnit: res.hargaFinal || b.hargaJualUnit || b.unitPrice || 0,
         totalOmset: res.totalHargaJual || b.totalOmset || b.totalPrice || 0,
+        marginPct: inp.marginPct || 0,
+        negoDiskonPct: inp.negoDiskonPct || 0,
         rawData: b,
       });
     });

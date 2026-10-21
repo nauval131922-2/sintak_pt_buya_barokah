@@ -1544,7 +1544,7 @@ export default function PenonaktifanMasterClient() {
                          </span>
                          {item.alasan && (
                            <span className="block text-[11px] text-slate-500 italic mt-0.5 whitespace-normal break-words">
-                             "{item.alasan}"
+                            &ldquo;{item.alasan}&rdquo;
                            </span>
                          )}
                        </div>

@@ -130,7 +130,9 @@ import { DEFAULT_BUKU_TABUNGAN_NS_PARAMS, BukuTabunganNsMasterParams } from '@/l
 import { DEFAULT_BUKU_TABUNGAN_SECURITY_PARAMS, BukuTabunganSecurityMasterParams } from '@/lib/buku-tabungan-security-calculator';
 import { DEFAULT_KARTU_KOPERASI_PROMISE_PARAMS, KartuKoperasiPromiseMasterParams } from '@/lib/kartu-koperasi-promise-calculator';
 import { DEFAULT_LEBEL_KARTU_OBAT_PARAMS, LebelKartuObatMasterParams } from '@/lib/lebel-kartu-obat-calculator';
-
+import { DEFAULT_BUKU_HARD_COVER_105X148_PARAMS } from '@/lib/buku-hard-cover-105x148-calculator';
+import { DEFAULT_BUKU_HARD_COVER_145X2025_PARAMS } from '@/lib/buku-hard-cover-145x2025-calculator';
+import { DEFAULT_BUKU_HARD_COVER_21X297_PARAMS } from '@/lib/buku-hard-cover-21x297-calculator';
 
 import { recalculatePricelistFromParams } from '@/lib/pricelist-calculator';
 
@@ -624,7 +626,6 @@ export default function PricelistClient() {
       else if (item.category === 'Buku Hard Cover' || item.category.startsWith('Buku Hard Cover')) {
         setParamsBukuHardCover(s);
       }
-      else if (item.category === 'Kalender Kop') setParamsKalenderKop(s);
       else if (item.category === 'Packaging') setParamsPackaging(s);
       else if (item.category === 'Paperbag') setParamsPaperbag(s);
       else if (item.category === 'Poster') setParamsPoster(s);

@@ -287,6 +287,11 @@ export default function UndanganSimulator({
       {n}
     </span>
   );
+  const specButton = (active: boolean) => `py-2 px-2 rounded-lg border text-xs font-bold text-center transition cursor-pointer ${
+    active
+      ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
+      : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
+  }`;
 
   const toggleButton = (active: boolean) => `${specButton(active)} w-full flex items-center justify-center gap-1.5`;
 

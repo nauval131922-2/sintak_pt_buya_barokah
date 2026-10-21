@@ -270,10 +270,10 @@ export default function OrderGanttChart({ entries, orderInfo }: OrderGanttChartP
     let earliest: string | null = null;
     let latest: string | null = null;
 
-    taskList.forEach((t) => {
+    for (const t of taskList) {
       if (!earliest || t.startDate < earliest) earliest = t.startDate;
       if (!latest || t.endDate > latest) latest = t.endDate;
-    });
+    }
 
     const parsedDeadline = parseToISO(orderInfo?.deadline_date);
     if (parsedDeadline && latest && parsedDeadline > latest) {

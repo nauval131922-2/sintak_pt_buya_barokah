@@ -210,9 +210,9 @@ export default function PackagingMasterParameter({
               </h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {fieldRow('biayaDesain', 'Jasa Desain Packaging (Rp/Order)'),
-              fieldRow('tarifPlatOliverPerWarna', 'Tarif Plat Oliver (Rp/Plat)'),
-              fieldRow('tarifPlatSMPerWarna', 'Tarif Plat SM 52/72 (Rp/Plat)')}
+              {fieldRow('biayaDesain', 'Jasa Desain Packaging (Rp/Order)')}
+              {fieldRow('tarifPlatOliverPerWarna', 'Tarif Plat Oliver (Rp/Plat)')}
+              {fieldRow('tarifPlatSMPerWarna', 'Tarif Plat SM 52/72 (Rp/Plat)')}
             </div>
           </div>
         )}
@@ -231,10 +231,10 @@ export default function PackagingMasterParameter({
               </h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {fieldRow('oliverMinOngkosPerWarna', 'Min Oliver 4W s/d 1rb (Rp/Plat)'),
-              fieldRow('oliverDrekOverPerWarna', 'Oliver Drek Over (Rp/Drek/Warna)'),
-              fieldRow('smMinOngkosPerWarna', 'Min SM 4W s/d 3rb (Rp/Plat)'),
-              fieldRow('smDrekOverPerWarna', 'SM Drek Over (Rp/Drek/Warna)')}
+              {fieldRow('oliverMinOngkosPerWarna', 'Min Oliver 4W s/d 1rb (Rp/Plat)')}
+              {fieldRow('oliverDrekOverPerWarna', 'Oliver Drek Over (Rp/Drek/Warna)')}
+              {fieldRow('smMinOngkosPerWarna', 'Min SM 4W s/d 3rb (Rp/Plat)')}
+              {fieldRow('smDrekOverPerWarna', 'SM Drek Over (Rp/Drek/Warna)')}
             </div>
           </div>
         )}
@@ -253,10 +253,10 @@ export default function PackagingMasterParameter({
               </h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {fieldRow('biayaTransport', 'Transport Ekspedisi (Rp/Order)'),
-              fieldRow('tarifPisauPondPerCm2', 'Pisau Pond (Rp/cm²)', true, ' /cm²'),
-              fieldRow('tarifOngkosPondPerPcs', 'Ongkos Pond (Rp/pcs)', true, ' /pcs'),
-              fieldRow('minBiayaPond', 'Min Biaya Pond (Rp/Order)')}
+              {fieldRow('biayaTransport', 'Transport Ekspedisi (Rp/Order)')}
+              {fieldRow('tarifPisauPondPerCm2', 'Pisau Pond (Rp/cm²)', true, ' /cm²')}
+              {fieldRow('tarifOngkosPondPerPcs', 'Ongkos Pond (Rp/pcs)', true, ' /pcs')}
+              {fieldRow('minBiayaPond', 'Min Biaya Pond (Rp/Order)')}
             </div>
           </div>
         )}
@@ -274,9 +274,9 @@ export default function PackagingMasterParameter({
               </h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {fieldRow('tarifKardusPerPcs', 'Tarif Kardus Packing (Rp/Kardus)'),
-              fieldRow('kapasitasKardusPcs', 'Isi per Kardus (Pcs)', false, ' pcs'),
-              fieldRow('tarifLakbanPerRoll', 'Tarif Lakban (Rp/Roll)')}
+              {fieldRow('tarifKardusPerPcs', 'Tarif Kardus Packing (Rp/Kardus)')}
+              {fieldRow('kapasitasKardusPcs', 'Isi per Kardus (Pcs)', false, ' pcs')}
+              {fieldRow('tarifLakbanPerRoll', 'Tarif Lakban (Rp/Roll)')}
             </div>
           </div>
         )}
@@ -297,12 +297,12 @@ export default function PackagingMasterParameter({
               </h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {fieldRow('tarifLaminasiGlossyPerCm2', 'Laminasi Glossy (Rp/cm²)', true, ' /cm²'),
-              fieldRow('tarifLaminasiDoffPerCm2', 'Laminasi Doff (Rp/cm²)', true, ' /cm²'),
-              fieldRow('tarifUVVarnishPerCm2', 'UV Varnish (Rp/cm²)', true, ' /cm²'),
-              fieldRow('minBiayaLaminasi', 'Min Biaya Laminasi (Rp/Order)'),
-              fieldRow('marginDefaultPct', 'Margin Profit Default (%)', false, ' %'),
-              fieldRow('negoDefaultPct', 'Batas Nego Default (%)', false, ' %')}
+              {fieldRow('tarifLaminasiGlossyPerCm2', 'Laminasi Glossy (Rp/cm²)', true, ' /cm²')}
+              {fieldRow('tarifLaminasiDoffPerCm2', 'Laminasi Doff (Rp/cm²)', true, ' /cm²')}
+              {fieldRow('tarifUVVarnishPerCm2', 'UV Varnish (Rp/cm²)', true, ' /cm²')}
+              {fieldRow('minBiayaLaminasi', 'Min Biaya Laminasi (Rp/Order)')}
+              {fieldRow('marginDefaultPct', 'Margin Profit Default (%)', false, ' %')}
+              {fieldRow('negoDefaultPct', 'Batas Nego Default (%)', false, ' %')}
             </div>
           </div>
         )}
