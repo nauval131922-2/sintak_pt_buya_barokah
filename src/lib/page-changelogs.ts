@@ -45,6 +45,19 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'jurnal-harian-produksi-2026-10-22': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    permissionKeys: ['produksi_jhp'],
+    sortDate: '2026-10-22',
+    date: '22 Okt 2026',
+    version: '2026-10-22-1',
+    items: [
+      "Hemat penulisan session_context per mutasi: guard cache username/menu + invalidasi di jalur BYPASS_TRIGGER",
+      "Tombol copy keterangan benar-benar menyalin ke clipboard",
+    ],
+  }),
+
   'penonaktifan-master-2026-10-21': entry({
     pageKey: 'penonaktifan-master',
     title: 'Laporan Penonaktifan Master Barang Jadi',
