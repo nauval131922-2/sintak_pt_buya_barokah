@@ -31,6 +31,14 @@ export async function GET(request: Request) {
       args: ['MAINTENANCE', 'system', '0', null, 0, 'Sistem menjalankan DB VACUUM & Pembersihan Log otomatis.']
     });
 
+    // Rapatkan WAL setelah VACUUM + prune agar file -wal tidak menumpuk (pernah 65 MB).
+    // TRUNCATE hanya jalan bila tak ada pembaca aktif; best-effort, jangan gagalkan maintenance.
+    try {
+      await db.execute('PRAGMA wal_checkpoint(TRUNCATE)');
+    } catch (err) {
+      console.warn('[MAINTENANCE] WAL checkpoint dilewati:', err);
+    }
+
     const durationMs = Date.now() - start;
 
     return NextResponse.json({ 
