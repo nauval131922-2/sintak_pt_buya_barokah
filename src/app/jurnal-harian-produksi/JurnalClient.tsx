@@ -814,10 +814,10 @@ export default function JurnalClient({
     ));
   }, [cekSudahFiltered, cekSudahPage]);
 
-  const showMessage = (type: 'success' | 'error', text: string) => {
+  const showMessage = useCallback((type: 'success' | 'error', text: string) => {
     setActionMessage({ type, text });
     setTimeout(() => setActionMessage(null), 3000);
-  };
+  }, []);
 
   const handleSaveKeterangan = useCallback(async (id: number | string, value: string): Promise<boolean> => {
     try {
@@ -848,9 +848,39 @@ export default function JurnalClient({
   const [keteranganCopiedValue, setKeteranganCopiedValue] = useState<string | null>(null);
 
   const handleKeteranganCopy = useCallback((value: string) => {
-    setKeteranganCopiedValue(value);
-    setKeteranganPasteActive(true);
-  }, []);
+    const text = value || '';
+    if (!text.trim()) {
+      showMessage('error', 'Keterangan masih kosong');
+      return;
+    }
+
+    const enterPasteMode = () => {
+      setKeteranganCopiedValue(text);
+      setKeteranganPasteActive(true);
+    };
+
+    // Salin ke clipboard OS supaya bisa ditempel ke aplikasi lain, sekaligus aktifkan mode tempel antar-baris.
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(
+        () => { showMessage('success', 'Keterangan disalin'); enterPasteMode(); },
+        () => enterPasteMode(),
+      );
+      return;
+    }
+
+    // ponytail: fallback untuk akses http:// via IP (clipboard API butuh secure context); hapus saat semua akses sudah HTTPS.
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-999999px';
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch { ok = false; }
+    ta.remove();
+    showMessage(ok ? 'success' : 'error', ok ? 'Keterangan disalin' : 'Gagal menyalin ke clipboard');
+    enterPasteMode();
+  }, [showMessage]);
 
   const handleKeteranganPasteDone = useCallback(() => {
     setKeteranganPasteActive(false);
