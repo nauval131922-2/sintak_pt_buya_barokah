@@ -82,6 +82,7 @@ interface SidebarProps {
 const MIN_WIDTH = 200;
 const MAX_WIDTH = 480;
 const COLLAPSED_WIDTH = 64;
+const HOVER_CLOSE_DELAY = 150;
 
 export default function Sidebar({ user, permissions = {} }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -115,6 +116,31 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
   const isRailOverlay = isCollapsed && isHovered && !isMobileOpen;
   const railWidth = isCollapsed && !isMobileOpen ? COLLAPSED_WIDTH : expandedWidth;
   const panelWidth = isExpanded ? expandedWidth : COLLAPSED_WIDTH;
+
+  // Delay tutup hover supaya sidebar tidak kedip saat kursor sekilas lewat
+  const hoverCloseTimerRef = useRef<number | null>(null);
+  const clearHoverClose = () => {
+    if (hoverCloseTimerRef.current) {
+      clearTimeout(hoverCloseTimerRef.current);
+      hoverCloseTimerRef.current = null;
+    }
+  };
+  const openHover = () => {
+    if (isTouchDevice || isResizing) return;
+    clearHoverClose();
+    if (isCollapsed) setIsHovered(true);
+  };
+  const closeHover = () => {
+    if (isTouchDevice || isResizing) return;
+    clearHoverClose();
+    hoverCloseTimerRef.current = window.setTimeout(() => {
+      setIsHovered(false);
+      hoverCloseTimerRef.current = null;
+    }, HOVER_CLOSE_DELAY);
+  };
+  useEffect(() => () => {
+    if (hoverCloseTimerRef.current) clearTimeout(hoverCloseTimerRef.current);
+  }, []);
 
   useEffect(() => {
     setIsMounted(true);
@@ -337,10 +363,19 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
       />
     )}
 
+    {/* Peredup area konten saat sidebar mekar karena hover — hanya opacity, tanpa blur */}
+    <div
+      aria-hidden
+      style={{ left: COLLAPSED_WIDTH }}
+      className={`fixed inset-y-0 right-0 z-[95] hidden xl:block pointer-events-none bg-slate-900/25 transition-opacity duration-200 ${
+        isRailOverlay ? 'opacity-100' : 'opacity-0'
+      }`}
+    />
+
     <aside
       ref={sidebarRef}
-      onMouseEnter={() => !isTouchDevice && isCollapsed && !isResizing && setIsHovered(true)}
-      onMouseLeave={() => { if (!isTouchDevice && !isResizing) setIsHovered(false); }}
+      onMouseEnter={openHover}
+      onMouseLeave={closeHover}
       style={{ width: railWidth }}
       className={`
         fixed xl:sticky top-0 h-full bg-white border-r border-gray-100 shrink-0 flex flex-col z-[100]
