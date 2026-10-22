@@ -221,7 +221,7 @@ function DataTableInner<TData extends { id: number | string }>({
 
   return (
     <ScrollContext.Provider value={parentRef}>
-      <div className={`bg-white border border-gray-100 shadow-sm rounded-[12px] overflow-hidden flex flex-col min-h-0 relative ${height} ${className} ${isResizingColumn ? 'is-resizing' : ''} ${isDragging ? 'is-dragging' : ''}`}>
+      <div className={`bg-white border border-gray-100 shadow-sm rounded-[12px] overflow-hidden flex flex-col min-h-0 relative isolate ${height} ${className} ${isResizingColumn ? 'is-resizing' : ''} ${isDragging ? 'is-dragging' : ''}`}>
         <style dangerouslySetInnerHTML={{ __html: `.is-resizing { user-select: none !important; cursor: col-resize !important; } .is-resizing * { cursor: col-resize !important; } .is-dragging * { user-select: none !important; cursor: grabbing !important; }` }} />
         <div
           ref={parentRef}
