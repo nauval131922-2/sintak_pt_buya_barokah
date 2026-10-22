@@ -1804,7 +1804,7 @@ async function initDynamicTriggers(db: any) {
       'bill_of_materials', 'purchase_requests', 'purchase_orders',
       'penerimaan_pembelian', 'rekap_pembelian_barang', 'pelunasan_hutang',
       'pelunasan_piutang', 'pengiriman', 'spph_out', 'sph_in', 'sph_out', 'rek_akuntansi',
-      'hpp_kalkulasi', 'pricelist_items', 'pricelist_saved_calculations', 'stok_master_barang', 'usr_log', 'produksi_selesai', 'user_roles',
+      'hpp_kalkulasi', 'pricelist_items', 'pricelist_saved_calculations', 'stok_master_barang', 'saldo_barang', 'usr_log', 'produksi_selesai', 'user_roles',
       'master_pekerjaan', 'push_subscriptions', 'telegram_users', 'role_permissions', 'app_roles',
       'laporan_pekerjaan', 'role_laporan_pekerjaan_config'
     ];
