@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/db';
+import db, { invalidateSessionContextCache } from '@/lib/db';
 import { getSession } from '@/lib/session';
 import { canAdminActivityLog } from '@/lib/activity-log-permissions';
 
@@ -148,6 +148,7 @@ export async function POST(req: NextRequest) {
         sql: `INSERT OR REPLACE INTO session_context (id, username, last_menu) VALUES (1, ?, 'Log Aktivitas')`,
         args: [session.username || 'System']
       });
+      invalidateSessionContextCache();
     }
 
     return NextResponse.json({ success: true });

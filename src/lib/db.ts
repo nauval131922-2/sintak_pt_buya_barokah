@@ -28,6 +28,16 @@ const client = createClient({
   authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
+// Tulis session_context hanya bila username/menu berubah: hemat satu commit per mutasi.
+// ponytail: cache per proses; multi-instance tetap bisa menimpa atribusi (desain satu baris global).
+let lastContextKey: string | null = null;
+
+// Wajib dipanggil setelah kode menulis session_context langsung (mis. BYPASS_TRIGGER),
+// supaya guard tidak salah mengira konteks masih sama.
+export function invalidateSessionContextCache() {
+  lastContextKey = null;
+}
+
 // Wrapper to automatically handle session context and logging
 const db = {
   ...client,
@@ -113,6 +123,8 @@ const db = {
       }
 
       // Try to update with last_menu first
+      const contextKey = `${username ?? ''}|${menuContext ?? ''}`;
+      if (contextKey === lastContextKey) return;
       try {
         await client.execute({
           sql: 'INSERT OR REPLACE INTO session_context (id, username, last_menu) VALUES (1, ?, ?)',
@@ -125,6 +137,7 @@ const db = {
           args: [username],
         });
       }
+      lastContextKey = contextKey;
     } catch (e) {
       // Silently fail - context tracking is best-effort
       if (isDev) {

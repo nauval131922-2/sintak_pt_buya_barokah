@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import db from "@/lib/db";
+import db, { invalidateSessionContextCache } from "@/lib/db";
 import { getSession } from "@/lib/session";
 
 export const dynamic = 'force-dynamic';
@@ -401,6 +401,7 @@ export async function POST(request: NextRequest) {
         sql: `INSERT OR REPLACE INTO session_context (id, username, last_menu) VALUES (1, ?, 'Jurnal Harian Produksi')`,
         args: [session.username || 'System']
       });
+      invalidateSessionContextCache();
 
       return NextResponse.json({ success: true });
     }
@@ -600,6 +601,8 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error("Upload Error:", error);
+    // Bisa saja BYPASS_TRIGGER masih terpasang; paksa tulis ulang konteks di mutasi berikutnya.
+    invalidateSessionContextCache();
     return NextResponse.json(
       { error: "Gagal memproses file Excel" },
       { status: 500 }
