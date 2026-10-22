@@ -583,7 +583,16 @@ const TableRow = React.memo(({
     </tr>
   );
 }, (prev, next) => {
+  // Cell renderer ikut menentukan isi baris (mis. mode copy/paste keterangan JHP):
+  // kolom dirakit ulang saat state berubah, tapi row.original tetap sama.
+  const prevCells = prev.row.getVisibleCells();
+  const nextCells = next.row.getVisibleCells();
+  const sameCellRenderers =
+    prevCells.length === nextCells.length &&
+    prevCells.every((cell: any, i: number) => cell.column.columnDef.cell === nextCells[i].column.columnDef.cell);
+
   return (
+    sameCellRenderers &&
     prev.row.original === next.row.original &&
     prev.isSelected === next.isSelected &&
     prev.isOdd === next.isOdd &&
