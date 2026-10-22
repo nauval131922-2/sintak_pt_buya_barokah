@@ -456,6 +456,7 @@ function DataTableInner<TData extends { id: number | string }>({
                   <TableRow
                     key={`row-${row.original.id}`}
                     row={row}
+                    columnDefs={columns}
                     isSelected={isSelected}
                     isOdd={isOdd}
                     onRowClick={onRowClick}
@@ -512,6 +513,7 @@ function areObjectsEqual(a?: Record<string, number>, b?: Record<string, number>)
 
 const TableRow = React.memo(({
   row,
+  columnDefs,
   isSelected,
   isOdd,
   onRowClick,
@@ -583,16 +585,11 @@ const TableRow = React.memo(({
     </tr>
   );
 }, (prev, next) => {
-  // Cell renderer ikut menentukan isi baris (mis. mode copy/paste keterangan JHP):
-  // kolom dirakit ulang saat state berubah, tapi row.original tetap sama.
-  const prevCells = prev.row.getVisibleCells();
-  const nextCells = next.row.getVisibleCells();
-  const sameCellRenderers =
-    prevCells.length === nextCells.length &&
-    prevCells.every((cell: any, i: number) => cell.column.columnDef.cell === nextCells[i].column.columnDef.cell);
-
+  // columnDefs menentukan renderer isi sel (mis. mode copy/paste keterangan JHP).
+  // Dibandingkan dari props (snapshot), bukan row.getVisibleCells(): objek row sama
+  // dan cache selnya ikut ter-update, jadi perbandingan lewat row selalu "sama".
   return (
-    sameCellRenderers &&
+    prev.columnDefs === next.columnDefs &&
     prev.row.original === next.row.original &&
     prev.isSelected === next.isSelected &&
     prev.isOdd === next.isOdd &&
