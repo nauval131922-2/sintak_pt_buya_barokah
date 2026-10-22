@@ -110,7 +110,11 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
   const navRef = useRef<HTMLElement>(null);
 
   const isExpanded = (!isCollapsed || isHovered) || isMobileOpen;
-  const currentWidth = isExpanded ? expandedWidth : COLLAPSED_WIDTH;
+  // ponytail: rail collapsed tetap 64px di alur layout; panel melebar saat hover sebagai overlay
+  // supaya animasi buka/tutup tidak memicu reflow seluruh isi halaman.
+  const isRailOverlay = isCollapsed && isHovered && !isMobileOpen;
+  const railWidth = isCollapsed && !isMobileOpen ? COLLAPSED_WIDTH : expandedWidth;
+  const panelWidth = isExpanded ? expandedWidth : COLLAPSED_WIDTH;
 
   useEffect(() => {
     setIsMounted(true);
@@ -128,10 +132,10 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
   useEffect(() => {
     if (isMounted) {
       localStorage.setItem('sidebar_collapsed', String(isCollapsed));
-      const event = new CustomEvent('sidebar-toggle', { detail: { isCollapsed, isHovered, width: currentWidth } });
-      window.dispatchEvent(event);
+      // Hanya saat status pin berubah — hover/lebar tidak perlu me-render ulang seluruh halaman
+      window.dispatchEvent(new CustomEvent('sidebar-toggle', { detail: { isCollapsed } }));
     }
-  }, [isCollapsed, isHovered, currentWidth, isMounted]);
+  }, [isCollapsed, isMounted]);
 
   // Handle Resizing
   const startPosRef = useRef<{ x: number; isDragging: boolean }>({ x: 0, isDragging: false });
@@ -337,13 +341,21 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
       ref={sidebarRef}
       onMouseEnter={() => !isTouchDevice && isCollapsed && !isResizing && setIsHovered(true)}
       onMouseLeave={() => { if (!isTouchDevice && !isResizing) setIsHovered(false); }}
-      style={{ width: currentWidth }}
+      style={{ width: railWidth }}
       className={`
         fixed xl:sticky top-0 h-full bg-white border-r border-gray-100 shrink-0 flex flex-col z-[100]
         ${isMobileOpen ? 'translate-x-0 shadow-2xl opacity-100 visible' : '-translate-x-full xl:translate-x-0 xl:opacity-100 xl:visible opacity-0 invisible'}
         ${isResizing ? '' : 'transition-[width,transform,opacity,visibility] duration-300 ease-in-out'}
       `}
     >
+      <div
+        style={{ width: panelWidth }}
+        className={`
+          flex flex-col h-full bg-white
+          ${isRailOverlay ? 'absolute inset-y-0 left-0 z-40 shadow-2xl border-r border-gray-100' : 'relative'}
+          ${isResizing ? '' : 'transition-[width,box-shadow] duration-300 ease-in-out'}
+        `}
+      >
       {/* Resizer Handle */}
       {isExpanded && (
         <div
@@ -812,6 +824,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
         ) : (
           <div className="h-10 bg-gray-200 rounded-[8px] animate-pulse" />
         )}
+      </div>
       </div>
     </aside>
     </SidebarContext.Provider>
