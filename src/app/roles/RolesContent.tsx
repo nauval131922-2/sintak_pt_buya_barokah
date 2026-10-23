@@ -284,6 +284,7 @@ export default function RolesContent({
     { type: 'node', label: 'Produksi', colorKey: 'Sistem - Produksi', children: [
       { type: 'leaf', key: 'produksi_hasil', label: 'Hasil Produksi' },
       { type: 'leaf', key: 'produksi_laporan_pekerjaan', label: 'Laporan Pekerjaan' },
+      { type: 'leaf', key: 'produksi_penonaktifan_master', label: 'Lap. Penonaktifan Master Barang Jadi' },
       { type: 'node', label: 'Jurnal Harian Produksi', children: [
         { type: 'leaf', key: 'produksi_jhp', label: 'Jurnal Harian Produksi' },
         { type: 'leaf', key: 'produksi_jhp_penjadwalan', label: 'Input Target (Penjadwalan)' },
