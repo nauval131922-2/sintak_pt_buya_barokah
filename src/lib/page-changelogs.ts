@@ -45,6 +45,31 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'roles-2026-10-23': entry({
+    pageKey: 'roles',
+    title: 'Hak Akses (Roles)',
+    permissionKeys: [...SUPER_ADMIN_ONLY],
+    sortDate: '2026-10-23',
+    date: '23 Okt 2026',
+    version: '2026-10-23-1',
+    items: [
+      "Penambahan izin hak akses peran (role permission) untuk modul Laporan Penonaktifan Master Barang Jadi.",
+    ],
+  }),
+
+  'penonaktifan-master-2026-10-23': entry({
+    pageKey: 'penonaktifan-master',
+    title: 'Laporan Penonaktifan Master Barang Jadi',
+    permissionKeys: ['produksi_penonaktifan_master'],
+    sortDate: '2026-10-23',
+    date: '23 Okt 2026',
+    version: '2026-10-23-1',
+    items: [
+      "Pembaruan format ekspor Excel: pengelompokan kolom alasan (collapsible group), penyesuaian tinggi baris wrap, pengaturan cetak A4 landscape fit-to-page, dan penamaan berkas berformat tanggal.",
+      "Perbaikan kompatibilitas struktur berkas Excel hasil ekspor agar dapat langsung dibuka tanpa kendala repair.",
+    ],
+  }),
+
   'jurnal-harian-produksi-2026-10-22': entry({
     pageKey: 'jurnal-harian-produksi',
     title: 'Jurnal Harian Produksi',
