@@ -50,8 +50,9 @@ export async function buildPenonaktifanWorkbook(cutoff: string, rows: Penonaktif
   const ws = wb.addWorksheet('TOTAL', {
     views: [{ showGridLines: false, state: 'frozen', xSplit: 0, ySplit: 4, topLeftCell: 'A5', activeCell: 'A5' }],
   });
-  // Ringkasan outline di kiri (tombol buka/tutup group kolom ALASAN ada di kolom J).
-  ws.properties.outlineProperties = { summaryBelow: true, summaryRight: false };
+  // Catatan: jangan set ws.properties.outlineProperties — ExcelJS menulis <pageSetUpPr> SEBELUM
+  // <outlinePr> di dalam <sheetPr>, padahal skema OOXML wajib outlinePr dulu. Excel lalu minta repair.
+  ws.properties.outlineLevelCol = 1;
   ws.columns = [
     { header: '', key: 'no', width: 6 },
     { header: '', key: 'kode', width: 14 },
