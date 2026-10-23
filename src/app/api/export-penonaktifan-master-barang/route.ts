@@ -44,11 +44,12 @@ function cleanRows(
 }
 
 function xlsx(buffer: Buffer, cutoff: string): NextResponse {
+  const name = `${cutoff.replace(/-/g, ' ')} - MASTER BARANG JADI NONAKTIF.xlsx`;
   return new NextResponse(new Uint8Array(buffer), {
     status: 200,
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'Content-Disposition': `attachment; filename="USULAN NONAKTIF ${cutoff}.xlsx"`,
+      'Content-Disposition': `attachment; filename="${name}"`,
     },
   });
 }

@@ -489,7 +489,7 @@ export default function PenonaktifanMasterClient() {
        const url = URL.createObjectURL(blob);
        const a = document.createElement('a');
        a.href = url;
-       a.download = `USULAN NONAKTIF ${cutoff}.xlsx`;
+       a.download = `${cutoff.replace(/-/g, ' ')} - MASTER BARANG JADI NONAKTIF.xlsx`;
        a.click();
        URL.revokeObjectURL(url);
      } catch (e) {
