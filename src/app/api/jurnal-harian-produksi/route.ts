@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import db, { invalidateSessionContextCache } from "@/lib/db";
 import { getSession } from "@/lib/session";
+import { requireApiPermission } from "@/lib/api-guard";
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +16,8 @@ const cleanNumberOrText = (val: any) => {
 };
 
 export async function GET(request: NextRequest) {
+  const gate = await requireApiPermission('produksi_jhp');
+  if (gate.error) return gate.error;
   try {
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get("search");

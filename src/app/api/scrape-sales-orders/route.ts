@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireScraperAuth } from "@/lib/api-guard";
 import db from "@/lib/db";
 import { clearCachedSession, getSession as getScraperSession } from "@/lib/session-cache";
 import { encodeScrapedPeriod, getScrapedPeriodSettingKey } from "@/lib/server-scraped-period";
@@ -24,6 +25,8 @@ function formatIndoDate(date: Date): string {
 }
 
 export async function GET(req: NextRequest) {
+  const auth = await requireScraperAuth(req);
+  if (auth.error) return auth.error;
   try {
     const { searchParams } = new URL(req.url);
     const startParam = searchParams.get('start'); // YYYY-MM-DD

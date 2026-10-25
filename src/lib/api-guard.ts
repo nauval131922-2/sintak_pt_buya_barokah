@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
 import { getMergedPermissions } from '@/lib/permissions';
+import { verifyBearerToken } from '@/lib/crypto-compare';
 import type { ModuleKey } from '@/lib/permissions-constants';
-
 // ponytail: API route guard — session + role check, balas 401/403 JSON (bukan redirect).
 // Batasan: Super Admin selalu lolos; role lain dicek via permission union.
 export async function requireApiPermission(
@@ -37,4 +37,24 @@ export async function requireSuperAdmin(): Promise<
     return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) };
   }
   return { session: { userId: session.userId, username: session.username } };
+}
+
+/**
+ * Guard untuk rute scraper & data-digit sinkronisasi:
+ * Mengizinkan jika dipanggil oleh Cron VPS dengan header Bearer CRON_SECRET,
+ * ATAU user yang memiliki sesi aktif (session cookie).
+ */
+export async function requireScraperAuth(
+  request: NextRequest
+): Promise<{ isCron: boolean; session?: { userId: number; username: string }; error?: NextResponse }> {
+  const authHeader = request.headers.get('authorization');
+  const cronSecret = process.env.CRON_SECRET;
+  if (verifyBearerToken(authHeader, cronSecret)) {
+    return { isCron: true };
+  }
+  const session = await getSession();
+  if (session?.userId) {
+    return { isCron: false, session: { userId: session.userId, username: session.username } };
+  }
+  return { isCron: false, error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) };
 }

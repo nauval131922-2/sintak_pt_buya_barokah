@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { getSession } from '@/lib/session';
+import { requireApiPermission } from '@/lib/api-guard';
 import { apiError, validateRequest } from '@/lib/api-utils';
 import { logActivity } from '@/lib/activity';
 
@@ -36,6 +37,8 @@ function generateDatePrefix(dateStr: string): string {
  * GET handler - Fetch infractions with optional date filter
  */
 export async function GET(req: NextRequest) {
+  const gate = await requireApiPermission('catat_kesalahan');
+  if (gate.error) return gate.error;
   try {
     const { searchParams } = new URL(req.url);
     const start = searchParams.get('start');

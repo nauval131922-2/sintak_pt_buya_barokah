@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireScraperAuth } from "@/lib/api-guard";
 import db from "@/lib/db";
 import { getErrorMessage } from "@/lib/api-utils";
 import { ScrapedRecord, BatchOperation } from "@/lib/scraper-utils";
@@ -42,6 +43,8 @@ async function ensureTable() {
 }
 
 export async function GET(req: NextRequest) {
+  const auth = await requireScraperAuth(req);
+  if (auth.error) return auth.error;
   try {
     const { searchParams } = new URL(req.url);
     const startParam = searchParams.get("start");

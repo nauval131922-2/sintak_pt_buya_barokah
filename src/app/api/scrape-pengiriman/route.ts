@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireScraperAuth } from "@/lib/api-guard";
 export const dynamic = 'force-dynamic';
 import db from '@/lib/db';
 import { getErrorMessage } from '@/lib/api-utils';
@@ -22,6 +23,8 @@ function formatDate(date: Date): string {
 }
 
 export async function GET(req: NextRequest) {
+  const auth = await requireScraperAuth(req);
+  if (auth.error) return auth.error;
   try {
     const { searchParams } = new URL(req.url);
     const start = searchParams.get('start'); 

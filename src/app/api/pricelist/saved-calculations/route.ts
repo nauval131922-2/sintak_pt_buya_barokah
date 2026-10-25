@@ -8,6 +8,10 @@ export const dynamic = "force-dynamic";
 
 // GET: Ambil daftar seluruh kalkulasi tersimpan dari database
 export async function GET(request: NextRequest) {
+  const session = await getSession();
+  if (!session?.userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
@@ -79,11 +83,13 @@ export async function GET(request: NextRequest) {
 
 // POST: Simpan kalkulasi baru atau lakukan batch sync dari client
 export async function POST(request: NextRequest) {
+  const session = await getSession();
+  if (!session?.userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
-    const session = await getSession();
-    const userId = session?.userId || null;
-    const userName = session?.name || session?.username || "Staff";
-
+    const userId = session.userId;
+    const userName = session.name || session.username || "Staff";
     const body = await request.json();
 
     // Handle batch sync

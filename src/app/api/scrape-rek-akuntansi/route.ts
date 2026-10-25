@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireScraperAuth } from "@/lib/api-guard";
 import db from "@/lib/db";
 import { getErrorMessage } from "@/lib/api-utils";
 import { ScrapedRecord, BatchOperation } from "@/lib/scraper-utils";
@@ -15,6 +16,8 @@ if (!process.env.SCRAPER_API_KEY) throw new Error("SCRAPER_API_KEY env tidak dis
 const API_KEY = process.env.SCRAPER_API_KEY;
 
 export async function GET(req: NextRequest) {
+  const auth = await requireScraperAuth(req);
+  if (auth.error) return auth.error;
   try {
     const cookies = await getScraperSession(async () => {
       const loginRes = await fetch(BASE_URL + "v1/auth/login", {

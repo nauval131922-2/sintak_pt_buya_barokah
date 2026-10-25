@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { getSession } from "@/lib/session";
+import { requireApiPermission } from "@/lib/api-guard";
 import { logActivity } from "@/lib/activity";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
+  const gate = await requireApiPermission(['produksi_jhp_sopd', 'produksi_jhp', 'produksi_jhp_target']);
+  if (gate.error) return gate.error;
   try {
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get("search");
@@ -321,6 +324,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const gate = await requireApiPermission('produksi_jhp_sopd');
+  if (gate.error) return gate.error;
   try {
     const body = await request.json();
     const { no_sopd, perkiraan_harga, keterangan, deadline_date, finished_date, pending_produksi, alasan_pending } = body;

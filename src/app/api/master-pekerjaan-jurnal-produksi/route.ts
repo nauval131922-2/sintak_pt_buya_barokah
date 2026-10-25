@@ -18,6 +18,10 @@ const MAX_UPLOAD_BYTES = 150 * 1024 * 1024;
 const MAX_CHUNK_BYTES = 15 * 1024 * 1024;
 
 export async function GET(request: NextRequest) {
+  const session = await getSession();
+  if (!session?.userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   const search = request.nextUrl.searchParams.get('search') || '';
   const category = request.nextUrl.searchParams.get('category') || '';
   const page = parseInt(request.nextUrl.searchParams.get('page') || '1');

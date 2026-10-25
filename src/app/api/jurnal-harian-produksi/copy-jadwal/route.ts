@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { getSession } from "@/lib/session";
+import { requireApiPermission } from "@/lib/api-guard";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(_request: NextRequest) {
+  const gate = await requireApiPermission('produksi_jhp');
+  if (gate.error) return gate.error;
   try {
     const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD UTC
 

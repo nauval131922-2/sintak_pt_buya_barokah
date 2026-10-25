@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireScraperAuth } from "@/lib/api-guard";
 export const dynamic = 'force-dynamic';
 import db from "@/lib/db";
 import { getErrorMessage } from "@/lib/api-utils";
@@ -15,6 +16,8 @@ if (!process.env.SCRAPER_API_KEY) throw new Error("SCRAPER_API_KEY env tidak dis
 const API_KEY = process.env.SCRAPER_API_KEY;
 
 export async function GET(request: NextRequest) {
+  const auth = await requireScraperAuth(request);
+  if (auth.error) return auth.error;
   try {
     const searchParams = request.nextUrl.searchParams;
     const currentUserSession = await getSession();

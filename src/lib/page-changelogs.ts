@@ -45,6 +45,18 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'jurnal-harian-produksi-2026-10-25': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    permissionKeys: ['produksi_jhp'],
+    sortDate: '2026-10-25',
+    date: '25 Okt 2026',
+    version: '2026-10-25-1',
+    items: [
+      "Penguatan keamanan API: penambahan autentikasi dan otorisasi sesi (requireApiPermission) pada handler GET jurnal harian produksi.",
+    ],
+  }),
+
   'roles-2026-10-23': entry({
     pageKey: 'roles',
     title: 'Hak Akses (Roles)',
