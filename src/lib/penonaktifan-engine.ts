@@ -115,6 +115,11 @@ export async function generateUsulan(cutoffIso: string, limit?: number): Promise
    const huluFaktur = new Map<string, string>(); // kode -> faktur QO terakhir (sph_out)
    const bomSet = new Set<string>();
    const bomFakturByKode = new Map<string, Set<string>>();
+   const touchHulu = (k: string, iso: string) => {
+     if (!kodeSet.has(k) || !iso || iso > cutoffIso) return;
+     const prev = huluTgl.get(k);
+     if (!prev || iso > prev) huluTgl.set(k, iso);
+   };
    for (const ch of chunks) {
     const marks = ch.map(() => '?').join(',');
     const [pd, bom] = await Promise.all([
@@ -135,11 +140,6 @@ export async function generateUsulan(cutoffIso: string, limit?: number): Promise
       a.lastSelesai = num(r.selesai);
       a.lastWip = num(r.qty_wip_akhir);
     }
-    const touchHulu = (k: string, iso: string) => {
-      if (!kodeSet.has(k) || !iso || iso > cutoffIso) return;
-      const prev = huluTgl.get(k);
-      if (!prev || iso > prev) huluTgl.set(k, iso);
-    };
      for (const r of bom.rows as DbRow[]) {
        const k = str(r.kd_barang);
        bomSet.add(k);
@@ -153,64 +153,77 @@ export async function generateUsulan(cutoffIso: string, limit?: number): Promise
      }
    }
 
-   // 2b. Jembatan BOM -> SPK: SPK terbit (orders.faktur_bom cocok faktur BOM)
-   // walau barang_jadi belum ada setoran (totPD=0).
-   {
-     const allBomFakturs = [...new Set([...bomFakturByKode.values()].flatMap((s) => [...s]))];
-     for (let i = 0; i < allBomFakturs.length; i += CH) {
-       const ch = allBomFakturs.slice(i, i + CH);
-       const marks = ch.map(() => '?').join(',');
-       const ors = await db.execute({ sql: `SELECT faktur, faktur_bom FROM orders WHERE faktur_bom IN (${marks})`, args: [...ch] });
-       for (const r of ors.rows as DbRow[]) {
-         const pr = str(r.faktur).toUpperCase();
-         const bm = str((r as Record<string, unknown>).faktur_bom).toUpperCase();
-         if (!pr || !bm) continue;
-         for (const [k, s] of bomFakturByKode) {
-           if (!s.has(bm)) continue;
-           let a = pdByKode.get(k);
-           if (!a) { a = { totPD: 0, hasPost: false, hasPostPR: false, lastSelesai: null, lastWip: null, prFakturs: new Set<string>() }; pdByKode.set(k, a); }
-           a.prFakturs.add(pr);
-           break;
+   // 3. Scan orders: ambil kuantitas SPK, relasi langsung via raw_data.kd_barang, relasi faktur_bom, dan fallback nama_prd.
+   const prQty = new Map<string, number>();
+   const allOrders = await db.execute({
+     sql: `SELECT faktur, qty, tgl, nama_prd, faktur_bom, json_extract(raw_data, '$.kd_barang') as kd_barang FROM orders`,
+   });
+
+   for (const r of allOrders.rows as DbRow[]) {
+     const f = str(r.faktur).toUpperCase();
+     const d = ddMmYyyyToIso(str(r.tgl));
+     const q = num(r.qty);
+     const kDirect = str(r.kd_barang);
+     const bm = str((r as Record<string, unknown>).faktur_bom).toUpperCase();
+     const isPost = Boolean(d && d > cutoffIso);
+
+     if (f && !isPost) {
+       prQty.set(f, (prQty.get(f) ?? 0) + q);
+     }
+
+     // 3a. Relasi langsung dari raw_data.kd_barang
+     if (kDirect && kodeSet.has(kDirect)) {
+       let a = pdByKode.get(kDirect);
+       if (!a) {
+         a = { totPD: 0, hasPost: false, hasPostPR: false, lastSelesai: null, lastWip: null, prFakturs: new Set<string>() };
+         pdByKode.set(kDirect, a);
+       }
+       if (f) a.prFakturs.add(f);
+       if (isPost) a.hasPostPR = true;
+       if (d) touchHulu(kDirect, d);
+     }
+
+     // 3b. Relasi jembatan BOM -> SPK via faktur_bom
+     if (bm) {
+       for (const [k, s] of bomFakturByKode) {
+         if (!s.has(bm)) continue;
+         let a = pdByKode.get(k);
+         if (!a) {
+           a = { totPD: 0, hasPost: false, hasPostPR: false, lastSelesai: null, lastWip: null, prFakturs: new Set<string>() };
+           pdByKode.set(k, a);
          }
+         if (f) a.prFakturs.add(f);
+         if (isPost) a.hasPostPR = true;
+         if (d) touchHulu(k, d);
        }
      }
    }
-  const allPrFakturs = [...new Set([...pdByKode.values()].flatMap((a) => [...a.prFakturs]))];
-  const prQty = new Map<string, number>();
-  for (let i = 0; i < allPrFakturs.length; i += CH) {
-     const ch = allPrFakturs.slice(i, i + CH);
-     const marks = ch.map(() => '?').join(',');
-     const pr = await db.execute({ sql: `SELECT faktur, qty, tgl FROM orders WHERE faktur IN (${marks})`, args: [...ch] });
-    for (const r of pr.rows as DbRow[]) {
-      const d = ddMmYyyyToIso(str(r.tgl));
-      const f = str(r.faktur).toUpperCase();
-      if (d && d > cutoffIso) {
-         for (const a of pdByKode.values()) if (a.prFakturs.has(f)) a.hasPostPR = true;
-         continue;
-      }
-      prQty.set(f, (prQty.get(f) ?? 0) + num(r.qty));
-     }
-   }
-  const needFallback = kodes.filter((k) => {
-    const a = pdByKode.get(k);
-    const tot = [...(a?.prFakturs ?? [])].reduce((s, f) => s + (prQty.get(f) ?? 0), 0);
-    return tot === 0;
-  });
-  const fallbackPR = new Map<string, number>();
-  if (needFallback.length > 0) {
-     const allOrders = await db.execute({ sql: `SELECT qty, tgl, nama_prd FROM orders` });
+
+   // 3c. Fallback untuk kode yang belum terdeteksi (mencocokkan substring di nama_prd)
+   const needFallback = kodes.filter((k) => {
+     const a = pdByKode.get(k);
+     const tot = [...(a?.prFakturs ?? [])].reduce((s, f) => s + (prQty.get(f) ?? 0), 0);
+     return tot === 0;
+   });
+   const fallbackPR = new Map<string, number>();
+   if (needFallback.length > 0) {
      for (const r of allOrders.rows as DbRow[]) {
        const d = ddMmYyyyToIso(str(r.tgl));
        const nm = str(r.nama_prd);
+       const isPost = Boolean(d && d > cutoffIso);
        for (const k of needFallback) {
          if (!nm.includes(k)) continue;
-         if (d && d > cutoffIso) {
+         if (isPost) {
            let a = pdByKode.get(k);
-           if (!a) { a = { totPD: 0, hasPost: false, hasPostPR: false, lastSelesai: null, lastWip: null, prFakturs: new Set<string>() }; pdByKode.set(k, a); }
+           if (!a) {
+             a = { totPD: 0, hasPost: false, hasPostPR: false, lastSelesai: null, lastWip: null, prFakturs: new Set<string>() };
+             pdByKode.set(k, a);
+           }
            a.hasPostPR = true;
-           continue;
+         } else {
+           fallbackPR.set(k, (fallbackPR.get(k) ?? 0) + num(r.qty));
          }
-         if (!d || d <= cutoffIso) fallbackPR.set(k, (fallbackPR.get(k) ?? 0) + num(r.qty));
+         if (d) touchHulu(k, d);
        }
      }
    }

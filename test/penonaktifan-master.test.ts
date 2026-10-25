@@ -110,6 +110,11 @@ describe('klasifikasiItem (4 pilar)', () => {
     expect(r.boleh).toBe(false);
     expect(r.alasan).toMatch(/belum tuntas/);
   });
+  it('Pilar 2: SPK terbit tapi belum pernah disetor (totPR > 0, totPD = 0) dilarang', () => {
+    const r = klasifikasiItem({ ...base, kode: '260500555', totPR: 10000, totPD: 0 });
+    expect(r.boleh).toBe(false);
+    expect(r.alasan).toBe('Oplah belum tuntas (PR=10.000, PD=0)');
+  });
 
   it('Pilar 2: produk rutin (settings) dilarang walau PR=PD', () => {
     const r = klasifikasiItem({
