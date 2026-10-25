@@ -55,20 +55,20 @@ Seluruh endpoint backend SINTAK dibangun menggunakan spesifikasi **Next.js 14+ A
 +-------------------+-------------------------------+------------------------------------------+
 | 1. Web UI Client  | Cookie: session (Signed Token)| Pengguna antarmuka web peramban (RBAC)   |
 | 2. Bot Telegram   | Header: X-API-Key (Env Secret)| Bot obrolan operator (@SintakSettingBot) |
-| 3. Scraper Digit  | Basic / Session Cookie & Key  | Mesin sinkronisasi data ke ERP Digit     |
+| 3. Scraper Digit  | Bearer Secret / Sesi Terpadu  | Mesin sinkronisasi data ke ERP Digit     |
 +-------------------+-------------------------------+------------------------------------------+
 ```
 
 1. **Autentikasi Pengguna Web UI**:
    - Memvalidasi cookie sesi browser menggunakan pustaka `src/lib/session.ts` (`getSession()`).
-   - Melakukan pengecekan hak akses modular terhadap tabel `role_permissions` menggunakan konstanta `MODULE_REGISTRY`.
+   - Melakukan pengecekan hak akses modular terhadap tabel `role_permissions` menggunakan konstanta `MODULE_REGISTRY` dan helper `requireApiPermission()` (`src/lib/api-guard.ts`).
 2. **Autentikasi Bot Telegram**:
    - Setiap permintaan masuk wajib menyertakan header `X-API-Key: process.env.SCRAPER_API_KEY`.
    - Menguji apakah ID Telegram terdaftar dan berstatus aktif (`is_active = 1`) pada tabel `telegram_users`.
-3. **Autentikasi Mesin Scraper ke ERP Digit**:
-   - Melakukan handshake awal ke `https://buyapercetakan.mdthoster.com/il/v1/auth/login`.
-   - Mengirimkan header `X-Bismillah-Api-Key: process.env.SCRAPER_API_KEY` dan menyimpan cookie sesi terotentikasi dalam cache memori (`src/lib/session-cache.ts`).
-
+3. **Autentikasi Mesin Scraper & Background Cron**:
+   - Setiap endpoint `/api/scrape-*` diproteksi secara terpusat oleh `requireScraperAuth(request)` (`src/lib/api-guard.ts`).
+   - Mengizinkan permintaan jika menyertakan header `Authorization: Bearer <CRON_SECRET>` (timing-safe via `verifyBearerToken`) ATAU cookie sesi terotentikasi pengguna aktif.
+   - Untuk koneksi keluar ke server ERP Digit, scraper melakukan handshake awal ke `https://buyapercetakan.mdthoster.com/il/v1/auth/login` dengan header `X-Bismillah-Api-Key: process.env.SCRAPER_API_KEY` dan menyimpan cookie sesi terotentikasi dalam cache memori (`src/lib/session-cache.ts`).
 ---
 
 ## 2. INTEGRASI BOT TELEGRAM & WEBHOOK (@SintakSettingBot)
@@ -236,6 +236,7 @@ Setiap endpoint scraper menerima parameter query standar:
 - **`end`**: Tanggal akhir pencarian format `YYYY-MM-DD` (contoh: `2026-10-05`).
 *(Jika tidak dikirim, scraper otomatis menggunakan tanggal hari ini)*.
 
+> **Keamanan & Otorisasi Endpoint**: Seluruh endpoint `/api/scrape-*` wajib melewati guard `requireScraperAuth()` (`src/lib/api-guard.ts`). Akses ditolak (HTTP 401 Unauthorized) jika tidak menyertakan Bearer `CRON_SECRET` atau cookie sesi login aktif.
 | No | Endpoint Scraper | Tabel Target Lokal | Entitas Data Digit | Peruntukan Bisnis di SINTAK |
 | :-: | :--- | :--- | :--- | :--- |
 | **1** | `GET /api/scrape-pr` | `purchase_requests` | Purchase Request (RQ...) | Permohonan kebutuhan bahan cetak |
@@ -307,6 +308,7 @@ Modul ini adalah jantung operasional pabrik yang mengelola penugasan target shif
 
 #### `GET /api/jurnal-harian-produksi`
 Mengambil daftar entri JHP dengan paginasi, pencarian token-based, dan filter multi-kriteria.
+> **Otorisasi**: Wajib memiliki salah satu izin: `produksi_jhp`, `produksi_jhp_target`, atau `produksi_jhp_sopd` (`requireApiPermission`).
 - **Query Params**:
   - `page` (number, default: 1), `limit` (number, default: 50)
   - `search` (string): Token-based AND search memindai nama karyawan, nomor order, jenis pekerjaan, dan catatan manual.
@@ -376,11 +378,14 @@ Melakukan *soft delete* entri JHP ke tabel trash (dapat dipulihkan sewaktu-waktu
 - **Query Params**: `id` (number)
 
 #### Sub-Endpoints Pendukung JHP:
-- **`GET /api/jurnal-harian-produksi/analisa?no_order=...`**: Rekapitulasi kronologis seluruh tahap pengerjaan (Setting $ightarrow$ Cetak $ightarrow$ Finishing) untuk satu nomor pesanan tertentu.
+- **`GET /api/jurnal-harian-produksi/analisa?no_order=...`**: Rekapitulasi kronologis seluruh tahap pengerjaan (Setting $
+ightarrow$ Cetak $
+ightarrow$ Finishing) untuk satu nomor pesanan tertentu.
 - **`GET /api/jurnal-harian-produksi/options`**: Mengambil daftar unik opsi dropdown untuk bagian, mesin, dan shift.
-- **`POST /api/jurnal-harian-produksi/copy-jadwal`**: Menyalin susunan penugasan operator dan mesin dari shift kemarin ke tanggal hari ini untuk efisiensi staf penjadwalan.
+- **`POST /api/jurnal-harian-produksi/copy-jadwal`**: Menyalin susunan penugasan operator dan mesin dari shift kemarin ke tanggal hari ini (Otorisasi: `requireApiPermission('produksi_jhp')`).
 - **`POST /api/jurnal-harian-produksi/copy-jadwal/revert`**: Membatalkan aksi salin jadwal terakhir jika terjadi kesalahan plotting.
 - **`GET /api/jurnal-harian-produksi/trash`**: Melihat daftar entri yang telah dihapus beserta tombol Restore dan Delete Permanen.
+- **`GET /api/master-pekerjaan` & `/api/master-pekerjaan-jurnal-produksi`**: Katalog master pekerjaan dan relasinya (Otorisasi: `requireApiPermission('produksi_jhp')`).
 
 ---
 
@@ -445,6 +450,7 @@ Memperbarui progres tugas atau mengubah status siklus hidup tugas:
 
 #### `GET /api/sopd`
 Menggabungkan data SPK pesanan cetak dari `orders` Digit (2025+) dengan data arsip Excel masa lalu `sopd` ($\le$ 2024), diperkaya dengan estimasi harga dan status selesai dari `sopd_harga`.
+> **Otorisasi**: `requireApiPermission(['produksi_jhp_sopd', 'produksi_jhp', 'produksi_jhp_target'])`. Untuk `POST /api/sopd` dilindungi izin `produksi_jhp_sopd`.
 - **Query Params**: `page`, `limit`, `search`, `filterStatus` ('finished', 'pending', 'active').
 
 #### `PUT /api/sopd`
@@ -497,10 +503,12 @@ Mengunggah file Excel master pegawai untuk pembaruan batch data personalia.
 
 #### `GET /api/infractions`
 Mengambil daftar catatan kesalahan kerja lapangan terikat nomor pesanan produksi.
+> **Otorisasi**: Memerlukan izin `catat_kesalahan` (`requireApiPermission('catat_kesalahan')`).
 - **Query Params**: `page`, `limit`, `employee_id`, `severity` ('Low', 'Medium'), `search`.
 
 #### `POST /api/infractions`
 Mencatat insiden kesalahan baru dengan rincian material rusak dan penetapan beban ganti rugi:
+> **Otorisasi**: Memerlukan izin `catat_kesalahan` (`requireApiPermission('catat_kesalahan')`).
 - **Payload**:
 ```json
 {

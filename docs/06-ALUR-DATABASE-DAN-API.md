@@ -45,7 +45,11 @@ sequenceDiagram
         end
     end
 
-    Route->>DB: db.execute(sql, args) / db.batch()
+    Route->>Route: Guard: requireApiPermission() / requireScraperAuth()
+    alt Otorisasi Ditolak (401 / 403)
+        Route-->>Client: HTTP 401 / 403 Forbidden
+    else Otorisasi Berhasil
+        Route->>DB: db.execute(sql, args) / db.batch()
     alt Operasi Tulis (INSERT / UPDATE / DELETE)
         DB->>SQLite: injectContext() -> INSERT INTO session_context (id=1, username, last_menu)
         DB->>SQLite: Eksekusi SQL Mutasi
@@ -57,13 +61,14 @@ sequenceDiagram
     SQLite-->>DB: Query Results / Rows Data
     DB-->>Route: Formatted Data / Record
     Route-->>Client: HTTP Response JSON (200 OK)
+    end
 ```
 
 ### Rincian Komponen Otorisasi:
 1. **Public Paths Whitelist (`src/proxy.ts:12-27`)**: Rute aset statis, webhook telegram, cron, dan login dikecualikan dari pengecekan sesi.
 2. **Machine-to-Machine Secret (`src/proxy.ts:34-37`)**: Header `Authorization: Bearer ${CRON_SECRET}` mengizinkan cron job OS Linux mengeksekusi sinkronisasi dan maintenance harian tanpa token browser.
 3. **User Session Verification (`src/proxy.ts:29-51`)**: Validasi token JWT terenkripsi dengan algoritma HS256 dari cookie `sintak_session`.
-
+4. **Endpoint-Level API Guard (`src/lib/api-guard.ts`)**: Lapisan otorisasi modular di dalam Route Handler menggunakan `requireApiPermission()` (menjamin hak akses RBAC per modul) dan `requireScraperAuth()` (memastikan rute sinkronisasi `/api/scrape-*` hanya dapat dipanggil oleh Crontab ber-Bearer atau user web berotentikasi).
 ---
 
 ## 2. ARSITEKTUR DATABASE ENGINE (SQLITE WAL & MEMORY-MAPPED I/O)
@@ -269,8 +274,8 @@ Berdasarkan audit alur database dan API, berikut adalah identifikasi risiko dan 
 | No | Komponen Terkait | Potensi Risiko | Penjelasan & Dampak | Rekomendasi Solusi Teknis |
 |:---:|---|---|---|---|
 | **1** | `session_context`<br>(`src/lib/db.ts:118`) | **Race Condition pada Audit Log** | `session_context` hanya memiliki 1 baris (`id = 1`). Jika dua user melakukan simpan bersamaan dalam hitungan milidetik, User B bisa menimpa username User A sebelum trigger User A berjalan. | Sertakan `connection/transaction-scoped context` atau teruskan `username` langsung pada statement mutasi. |
-| **2** | API Routes<br>(`src/app/api/*/route.ts`) | **IDOR / Bypass Izin Modul** | `src/proxy.ts` hanya memverifikasi login (sesi valid), sedangkan `requirePermission()` hanya dipanggil di Server Component UI (`page.tsx`). User login dengan role apa pun bisa memanggil endpoint API secara langsung via cURL. | Tambahkan pemanggilan `requirePermission()` di awal fungsi handler API mutasi (POST, PATCH, DELETE). |
+| **2** | API Routes<br>(`src/app/api/*/route.ts`) | **IDOR / Bypass Izin Modul** | `src/proxy.ts` memverifikasi login (sesi valid), sedangkan otorisasi aksi mutasi/query sensitif memerlukan pengecekan hak akses modular. | **[TERATASI]** Diimplementasikan via `requireApiPermission()` dan `requireScraperAuth()` pada seluruh rute bisnis (`infractions`, `jhp`, `sopd`, `pricelist`) serta 21 rute scraper (`src/lib/api-guard.ts`). |
 | **3** | Ingestion vs Bot<br>(`scrape-*/route.ts`) | **Database Lock (`SQLITE_BUSY`)** | SQLite hanya mengizinkan **1 thread penulisan** dalam satu waktu. Jika scraper sedang mengeksekusi batch besar $> 5$ detik, Telegram bot akan timeout dan melempar error *database locked*. | Jaga `chunkSize = 100` pada scraper, sisipkan jeda `await sleep(10)` antar-chunk jika antrean sedang padat. |
 
 ---
-> *Dokumen ini disinkronkan langsung dari basis kode aktif SINTAK pada 5 Oktober 2026.*
+> *Dokumen ini disinkronkan langsung dari basis kode aktif SINTAK pada 25 Oktober 2026.*

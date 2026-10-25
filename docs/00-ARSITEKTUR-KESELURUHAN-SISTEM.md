@@ -155,7 +155,9 @@ graph TD
 * **Role-Based Access Control (RBAC)**:
   * Matriks hak akses disimpan di tabel `app_roles` dan `role_permissions` (`src/lib/schema.ts:195-211`).
   * `getFirstAccessibleRoute()` (`src/lib/permissions.ts:56-66`) mengarahkan pengguna secara dinamis ke halaman pertama yang diizinkan untuk rolenya segera setelah login.
-
+* **Endpoint-Level API Guard (`src/lib/api-guard.ts`)**:
+  * `requireApiPermission(permission)`: Memvalidasi izin per modul di Route Handler (mencegah bypass otorisasi / IDOR).
+  * `requireScraperAuth(request)`: Melindungi seluruh 21 rute sinkronisasi `/api/scrape-*` (hanya dapat diakses melalui Bearer `CRON_SECRET` atau sesi login aktif).
 ### 3.4 Core Domain & Calculation Engine
 * **Lokasi Kode**: `src/lib/*-calculator.ts`.
 * **Cakupan Produk Cetak**:
@@ -290,9 +292,9 @@ Berdasarkan `docs/01-DATA-FLOW-DIAGRAM.md:21-32` dan `src/lib/permissions.ts`:
 3. **Penyelarasan Log Aktivitas**:
    * Jangan mengaktifkan database trigger otomatis pada tabel scraper volume tinggi. Selalu gunakan `logActivity()` teragregasi setelah mutasi massal.
 4. **Keamanan Rute Baru**:
-   * Setiap route baru di `src/app/api/` otomatis dilindungi oleh `src/proxy.ts`. Jika route membutuhkan akses publik tanpa login, daftarkan secara eksplisit di array `PUBLIC_PATHS` pada `src/proxy.ts`.
+   * Setiap route baru di `src/app/api/` otomatis dilindungi oleh `src/proxy.ts`. Untuk rute bisnis dan scraper, terapkan guard modular eksplisit menggunakan `requireApiPermission()` atau `requireScraperAuth()` (`src/lib/api-guard.ts`). Jika route membutuhkan akses publik tanpa login, daftarkan secara eksplisit di array `PUBLIC_PATHS` pada `src/proxy.ts`.
 5. **Kebiasaan Build & Deployment**:
    * Perintah `npm run build` otomatis memicu `init-db` via `prebuild`. Jangan menjalankan build di lingkungan lokal tanpa instruksi eksplisit pengguna (`AGENTS.md:10-18`).
 
 ---
-> *Dokumen ini disinkronkan langsung dari basis kode aktif SINTAK pada 5 Oktober 2026.*
+> *Dokumen ini disinkronkan langsung dari basis kode aktif SINTAK pada 25 Oktober 2026.*
