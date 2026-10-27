@@ -250,6 +250,7 @@ export default function RolesContent({
     { type: 'node', label: 'Produksi', colorKey: 'Data Digit - Produksi', children: [
       { type: 'leaf', key: 'produksi_bom', label: 'BOM Produksi' },
       { type: 'leaf', key: 'produksi_orders', label: 'Order Produksi' },
+      { type: 'leaf', key: 'produksi_selesai', label: 'Produksi Selesai' },
       { type: 'leaf', key: 'produksi_bahan_baku', label: 'BBB Produksi' },
       { type: 'leaf', key: 'produksi_barang_jadi', label: 'Penerimaan Barang Hasil Produksi' },
     ]},
@@ -266,6 +267,10 @@ export default function RolesContent({
     ]},
     { type: 'node', label: 'Stok', colorKey: 'Data Digit - Stok', children: [
       { type: 'leaf', key: 'stok_master_barang', label: 'Master Barang' },
+      { type: 'leaf', key: 'stok_saldo_barang', label: 'Saldo Barang' },
+    ]},
+    { type: 'node', label: 'Sistem', colorKey: 'Data Digit - Sistem', children: [
+      { type: 'leaf', key: 'usr_log_view', label: 'Log Aktivitas User' },
     ]},
   ];
 
@@ -273,6 +278,8 @@ export default function RolesContent({
     { type: 'node', label: 'Umum', colorKey: 'Sistem - Umum', children: [
       { type: 'leaf', key: 'karyawan', label: 'Karyawan' },
       { type: 'leaf', key: 'tracking_manufaktur', label: 'Tracking Manufaktur' },
+      { type: 'leaf', key: 'activity_log_view', label: 'Log Aktivitas (Lihat)' },
+      { type: 'leaf', key: 'activity_log_admin', label: 'Log Aktivitas (Kelola)' },
     ]},
     { type: 'node', label: 'HRD', colorKey: 'Sistem - HRD', children: [
       { type: 'leaf', key: 'catat_kesalahan', label: 'Catat Kesalahan' },
@@ -285,6 +292,8 @@ export default function RolesContent({
       { type: 'leaf', key: 'produksi_hasil', label: 'Hasil Produksi' },
       { type: 'leaf', key: 'produksi_laporan_pekerjaan', label: 'Laporan Pekerjaan' },
       { type: 'leaf', key: 'produksi_penonaktifan_master', label: 'Lap. Penonaktifan Master Barang Jadi' },
+      { type: 'leaf', key: 'produksi_jhp_analisa', label: 'Analisa Produksi' },
+      { type: 'leaf', key: 'produksi_rencana_produksi', label: 'Rencana Produksi' },
       { type: 'node', label: 'Jurnal Harian Produksi', children: [
         { type: 'leaf', key: 'produksi_jhp', label: 'Jurnal Harian Produksi' },
         { type: 'leaf', key: 'produksi_jhp_penjadwalan', label: 'Input Target (Penjadwalan)' },
@@ -305,6 +314,7 @@ export default function RolesContent({
     { type: 'node', label: 'Settings', colorKey: 'Sistem - Settings', children: [
       { type: 'leaf', key: 'settings_konversi_data_hpp', label: 'Konversi Data - HPP Kalkulasi' },
       { type: 'leaf', key: 'settings_konversi_data', label: 'Konversi Data - JHP' },
+      { type: 'leaf', key: 'telegram_users', label: 'Telegram Users' },
     ]},
   ];
 
