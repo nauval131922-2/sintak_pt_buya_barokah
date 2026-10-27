@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { ColumnDef, SortingState } from '@tanstack/react-table';
-import { Loader2, AlertCircle, Download, Search, RefreshCw, Calendar, BarChart3 } from 'lucide-react';
+import { Loader2, AlertCircle, Download, Search, RefreshCw, Calendar, BarChart3, TrendingDown } from 'lucide-react';
 import SquareDropdown from '@/components/SquareDropdown';
 import { exportJurnalUmumExcel } from '@/lib/export-excel';
 import type { JurnalUmumExportRow } from '@/lib/export-excel';
@@ -198,6 +198,8 @@ export default function JurnalUmumClient() {
   const [createAtTo, setCreateAtTo]     = useState<Date | null>(null);
   // Filter rekening (kode, cth "1101") — dropdown dari rek_akuntansi
   const [rekFilter, setRekFilter] = useState('');
+  // Filter penjualan rugi: hanya voucher dengan HPP (rek 5) > harga jual (rek 4/7)
+  const [hppGtJual, setHppGtJual] = useState(false);
   const [rekOptions, setRekOptions] = useState<{ kode: string; keterangan: string }[]>([]);
   const rekDropdownOptions = useMemo(() => [
     { value: '', label: 'Semua Rekening' },
@@ -325,6 +327,7 @@ export default function JurnalUmumClient() {
           ...(createAtFrom ? { cat_from: formatDateToYYYYMMDD(createAtFrom) } : {}),
           ...(createAtTo   ? { cat_to:   formatDateToYYYYMMDD(createAtTo) } : {}),
           ...(rekFilter ? { rek: rekFilter } : {}),
+          ...(hppGtJual ? { hpp_gt_jual: '1' } : {}),
           // Sort global server-side: backend hanya kenal kolom parent.
           // Kolom turunan (_labaRugi dkk) tidak dikirim — running total dihitung
           // ulang mengikuti urutan tampil, bukan nilai mati per halaman.
@@ -381,7 +384,7 @@ export default function JurnalUmumClient() {
     }
     loadData();
     return () => { active = false; };
-  }, [page, debouncedQuery, refreshKey, startDate, endDate, createAtFrom, createAtTo, rekFilter, sorting, isMounted]);
+  }, [page, debouncedQuery, refreshKey, startDate, endDate, createAtFrom, createAtTo, rekFilter, hppGtJual, sorting, isMounted]);
 
   const handleSortingChange = useCallback((updater: SortingState | ((old: SortingState) => SortingState)) => {
     setSorting((prev) => (typeof updater === 'function' ? updater(prev) : updater));
@@ -394,9 +397,10 @@ export default function JurnalUmumClient() {
     ...(createAtFrom ? { cat_from: formatDateToYYYYMMDD(createAtFrom) } : {}),
     ...(createAtTo ? { cat_to: formatDateToYYYYMMDD(createAtTo) } : {}),
     ...(rekFilter ? { rek: rekFilter } : {}),
+    ...(hppGtJual ? { hpp_gt_jual: '1' } : {}),
     ...(sorting.length ? { sort: JSON.stringify(sorting.filter((s) => !s.id.startsWith('_') && s.id !== 'ketepatan_waktu')) } : {}),
     _t: Date.now().toString(),
-  }), [debouncedQuery, startDate, endDate, createAtFrom, createAtTo, rekFilter, sorting]);
+  }), [debouncedQuery, startDate, endDate, createAtFrom, createAtTo, rekFilter, hppGtJual, sorting]);
   const analisisQueryParams = useMemo(() => {
     const p = new URLSearchParams({
       q: debouncedQuery,
@@ -1005,6 +1009,19 @@ export default function JurnalUmumClient() {
             </div>
             <button
               type="button"
+              onClick={() => { setHppGtJual((v) => !v); setPage(1); }}
+              className={`h-9 px-3 text-xs font-bold rounded-lg border transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer shadow-xs ${
+                hppGtJual
+                  ? 'text-white bg-rose-600 hover:bg-rose-700 border-rose-600'
+                  : 'text-slate-700 bg-slate-50 hover:bg-slate-100 border-slate-200'
+              }`}
+              title="Tampilkan hanya penjualan yang HPP-nya lebih tinggi dari harga jual"
+            >
+              <TrendingDown size={14} />
+              <span>HPP &gt; Harga Jual</span>
+            </button>
+            <button
+              type="button"
               onClick={() => setShowAnalisis(true)}
               disabled={!totalCount}
               className="h-9 px-3 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-all flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-2xs"
@@ -1022,11 +1039,12 @@ export default function JurnalUmumClient() {
               {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
               <span>Export Excel</span>
             </button>
-            {(rekFilter || createAtFrom || createAtTo || searchQuery) && (
+            {(rekFilter || hppGtJual || createAtFrom || createAtTo || searchQuery) && (
               <button
                 type="button"
                 onClick={() => {
                   setRekFilter('');
+                  setHppGtJual(false);
                   setCreateAtFrom(null);
                   setCreateAtTo(null);
                   setSearchQuery('');

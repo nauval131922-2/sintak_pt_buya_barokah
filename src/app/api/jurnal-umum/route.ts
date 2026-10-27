@@ -84,8 +84,25 @@ export async function GET(req: NextRequest) {
     const catFrom = searchParams.get('cat_from');  // filter by create_at
     const catTo   = searchParams.get('cat_to');
     const rek     = searchParams.get('rek') || '';   // filter rekening (kode, exact match rek_kode)
+    const hppGtJual = searchParams.get('hpp_gt_jual') === '1';
     const orderBy = getParentOrderBy(searchParams.get('sort'));
     const offset  = (page - 1) * limit;
+
+    // Filter "HPP > Harga Jual": voucher penjualan (HPP rek 5 melebihi omset
+    // rek 4/7). Dihitung per voucher di server agar pagination, total, dan
+    // export konsisten. Semua baris satu voucher bertanggal sama (0 baris
+    // beda tgl), jadi batas tgl di subquery aman sekaligus memangkas scan.
+    // ponytail: agregat tetap ~300ms per request saat filter aktif; kalau
+    // makin lambat, cache hasilnya di tabel ringkasan harian.
+    const hppGtJualSub = hppGtJual
+      ? `SELECT parent_faktur FROM jurnal_umum WHERE is_child = 1` +
+        (from && to ? ` AND tgl BETWEEN ? AND ?` : '') +
+        ` GROUP BY parent_faktur
+          HAVING SUM(CASE WHEN rek_head IN ('4','7') THEN kredit - debit ELSE 0 END) > 0
+             AND SUM(CASE WHEN rek_head = '5' THEN debit - kredit ELSE 0 END)
+               > SUM(CASE WHEN rek_head IN ('4','7') THEN kredit - debit ELSE 0 END)`
+      : '';
+    const hppGtJualArgs: (string | number)[] = from && to ? [from, to] : [];
 
     // Tanpa raw_data: JSON mentah Digit ±13x bobot kolom terpakai
     // (±95KB/halaman) dan tidak pernah dirender klien.
@@ -127,6 +144,13 @@ export async function GET(req: NextRequest) {
       query      += clause;
       countQuery += clause;
       params.push(rek);
+    }
+
+    if (hppGtJual) {
+      const clause = ` AND faktur IN (${hppGtJualSub})`;
+      query      += clause;
+      countQuery += clause;
+      params.push(...hppGtJualArgs);
     }
 
     query += ` ORDER BY ${orderBy} LIMIT ? OFFSET ?`;
@@ -221,6 +245,11 @@ export async function GET(req: NextRequest) {
         saldoParams.push(rek);
       }
 
+      if (hppGtJual) {
+        saldoSql += ` AND parent_faktur IN (${hppGtJualSub})`;
+        saldoParams.push(...hppGtJualArgs);
+      }
+
       const saldoRes = await db.execute({ sql: saldoSql, args: saldoParams });
       const saldoRow = saldoRes.rows[0] as { saldo?: number | null; saldo_kas?: number | null } | undefined;
       saldoAwal = Number(saldoRow?.saldo ?? 0) || 0;
@@ -252,6 +281,10 @@ export async function GET(req: NextRequest) {
       if (rek) {
         prevParentWhere += ` AND faktur IN (SELECT parent_faktur FROM jurnal_umum WHERE is_child = 1 AND rek_kode = ?)`;
         prevParentParams.push(rek);
+      }
+      if (hppGtJual) {
+        prevParentWhere += ` AND faktur IN (${hppGtJualSub})`;
+        prevParentParams.push(...hppGtJualArgs);
       }
 
       // Parent sebelum halaman ini (ORDER BY sama dengan query utama: sort global)
