@@ -205,11 +205,9 @@ export async function GET(req: NextRequest) {
       GROUP BY 1, 2
     `;
 
-    // Query 8: Dampak penjualan dengan HPP > harga jual ke laba rugi & arus kas.
+    // Query 8: Dampak penjualan dengan HPP > harga jual ke laba rugi.
     // Per voucher: jual = kredit-debit rek 4/7, hpp = debit-kredit rek 5.
-    // sentuh_kas menandai voucher yang punya baris akun kas (arus_kas = 'Kas'),
-    // supaya efek ke arus kas tidak diklaim tanpa bukti.
-    // ponytail: agregat per voucher ~0,6 detik pada 110rb baris; cukup karena
+    // ponytail: agregat per voucher ±0,4 detik pada 110rb baris; cukup karena
     // hanya dijalankan saat modal analisis dibuka (bukan tiap halaman jurnal).
     const rugiSql = `
       WITH target_parents AS (
@@ -219,10 +217,8 @@ export async function GET(req: NextRequest) {
         SELECT
           j.parent_faktur,
           SUM(CASE WHEN j.rek_head IN ('4','7') THEN j.kredit - j.debit ELSE 0 END) AS jual,
-          SUM(CASE WHEN j.rek_head = '5' THEN j.debit - j.kredit ELSE 0 END) AS hpp,
-          MAX(CASE WHEN r.arus_kas = 'Kas' THEN 1 ELSE 0 END) AS sentuh_kas
+          SUM(CASE WHEN j.rek_head = '5' THEN j.debit - j.kredit ELSE 0 END) AS hpp
         FROM jurnal_umum j
-        LEFT JOIN rek_akuntansi r ON j.rek_kode = r.kode
         WHERE j.is_child = 1
           AND j.parent_faktur IN (SELECT faktur FROM target_parents)
         GROUP BY j.parent_faktur
@@ -231,8 +227,7 @@ export async function GET(req: NextRequest) {
         SUM(CASE WHEN hpp > jual THEN 1 ELSE 0 END) AS jumlah_rugi,
         SUM(CASE WHEN hpp > jual THEN jual ELSE 0 END) AS total_jual,
         SUM(CASE WHEN hpp > jual THEN hpp ELSE 0 END) AS total_hpp,
-        SUM(CASE WHEN hpp > jual THEN hpp - jual ELSE 0 END) AS total_kerugian,
-        SUM(CASE WHEN hpp > jual AND sentuh_kas = 1 THEN 1 ELSE 0 END) AS jumlah_rugi_kas
+        SUM(CASE WHEN hpp > jual THEN hpp - jual ELSE 0 END) AS total_kerugian
       FROM v
       WHERE jual > 0
     `;
@@ -580,14 +575,12 @@ export async function GET(req: NextRequest) {
       total_jual?: number | null;
       total_hpp?: number | null;
       total_kerugian?: number | null;
-      jumlah_rugi_kas?: number | null;
     } | undefined;
     const hppGtJual = {
       jumlahRugi: Number(rugiRow?.jumlah_rugi ?? 0),
       totalJual: Number(rugiRow?.total_jual ?? 0),
       totalHpp: Number(rugiRow?.total_hpp ?? 0),
       totalKerugian: Number(rugiRow?.total_kerugian ?? 0),
-      jumlahRugiKas: Number(rugiRow?.jumlah_rugi_kas ?? 0),
     };
 
     return NextResponse.json({
