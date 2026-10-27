@@ -45,6 +45,21 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'jurnal-umum-2026-10-27': entry({
+    pageKey: 'jurnal-umum',
+    title: 'Jurnal Umum',
+    permissionKeys: ['akt_jurnal_umum'],
+    sortDate: '2026-10-27',
+    date: '27 Okt 2026',
+    version: '2026-10-27-1',
+    items: [
+      "Filter penjualan dengan HPP lebih tinggi dari harga jual (HPP > Harga Jual) beserta indikator nominal selisih per voucher",
+      "Tampilkan rincian dampak transaksi HPP > harga jual pada modal analisis laba rugi",
+      "Penyederhanaan modal analisis laba rugi (menghapus kartu efek arus kas)",
+      "Optimasi performa ekspor data tanpa hitung ulang running total per halaman",
+    ],
+  }),
+
   'jurnal-harian-produksi-2026-10-25': entry({
     pageKey: 'jurnal-harian-produksi',
     title: 'Jurnal Harian Produksi',
