@@ -45,6 +45,18 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'roles-2026-10-27': entry({
+    pageKey: 'roles',
+    title: 'Hak Akses (Roles)',
+    permissionKeys: [...SUPER_ADMIN_ONLY],
+    sortDate: '2026-10-27',
+    date: '27 Okt 2026',
+    version: '2026-10-27-1',
+    items: [
+      "Tambah toggle 8 modul yang belum terdaftar di panel role (saldo barang, produksi selesai, analisa & rencana produksi, log aktivitas lihat/kelola, log aktivitas user, telegram users)",
+    ],
+  }),
+
   'jurnal-umum-2026-10-27': entry({
     pageKey: 'jurnal-umum',
     title: 'Jurnal Umum',
