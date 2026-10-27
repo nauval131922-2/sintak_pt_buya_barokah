@@ -84,29 +84,25 @@ export async function GET(req: NextRequest) {
     const catFrom = searchParams.get('cat_from');  // filter by create_at
     const catTo   = searchParams.get('cat_to');
     const rek     = searchParams.get('rek') || '';   // filter rekening (kode, exact match rek_kode)
-    // Mode filter penjualan: 'hpp_gt' (HPP > harga jual) | 'tanpa_hpp' (omset tanpa baris HPP)
-    const rugiMode = searchParams.get('rugi');
+    const hppGtJual = searchParams.get('hpp_gt_jual') === '1';
     const orderBy = getParentOrderBy(searchParams.get('sort'));
     const offset  = (page - 1) * limit;
 
-    // Filter penjualan dihitung per voucher di server agar pagination, total,
-    // dan export konsisten. Semua baris satu voucher bertanggal sama (0 baris
-    // beda tgl), jadi batas tgl di subquery aman sekaligus memangkas scan.
-    // ponytail: agregat tetap ~300ms per request saat filter aktif; kalau
+    // Filter "HPP > Harga Jual": voucher penjualan dengan HPP (rek 5) melebihi
+    // harga jual (rek 4/7). Dihitung per voucher di server agar pagination,
+    // total, dan export konsisten. Semua baris satu voucher bertanggal sama
+    // (0 baris beda tgl), jadi batas tgl di subquery aman sekaligus memangkas
+    // scan. ponytail: agregat ~300ms per request saat filter aktif; kalau
     // makin lambat, cache hasilnya di tabel ringkasan harian.
-    const rugiAktif = rugiMode === 'hpp_gt' || rugiMode === 'tanpa_hpp';
-    const rugiSub = rugiAktif
+    const hppGtJualSub = hppGtJual
       ? `SELECT parent_faktur FROM jurnal_umum WHERE is_child = 1` +
         (from && to ? ` AND tgl BETWEEN ? AND ?` : '') +
         ` GROUP BY parent_faktur
           HAVING SUM(CASE WHEN rek_head IN ('4','7') THEN kredit - debit ELSE 0 END) > 0
-             AND ` +
-        (rugiMode === 'hpp_gt'
-          ? `SUM(CASE WHEN rek_head = '5' THEN debit - kredit ELSE 0 END)
+             AND SUM(CASE WHEN rek_head = '5' THEN debit - kredit ELSE 0 END)
                > SUM(CASE WHEN rek_head IN ('4','7') THEN kredit - debit ELSE 0 END)`
-          : `SUM(CASE WHEN rek_head = '5' THEN debit - kredit ELSE 0 END) = 0`)
       : '';
-    const rugiArgs: (string | number)[] = from && to ? [from, to] : [];
+    const hppGtJualArgs: (string | number)[] = from && to ? [from, to] : [];
 
     // Tanpa raw_data: JSON mentah Digit ±13x bobot kolom terpakai
     // (±95KB/halaman) dan tidak pernah dirender klien.
@@ -150,11 +146,11 @@ export async function GET(req: NextRequest) {
       params.push(rek);
     }
 
-    if (rugiAktif) {
-      const clause = ` AND faktur IN (${rugiSub})`;
+    if (hppGtJual) {
+      const clause = ` AND faktur IN (${hppGtJualSub})`;
       query      += clause;
       countQuery += clause;
-      params.push(...rugiArgs);
+      params.push(...hppGtJualArgs);
     }
 
     query += ` ORDER BY ${orderBy} LIMIT ? OFFSET ?`;
@@ -194,9 +190,9 @@ export async function GET(req: NextRequest) {
     }
 
     // Nilai pembanding HPP vs harga jual per voucher, dihitung dari baris anak
-    // yang sudah diambil (tanpa query tambahan). Hanya dikirim saat mode filter
+    // yang sudah diambil (tanpa query tambahan). Hanya dikirim saat filter
     // penjualan aktif agar payload normal tidak bertambah.
-    if (rugiAktif) {
+    if (hppGtJual) {
       for (const row of parentRows) {
         let jual = 0;
         let hpp = 0;
@@ -268,9 +264,9 @@ export async function GET(req: NextRequest) {
         saldoParams.push(rek);
       }
 
-      if (rugiAktif) {
-        saldoSql += ` AND parent_faktur IN (${rugiSub})`;
-        saldoParams.push(...rugiArgs);
+      if (hppGtJual) {
+        saldoSql += ` AND parent_faktur IN (${hppGtJualSub})`;
+        saldoParams.push(...hppGtJualArgs);
       }
 
       const saldoRes = await db.execute({ sql: saldoSql, args: saldoParams });
@@ -305,9 +301,9 @@ export async function GET(req: NextRequest) {
         prevParentWhere += ` AND faktur IN (SELECT parent_faktur FROM jurnal_umum WHERE is_child = 1 AND rek_kode = ?)`;
         prevParentParams.push(rek);
       }
-      if (rugiAktif) {
-        prevParentWhere += ` AND faktur IN (${rugiSub})`;
-        prevParentParams.push(...rugiArgs);
+      if (hppGtJual) {
+        prevParentWhere += ` AND faktur IN (${hppGtJualSub})`;
+        prevParentParams.push(...hppGtJualArgs);
       }
 
       // Parent sebelum halaman ini (ORDER BY sama dengan query utama: sort global)

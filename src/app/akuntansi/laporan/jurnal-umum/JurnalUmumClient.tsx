@@ -51,6 +51,10 @@ function formatRupiah(val: string | number) {
   if (isNaN(n)) return '–';
   return n.toLocaleString('id-ID', { minimumFractionDigits: 2 });
 }
+// Ringkas (tanpa sen) untuk badge pembanding di tabel
+function formatRupiahRingkas(val: number) {
+  return Math.round(val).toLocaleString('id-ID');
+}
 // Kepala rekening laba rugi: 4, 5, 6, 7, 8, 9
 function isLabaRugiRekening(rekening: string): boolean {
   const kode = rekening?.trim();
@@ -204,8 +208,8 @@ export default function JurnalUmumClient() {
   const [createAtTo, setCreateAtTo]     = useState<Date | null>(null);
   // Filter rekening (kode, cth "1101") — dropdown dari rek_akuntansi
   const [rekFilter, setRekFilter] = useState('');
-  // Filter penjualan: '' | 'hpp_gt' (HPP > harga jual) | 'tanpa_hpp' (omset tanpa HPP)
-  const [rugiMode, setRugiMode] = useState<'' | 'hpp_gt' | 'tanpa_hpp'>('');
+  // Filter penjualan rugi: hanya voucher dengan HPP (rek 5) > harga jual (rek 4/7)
+  const [hppGtJual, setHppGtJual] = useState(false);
   const [rekOptions, setRekOptions] = useState<{ kode: string; keterangan: string }[]>([]);
   const rekDropdownOptions = useMemo(() => [
     { value: '', label: 'Semua Rekening' },
@@ -333,7 +337,7 @@ export default function JurnalUmumClient() {
           ...(createAtFrom ? { cat_from: formatDateToYYYYMMDD(createAtFrom) } : {}),
           ...(createAtTo   ? { cat_to:   formatDateToYYYYMMDD(createAtTo) } : {}),
           ...(rekFilter ? { rek: rekFilter } : {}),
-          ...(rugiMode ? { rugi: rugiMode } : {}),
+          ...(hppGtJual ? { hpp_gt_jual: '1' } : {}),
           // Sort global server-side: backend hanya kenal kolom parent.
           // Kolom turunan (_labaRugi dkk) tidak dikirim — running total dihitung
           // ulang mengikuti urutan tampil, bukan nilai mati per halaman.
@@ -390,7 +394,7 @@ export default function JurnalUmumClient() {
     }
     loadData();
     return () => { active = false; };
-  }, [page, debouncedQuery, refreshKey, startDate, endDate, createAtFrom, createAtTo, rekFilter, rugiMode, sorting, isMounted]);
+  }, [page, debouncedQuery, refreshKey, startDate, endDate, createAtFrom, createAtTo, rekFilter, hppGtJual, sorting, isMounted]);
 
   const handleSortingChange = useCallback((updater: SortingState | ((old: SortingState) => SortingState)) => {
     setSorting((prev) => (typeof updater === 'function' ? updater(prev) : updater));
@@ -403,10 +407,10 @@ export default function JurnalUmumClient() {
     ...(createAtFrom ? { cat_from: formatDateToYYYYMMDD(createAtFrom) } : {}),
     ...(createAtTo ? { cat_to: formatDateToYYYYMMDD(createAtTo) } : {}),
     ...(rekFilter ? { rek: rekFilter } : {}),
-    ...(rugiMode ? { rugi: rugiMode } : {}),
+    ...(hppGtJual ? { hpp_gt_jual: '1' } : {}),
     ...(sorting.length ? { sort: JSON.stringify(sorting.filter((s) => !s.id.startsWith('_') && s.id !== 'ketepatan_waktu')) } : {}),
     _t: Date.now().toString(),
-  }), [debouncedQuery, startDate, endDate, createAtFrom, createAtTo, rekFilter, rugiMode, sorting]);
+  }), [debouncedQuery, startDate, endDate, createAtFrom, createAtTo, rekFilter, hppGtJual, sorting]);
   const analisisQueryParams = useMemo(() => {
     const p = new URLSearchParams({
       q: debouncedQuery,
@@ -683,16 +687,18 @@ export default function JurnalUmumClient() {
             }`}>
               {String(getValue() ?? '–')}
             </span>
-            {!isChild && typeof row.original.hpp === 'number' && (
-              <span className={`block truncate text-[10px] font-bold tabular-nums ${
-                rugiMode === 'tanpa_hpp' ? 'text-amber-700' : 'text-rose-600'
-              }`}>
-                HPP {formatRupiah(row.original.hpp)} • Jual {formatRupiah(row.original.jual ?? 0)}
-                {row.original.hpp > 0 && (row.original.jual ?? 0) > 0
-                  ? ` • ${((((row.original.jual ?? 0) - row.original.hpp) / (row.original.jual ?? 1)) * 100).toFixed(1).replace('.', ',')}%`
-                  : ''}
-              </span>
-            )}
+            {!isChild && typeof row.original.hpp === 'number' && (() => {
+              const hpp = row.original.hpp;
+              const jual = row.original.jual ?? 0;
+              const selisih = jual - hpp;
+              const pct = jual > 0 ? (selisih / jual) * 100 : 0;
+              const text = `HPP ${formatRupiahRingkas(hpp)} • Jual ${formatRupiahRingkas(jual)} • Selisih ${formatRupiahRingkas(selisih)} (${pct.toFixed(1).replace('.', ',')}%)`;
+              return (
+                <span className="block truncate text-[10px] font-bold tabular-nums text-rose-600" title={text}>
+                  {text}
+                </span>
+              );
+            })()}
           </span>
         );
       }
@@ -913,7 +919,7 @@ export default function JurnalUmumClient() {
         );
       }
     },
-  ], [rugiMode]);
+  ], []);
 
   if (!isMounted) return null;
 
@@ -1027,29 +1033,16 @@ export default function JurnalUmumClient() {
             </div>
             <button
               type="button"
-              onClick={() => { setRugiMode((m) => (m === 'hpp_gt' ? '' : 'hpp_gt')); setPage(1); }}
+              onClick={() => { setHppGtJual((v) => !v); setPage(1); }}
               className={`h-9 px-3 text-xs font-bold rounded-lg border transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer shadow-xs ${
-                rugiMode === 'hpp_gt'
+                hppGtJual
                   ? 'text-white bg-rose-600 hover:bg-rose-700 border-rose-600'
                   : 'text-slate-700 bg-slate-50 hover:bg-slate-100 border-slate-200'
               }`}
               title="Tampilkan hanya penjualan yang HPP-nya lebih tinggi dari harga jual"
             >
               <TrendingDown size={14} />
-              <span>HPP &gt; Jual{rugiMode === 'hpp_gt' ? ` · ${totalCount}` : ''}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => { setRugiMode((m) => (m === 'tanpa_hpp' ? '' : 'tanpa_hpp')); setPage(1); }}
-              className={`h-9 px-3 text-xs font-bold rounded-lg border transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer shadow-xs ${
-                rugiMode === 'tanpa_hpp'
-                  ? 'text-white bg-amber-600 hover:bg-amber-700 border-amber-600'
-                  : 'text-slate-700 bg-slate-50 hover:bg-slate-100 border-slate-200'
-              }`}
-              title="Tampilkan penjualan yang belum punya baris HPP di jurnal"
-            >
-              <AlertCircle size={14} />
-              <span>Tanpa HPP{rugiMode === 'tanpa_hpp' ? ` · ${totalCount}` : ''}</span>
+              <span>HPP &gt; Jual{hppGtJual ? ` · ${totalCount}` : ''}</span>
             </button>
             <button
               type="button"
@@ -1070,12 +1063,12 @@ export default function JurnalUmumClient() {
               {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
               <span>Export Excel</span>
             </button>
-            {(rekFilter || rugiMode || createAtFrom || createAtTo || searchQuery) && (
+            {(rekFilter || hppGtJual || createAtFrom || createAtTo || searchQuery) && (
               <button
                 type="button"
                 onClick={() => {
                   setRekFilter('');
-                  setRugiMode('');
+                  setHppGtJual(false);
                   setCreateAtFrom(null);
                   setCreateAtTo(null);
                   setSearchQuery('');

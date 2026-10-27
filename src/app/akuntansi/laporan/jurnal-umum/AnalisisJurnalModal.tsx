@@ -114,6 +114,14 @@ interface CashCounterpartItem {
   percentage: number;
 }
 
+interface HppGtJualSummary {
+  jumlahRugi: number;
+  totalJual: number;
+  totalHpp: number;
+  totalKerugian: number;
+  jumlahRugiKas: number;
+}
+
 interface AnalisisData {
   summary: AnalisisSummary;
   topUntung: ItemContributor[];
@@ -124,6 +132,7 @@ interface AnalisisData {
   cashInflows: CashCounterpartItem[];
   cashOutflows: CashCounterpartItem[];
   dailyTrend: DailyPoint[];
+  hppGtJual?: HppGtJualSummary;
 }
 
 function parseRekeningDisplay(fullStr?: string) {
@@ -728,6 +737,56 @@ export default function AnalisisJurnalModal({
                   )}
                 </div>
               </div>
+
+              {/* Dampak penjualan dengan HPP > harga jual */}
+              {data.hppGtJual && data.hppGtJual.jumlahRugi > 0 && (() => {
+                const r = data.hppGtJual;
+                const porsiOmset = summary.totalPendapatan > 0 ? (r.totalKerugian / summary.totalPendapatan) * 100 : 0;
+                const labaTanpaRugi = summary.labaKotor + r.totalKerugian;
+                const lebihTinggiPct = summary.labaKotor > 0 ? (r.totalKerugian / summary.labaKotor) * 100 : 0;
+                return (
+                  <div className="bg-white border border-rose-200 rounded-xl p-3.5">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                        <TrendingDown size={14} className="text-rose-600" />
+                        Penjualan dengan HPP &gt; Harga Jual
+                      </span>
+                      <span className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-2 py-0.5">
+                        {r.jumlahRugi} voucher
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 mt-2.5">
+                      <div className="bg-slate-50 rounded-lg p-2.5">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Harga Jual</span>
+                        <p className="text-xs font-black font-mono text-slate-800 truncate" title={formatRp(r.totalJual)}>{formatRp(r.totalJual)}</p>
+                      </div>
+                      <div className="bg-slate-50 rounded-lg p-2.5">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">HPP</span>
+                        <p className="text-xs font-black font-mono text-rose-700 truncate" title={formatRp(r.totalHpp)}>{formatRp(r.totalHpp)}</p>
+                      </div>
+                      <div className="bg-rose-50 rounded-lg p-2.5">
+                        <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider block">Kerugian</span>
+                        <p className="text-xs font-black font-mono text-rose-700 truncate" title={formatRp(r.totalKerugian)}>{formatRp(r.totalKerugian)}</p>
+                        <span className="text-[10px] text-rose-500 font-bold block">{porsiOmset.toFixed(1)}% dari omset</span>
+                      </div>
+                      <div className="bg-slate-50 rounded-lg p-2.5">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Efek ke Arus Kas</span>
+                        <p className="text-xs font-black font-mono text-slate-800">{r.jumlahRugiKas === 0 ? 'Rp 0' : `${r.jumlahRugiKas} voucher`}</p>
+                        <span className="text-[10px] text-slate-500 font-bold block">{r.jumlahRugiKas === 0 ? 'belum menyentuh akun kas' : 'sebagian memakai akun kas'}</span>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-relaxed mt-2.5">
+                      Kerugian ini sudah termasuk di Total HPP, jadi menekan laba kotor. Tanpa margin minus pada voucher tersebut,
+                      laba kotor menjadi <span className="font-bold text-slate-700">{formatRp(labaTanpaRugi)}</span>
+                      {lebihTinggiPct > 0 ? ` (${lebihTinggiPct.toFixed(1)}% lebih tinggi)` : ''}.
+                      {' '}
+                      {r.jumlahRugiKas === 0
+                        ? 'Arus kas tidak terpengaruh: seluruh voucher dibukukan sebagai piutang, kas baru masuk saat pelunasan sebesar harga jual — margin minus tidak mengubah nilai kas.'
+                        : `Arus kas hanya terpengaruh lewat ${r.jumlahRugiKas} voucher yang memakai akun kas; sisanya piutang.`}
+                    </p>
+                  </div>
+                );
+              })()}
 
               {/* Row 2: Struktur Alokasi Beban */}
               <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
