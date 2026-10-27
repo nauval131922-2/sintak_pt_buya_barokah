@@ -41,8 +41,10 @@ async function ensureTable() {
     if (executor.execute) {
       await ensureJurnalUmumSchema(executor as unknown as JurnalUmumExecutor);
     }
-  } catch {
-    // Tabel belum ada (belum pernah scrape) — query di bawah gagal wajar
+  } catch (e) {
+    // Jangan diam: kegagalan di sini = halaman jalan tanpa index/kolom generated
+    // (query 0,5 detik alih-alih 2 ms) dan gejalanya tidak terlihat dari UI.
+    console.error('[jurnal-umum] ensureJurnalUmumSchema gagal — index/kolom mungkin belum siap', e);
   }
 }
 const PARENT_SORT_COLS: Record<string, string> = {
@@ -85,6 +87,9 @@ export async function GET(req: NextRequest) {
     const catTo   = searchParams.get('cat_to');
     const rek     = searchParams.get('rek') || '';   // filter rekening (kode, exact match rek_kode)
     const hppGtJual = searchParams.get('hpp_gt_jual') === '1';
+    // Export menarik semua halaman berurutan dari 1, jadi running total dihitung
+    // klien. Lewati agregasi prev-running (mahal: O(offset) per halaman).
+    const skipPrev = searchParams.get('skip_prev') === '1';
     const orderBy = getParentOrderBy(searchParams.get('sort'));
     const offset  = (page - 1) * limit;
 
@@ -279,7 +284,7 @@ export async function GET(req: NextRequest) {
     // This lets the frontend continue the cumulative calculation correctly across pages.
     let prevLabaRugi = saldoAwal;
     let prevArusKas  = saldoAwalKas;
-    if (offset > 0) {
+    if (offset > 0 && !skipPrev) {
       // Build the same WHERE clause used for parents, then get children of those parents
       let prevParentWhere = `is_child = 0`;
       const prevParentParams: (string | number)[] = [];

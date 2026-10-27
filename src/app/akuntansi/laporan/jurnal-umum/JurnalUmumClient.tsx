@@ -403,6 +403,8 @@ export default function JurnalUmumClient() {
 
   const buildExportParams = useCallback((pageNum: number, limit: number) => new URLSearchParams({
     page: String(pageNum), limit: String(limit), q: debouncedQuery,
+    // Export berjalan urut dari halaman 1, jadi running total dihitung di klien.
+    skip_prev: '1',
     from: formatDateToYYYYMMDD(startDate), to: formatDateToYYYYMMDD(endDate),
     ...(createAtFrom ? { cat_from: formatDateToYYYYMMDD(createAtFrom) } : {}),
     ...(createAtTo ? { cat_to: formatDateToYYYYMMDD(createAtTo) } : {}),
@@ -471,10 +473,10 @@ export default function JurnalUmumClient() {
           totalPages = json.totalPages ?? 1;
           if (hasCatFilter) { runningLR = saldoAwal; runningAK = saldoAwalKas; }
         }
-        // Server mengirim prevLabaRugi/prevArusKas per halaman — pakai itu agar
-        // kumulatif tetap benar walau urutan sort berubah.
-        const startLR = json.prevLabaRugi ?? runningLR;
-        const startAK = json.prevArusKas ?? runningAK;
+        // Server tidak menghitung prev-running saat export (skip_prev=1);
+        // kumulatif dibawa dari halaman sebelumnya di klien.
+        const startLR = runningLR;
+        const startAK = runningAK;
         const { flat, lastLabaRugi, lastArusKas } = flattenJurnal(json.data || [], startLR, startAK);
         allFlat.push(...flat);
         runningLR = lastLabaRugi;
