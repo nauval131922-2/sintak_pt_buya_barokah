@@ -459,8 +459,14 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
   const [detailPage, setDetailPage] = useState<number>(1);
   const detailTotalPages = Math.max(1, Math.ceil(tasks.length / DETAIL_PAGE_SIZE));
   const safeDetailPage = Math.min(detailPage, detailTotalPages);
-  // ponytail: sort kronologis di sini (mount-only) agar parent tak ikut sort saat modal tertutup
-  const sortedDetailTasks = useMemo(() => [...tasks].sort(compareTasksChronological), [tasks]);
+  // Sort: nama PIC dulu, lalu kronologis — urutan ini juga dipakai hasil export Excel
+  const sortedDetailTasks = useMemo(() => {
+    const collator = new Intl.Collator("id", { sensitivity: "base" });
+    return [...tasks].sort((a, b) => {
+      const byPic = collator.compare((a.pic || "").trim(), (b.pic || "").trim());
+      return byPic !== 0 ? byPic : compareTasksChronological(a, b);
+    });
+  }, [tasks]);
   const detailPageRows = useMemo(
     () => sortedDetailTasks.slice((safeDetailPage - 1) * DETAIL_PAGE_SIZE, safeDetailPage * DETAIL_PAGE_SIZE),
     [sortedDetailTasks, safeDetailPage]
@@ -482,27 +488,125 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
     return out;
   }, [detailTotalPages, safeDetailPage]);
 
+  // Label filter aktif — dipakai untuk nama file & subjudul Excel
+  const exportFilterLabel =
+    [
+      pic !== "ALL" ? `PIC ${pic}` : "",
+      bagian !== "ALL" ? `Bagian ${bagian}` : "",
+      status !== "ALL" ? `Status ${status}` : "",
+      search ? `Cari ${search}` : "",
+      startDate || endDate
+        ? `Tgl ${startDate ? formatDateDisplay(startDate) : "awal"} s.d. ${endDate ? formatDateDisplay(endDate) : "akhir"}`
+        : "",
+    ]
+      .filter(Boolean)
+      .join(", ") || "Semua Data";
+
   // Export seluruh task hasil filter (bukan hanya halaman yang sedang tampil)
   const handleExportExcel = async () => {
     if (sortedDetailTasks.length === 0) return;
-    const { exportRowsToExcel } = await import("@/lib/export-excel");
-    const rows = sortedDetailTasks.map((t, idx) => ({
-      No: idx + 1,
-      Tanggal:
-        t.startDate || t.endDate
-          ? `${t.startDate ? formatDateDisplay(t.startDate) : "-"}${
-              t.endDate && t.endDate !== t.startDate ? ` ~ ${formatDateDisplay(t.endDate)}` : ""
-            }`
-          : "-",
-      Jam: t.startTime || t.endTime ? `${t.startTime || "-"} ~ ${t.endTime || "-"}` : "-",
-      "Project / Order": t.project || "-",
-      Bagian: t.bagian || "-",
-      PIC: t.pic || "-",
-      "Task / Aktivitas": cleanTaskName(t.task || "", t.project || "") || "-",
-      Status: t.status || "-",
-      Note: t.note || "-",
-    }));
-    await exportRowsToExcel(rows, `Rincian Pekerjaan - ${new Date().toISOString().slice(0, 10)}`);
+    const XLSX = (await import("xlsx-js-style")).default;
+
+    const header = [
+      "No",
+      "Tanggal Mulai",
+      "Tanggal Selesai",
+      "Jam",
+      "Project / Order",
+      "Bagian",
+      "PIC",
+      "Task / Aktivitas",
+      "Status",
+      "Note",
+    ];
+    const toDate = (val?: string | null) => {
+      const ts = parseDateToSort(val || "");
+      if (!ts) return "";
+      const d = new Date(ts);
+      // Jam 12:00 agar konversi serial Excel tidak menggeser tanggal (UTC vs WIB)
+      d.setHours(12, 0, 0, 0);
+      return d;
+    };
+    const body = sortedDetailTasks.map((t, idx) => [
+      idx + 1,
+      toDate(t.startDate),
+      toDate(t.endDate),
+      t.startTime || t.endTime ? `${t.startTime || "-"} ~ ${t.endTime || "-"}` : "-",
+      t.project || "-",
+      t.bagian || "-",
+      t.pic || "-",
+      cleanTaskName(t.task || "", t.project || "") || "-",
+      t.status || "-",
+      t.note || "-",
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet(
+      [["RINCIAN LAPORAN PEKERJAAN"], [exportFilterLabel], [], header, ...body],
+      { cellDates: true }
+    );
+    const lastCol = header.length - 1;
+    ws["!merges"] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: lastCol } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: lastCol } },
+    ];
+    ws["!cols"] = [
+      { wch: 6 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 42 },
+      { wch: 15 }, { wch: 24 }, { wch: 42 }, { wch: 15 }, { wch: 42 },
+    ];
+    ws["!autofilter"] = { ref: `A4:${XLSX.utils.encode_col(lastCol)}${4 + body.length}` };
+
+    const border = { style: "thin", color: { rgb: "D9D9D9" } };
+    const cellAt = (r: number, c: number) => ws[XLSX.utils.encode_cell({ r, c })];
+
+    const titleCell = cellAt(0, 0);
+    if (titleCell) {
+      titleCell.s = {
+        font: { bold: true, sz: 14, color: { rgb: "1F4E78" } },
+        alignment: { horizontal: "center", vertical: "center" },
+      };
+    }
+    const subtitleCell = cellAt(1, 0);
+    if (subtitleCell) {
+      subtitleCell.s = {
+        font: { italic: true, sz: 10, color: { rgb: "595959" } },
+        alignment: { horizontal: "center", vertical: "center" },
+      };
+    }
+    header.forEach((_, c) => {
+      const cell = cellAt(3, c);
+      if (!cell) return;
+      cell.s = {
+        font: { bold: true, sz: 10, color: { rgb: "FFFFFF" } },
+        fill: { patternType: "solid", fgColor: { rgb: "2F5597" } },
+        alignment: { horizontal: "center", vertical: "center", wrapText: true },
+        border: { top: border, bottom: border, left: border, right: border },
+      };
+    });
+    body.forEach((_, r) => {
+      for (let c = 0; c <= lastCol; c++) {
+        const cell = cellAt(4 + r, c);
+        if (!cell) continue;
+        if (cell.v instanceof Date) cell.z = "dd-mmm-yyyy";
+        cell.s = {
+          font: { sz: 10, color: { rgb: "1F1F1F" } },
+          alignment: {
+            horizontal: c === 0 || (c >= 1 && c <= 3) || c === 8 ? "center" : "left",
+            vertical: "center",
+            wrapText: c === 4 || c === 7 || c === 9,
+          },
+          border: { top: border, bottom: border, left: border, right: border },
+          ...(r % 2 === 1 ? { fill: { patternType: "solid", fgColor: { rgb: "F9FAFB" } } } : {}),
+        };
+      }
+    });
+    ws["!rows"] = [{ hpt: 24 }, { hpt: 16 }, { hpt: 6 }, { hpt: 26 }];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Rincian");
+    const safeName = `Rincian Laporan Pekerjaan - ${exportFilterLabel}`
+      .replace(/[\\/:*?"<>|]/g, "-")
+      .slice(0, 120);
+    XLSX.writeFile(wb, `${safeName}.xlsx`, { cellDates: true });
   };
 
   useEffect(() => {
