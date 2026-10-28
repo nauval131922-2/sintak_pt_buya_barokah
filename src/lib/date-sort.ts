@@ -108,7 +108,12 @@ export function isValidRangeDate(s: unknown): s is string {
 
 // Self-heal kolom norm + backfill (dipakai initSchema & retry API).
 // Idempoten: no-op jika kolom sudah ada dan tidak ada baris yang norm-nya kosong.
-export async function ensureLaporanPekerjaanNorms(db: any): Promise<number> {
+interface DbLike {
+  execute(query: string | { sql: string; args?: unknown[] }): Promise<{ rows?: Record<string, unknown>[] }>;
+  batch?(statements: { sql: string; args?: unknown[] }[], mode?: string): Promise<unknown>;
+}
+
+export async function ensureLaporanPekerjaanNorms(db: DbLike): Promise<number> {
   for (const col of ["start_date_norm", "end_date_norm", "tgl_order_norm"]) {
     try {
       await db.execute(`ALTER TABLE laporan_pekerjaan ADD COLUMN ${col} TEXT DEFAULT ''`);
@@ -117,14 +122,35 @@ export async function ensureLaporanPekerjaanNorms(db: any): Promise<number> {
   try {
     await db.execute(`CREATE INDEX IF NOT EXISTS idx_laporan_pekerjaan_start_norm ON laporan_pekerjaan(start_date_norm)`);
   } catch {}
+  // ponytail: backfill tgl_order dari sopd/orders 1x jika masih ada yang kosong agar query GET tidak butuh 4 subquery
+  try {
+    const checkEmpty = await db.execute(
+      "SELECT COUNT(*) as cnt FROM laporan_pekerjaan WHERE tgl_order IS NULL OR tgl_order = ''"
+    );
+    const emptyCount = Number(checkEmpty.rows?.[0]?.cnt || 0);
+    if (emptyCount > 0) {
+      await db.execute(`
+        UPDATE laporan_pekerjaan
+        SET tgl_order = COALESCE(
+          NULLIF(tgl_order, ''),
+          (SELECT s.tgl FROM sopd s WHERE s.nama_order = laporan_pekerjaan.project LIMIT 1),
+          (SELECT s.tgl FROM sopd s WHERE s.no_sopd = laporan_pekerjaan.project LIMIT 1),
+          (SELECT o.tgl FROM orders o WHERE o.nama_prd = laporan_pekerjaan.project LIMIT 1),
+          (SELECT o.tgl FROM orders o WHERE o.faktur = laporan_pekerjaan.project LIMIT 1),
+          ''
+        )
+        WHERE tgl_order IS NULL OR tgl_order = ''
+      `);
+    }
+  } catch {}
   let total = 0;
   for (;;) {
     const missing = await db.execute(
       "SELECT id, start_date, end_date, tgl_order FROM laporan_pekerjaan WHERE (COALESCE(start_date,'') != '' AND COALESCE(start_date_norm,'') = '') OR (COALESCE(end_date,'') != '' AND COALESCE(end_date_norm,'') = '') OR (COALESCE(tgl_order,'') != '' AND COALESCE(tgl_order_norm,'') = '') LIMIT 2000"
     );
-    const rows = ((missing as any).rows as any[]) || [];
+    const rows = missing.rows || [];
     if (rows.length === 0) break;
-    const batch = rows.map((r: any) => ({
+    const batch = rows.map((r) => ({
       sql: "UPDATE laporan_pekerjaan SET start_date_norm = ?, end_date_norm = ?, tgl_order_norm = ? WHERE id = ?",
       args: [
         toNormDateString(String(r.start_date || "")),

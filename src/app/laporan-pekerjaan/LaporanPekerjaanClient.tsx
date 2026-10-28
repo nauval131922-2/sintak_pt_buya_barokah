@@ -44,7 +44,7 @@ import TimePicker from "@/components/TimePicker";
 import FontSizeControl from "@/components/FontSizeControl";
 import { toast } from "@/lib/toast";
 import { type SpreadsheetTask } from "@/lib/google-sheets";
-import { parseDateToSort } from "@/lib/date-sort";
+import { parseDateToSort, toNormDateString } from "@/lib/date-sort";
 import {
   LAPORAN_PEKERJAAN_COLUMNS,
   type RoleLaporanPekerjaanConfig,
@@ -1438,6 +1438,8 @@ export default function LaporanPekerjaanClient({
       priority: data.priority || "Low",
       startDate: startDateStr,
       endDate: endDateStr,
+      startDateNorm: toNormDateString(startDateStr),
+      endDateNorm: toNormDateString(endDateStr),
       startTime: data.startTime || "",
       endTime: data.endTime || "",
       workDays: workDays,
@@ -1563,6 +1565,8 @@ export default function LaporanPekerjaanClient({
             priority: data.priority || "Low",
             startDate: startDateStr,
             endDate: endDateStr,
+            startDateNorm: toNormDateString(startDateStr),
+            endDateNorm: toNormDateString(endDateStr),
             startTime: data.startTime || "",
             endTime: data.endTime || "",
             workDays: workDays,
@@ -1968,12 +1972,13 @@ export default function LaporanPekerjaanClient({
 
   // Filtered tasks
   const filteredTasks = useMemo(() => {
-    // Siapkan boundary timestamp untuk filter rentang tanggal
-    const startFilterTime = filterStartDate
-      ? new Date(filterStartDate.getFullYear(), filterStartDate.getMonth(), filterStartDate.getDate(), 0, 0, 0).getTime()
+    // ponytail: boundary string ISO (YYYY-MM-DD) untuk perbandingan leksikografis instan
+    // memanfaatkan startDateNorm / endDateNorm dari server (tanpa parseDateToSort 12.000x per perubahan filter)
+    const startFilterNorm = filterStartDate
+      ? `${filterStartDate.getFullYear()}-${String(filterStartDate.getMonth() + 1).padStart(2, "0")}-${String(filterStartDate.getDate()).padStart(2, "0")}`
       : null;
-    const endFilterTime = filterEndDate
-      ? new Date(filterEndDate.getFullYear(), filterEndDate.getMonth(), filterEndDate.getDate(), 23, 59, 59, 999).getTime()
+    const endFilterNorm = filterEndDate
+      ? `${filterEndDate.getFullYear()}-${String(filterEndDate.getMonth() + 1).padStart(2, "0")}-${String(filterEndDate.getDate()).padStart(2, "0")}`
       : null;
 
     // Siapkan rentang jam (format string HH:mm langsung bisa dibandingkan leksikografis)
@@ -2001,21 +2006,23 @@ export default function LaporanPekerjaanClient({
       }
 
       // Filter Rentang Tanggal (berdasarkan startDate / endDate task, atau tglOrder jika placeholder order baru)
-      if (startFilterTime !== null || endFilterTime !== null) {
-        const taskStartTime = parseDateToSort(t.startDate || "") || (!t.task ? parseDateToSort(t.tglOrder || "") : 0);
-        const taskEndTime = parseDateToSort(t.endDate || "") || taskStartTime;
+      if (startFilterNorm !== null || endFilterNorm !== null) {
+        const startNorm =
+          t.startDateNorm ||
+          toNormDateString(t.startDate || "") ||
+          (!t.task ? toNormDateString(t.tglOrder || "") : "");
+        const endNorm = t.endDateNorm || toNormDateString(t.endDate || "") || startNorm;
 
         // Jika task / order tidak memiliki tanggal sama sekali, skip jika filter tanggal aktif
-        if (!taskStartTime && !taskEndTime) return false;
+        if (!startNorm && !endNorm) return false;
 
-        // Cek overlap: task rentang [taskStartTime, taskEndTime] vs filter rentang [startFilterTime, endFilterTime]
-        const effectiveTaskStart = taskStartTime || taskEndTime;
-        const effectiveTaskEnd = taskEndTime || taskStartTime;
+        const effectiveStart = startNorm || endNorm;
+        const effectiveEnd = endNorm || startNorm;
 
-        if (startFilterTime !== null && effectiveTaskEnd < startFilterTime) {
+        if (startFilterNorm !== null && effectiveEnd < startFilterNorm) {
           return false;
         }
-        if (endFilterTime !== null && effectiveTaskStart > endFilterTime) {
+        if (endFilterNorm !== null && effectiveStart > endFilterNorm) {
           return false;
         }
       }
@@ -2164,12 +2171,12 @@ export default function LaporanPekerjaanClient({
 
   // Tasks filtered by PIC and search term (for stat card counts)
   const tasksForCounts = useMemo(() => {
-    // Siapkan boundary timestamp untuk filter rentang tanggal
-    const startFilterTime = filterStartDate
-      ? new Date(filterStartDate.getFullYear(), filterStartDate.getMonth(), filterStartDate.getDate(), 0, 0, 0).getTime()
+    // ponytail: boundary string ISO (YYYY-MM-DD) untuk perbandingan leksikografis instan
+    const startFilterNorm = filterStartDate
+      ? `${filterStartDate.getFullYear()}-${String(filterStartDate.getMonth() + 1).padStart(2, "0")}-${String(filterStartDate.getDate()).padStart(2, "0")}`
       : null;
-    const endFilterTime = filterEndDate
-      ? new Date(filterEndDate.getFullYear(), filterEndDate.getMonth(), filterEndDate.getDate(), 23, 59, 59, 999).getTime()
+    const endFilterNorm = filterEndDate
+      ? `${filterEndDate.getFullYear()}-${String(filterEndDate.getMonth() + 1).padStart(2, "0")}-${String(filterEndDate.getDate()).padStart(2, "0")}`
       : null;
 
     const hasStartTimeFilter = Boolean(filterStartTime);
@@ -2184,19 +2191,19 @@ export default function LaporanPekerjaanClient({
       }
 
       // Filter Rentang Tanggal
-      if (startFilterTime !== null || endFilterTime !== null) {
-        const taskStartTime = parseDateToSort(t.startDate || "");
-        const taskEndTime = parseDateToSort(t.endDate || "") || taskStartTime;
+      if (startFilterNorm !== null || endFilterNorm !== null) {
+        const startNorm = t.startDateNorm || toNormDateString(t.startDate || "");
+        const endNorm = t.endDateNorm || toNormDateString(t.endDate || "") || startNorm;
 
-        if (!taskStartTime && !taskEndTime) return false;
+        if (!startNorm && !endNorm) return false;
 
-        const effectiveTaskStart = taskStartTime || taskEndTime;
-        const effectiveTaskEnd = taskEndTime || taskStartTime;
+        const effectiveStart = startNorm || endNorm;
+        const effectiveEnd = endNorm || startNorm;
 
-        if (startFilterTime !== null && effectiveTaskEnd < startFilterTime) {
+        if (startFilterNorm !== null && effectiveEnd < startFilterNorm) {
           return false;
         }
-        if (endFilterTime !== null && effectiveTaskStart > endFilterTime) {
+        if (endFilterNorm !== null && effectiveStart > endFilterNorm) {
           return false;
         }
       }

@@ -78,17 +78,11 @@ export async function GET(request: NextRequest) {
       isInitialSeedChecked = true;
     }
 
-    // Query data murni dari database lokal Sintak dengan join tgl_order dari sopd / orders (fallback ke lp.tgl_order)
+    // ponytail: tgl_order dibaca langsung dari lp.tgl_order (sudah ter-backfill di ensureLaporanPekerjaanNorms)
+    // tanpa 4 correlated subqueries yang memicu puluhan ribu index lookup per GET request.
     let sql = `
       SELECT lp.*,
-             COALESCE(
-               NULLIF(lp.tgl_order, ''),
-               (SELECT s.tgl FROM sopd s WHERE s.nama_order = lp.project LIMIT 1),
-               (SELECT s.tgl FROM sopd s WHERE s.no_sopd = lp.project LIMIT 1),
-               (SELECT o.tgl FROM orders o WHERE o.nama_prd = lp.project LIMIT 1),
-               (SELECT o.tgl FROM orders o WHERE o.faktur = lp.project LIMIT 1),
-               ''
-             ) as calculated_tgl_order
+             COALESCE(NULLIF(lp.tgl_order, ''), '') as calculated_tgl_order
       FROM laporan_pekerjaan lp
       WHERE 1=1
     `;
@@ -129,15 +123,16 @@ export async function GET(request: NextRequest) {
     let res;
     try {
       res = await db.execute({ sql, args });
-    } catch (e: any) {
-      if (String(e?.message || e).includes("no such column")) {
+    } catch (e: unknown) {
+      const errStr = e instanceof Error ? e.message : String(e);
+      if (errStr.includes("no such column")) {
         await ensureLaporanPekerjaanNorms(db);
         res = await db.execute({ sql, args });
       } else {
         throw e;
       }
     }
-    const tasks = res.rows.map((row: any) => ({
+    const tasks = res.rows.map((row: Record<string, unknown>) => ({
       id: Number(row.id),
       task: String(row.task || ""),
       project: String(row.project || ""),
@@ -147,9 +142,11 @@ export async function GET(request: NextRequest) {
       priority: String(row.priority || ""),
       startDate: String(row.start_date || ""),
       endDate: String(row.end_date || ""),
+      startDateNorm: String(row.start_date_norm || ""),
+      endDateNorm: String(row.end_date_norm || ""),
       startTime: String(row.start_time || ""),
       endTime: String(row.end_time || ""),
-      sortOrder: Number((row as any).sort_order || 0),
+      sortOrder: Number(row.sort_order || 0),
       workDays: String(row.work_days || ""),
       note: String(row.note || ""),
       status: String(row.status || "BELUM DIKERJAKAN"),
@@ -206,7 +203,7 @@ export async function GET(request: NextRequest) {
         sopdSql += " GROUP BY s.nama_order ORDER BY s.id DESC";
 
         const sopdRes = await db.execute({ sql: sopdSql, args: sopdArgs });
-        const sopdTasks = sopdRes.rows.map((row: any) => ({
+        const sopdTasks = sopdRes.rows.map((row: Record<string, unknown>) => ({
           id: Number(row.id),
           task: "",
           project: String(row.project || ""),
@@ -216,6 +213,8 @@ export async function GET(request: NextRequest) {
           priority: "Low",
           startDate: "",
           endDate: "",
+          startDateNorm: "",
+          endDateNorm: "",
           startTime: "",
           endTime: "",
           sortOrder: 0,
@@ -226,7 +225,6 @@ export async function GET(request: NextRequest) {
           tglOrder: String(row.tgl_order || ""),
           updated_at: null,
         }));
-
         tasks.push(...sopdTasks);
       } catch (e) {
         console.error("Gagal menyertakan order SOPD baru:", e);
@@ -295,9 +293,32 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    let finalTglOrder = tglOrder?.trim() || "";
+    if (!finalTglOrder && finalProject) {
+      try {
+        const sopdLookup = await db.execute({
+          sql: "SELECT tgl FROM sopd WHERE nama_order = ? OR no_sopd = ? LIMIT 1",
+          args: [finalProject, finalProject],
+        });
+        const sRow = sopdLookup.rows?.[0] as { tgl?: unknown } | undefined;
+        if (sRow?.tgl) {
+          finalTglOrder = String(sRow.tgl);
+        } else {
+          const orderLookup = await db.execute({
+            sql: "SELECT tgl FROM orders WHERE nama_prd = ? OR faktur = ? LIMIT 1",
+            args: [finalProject, finalProject],
+          });
+          const oRow = orderLookup.rows?.[0] as { tgl?: unknown } | undefined;
+          if (oRow?.tgl) {
+            finalTglOrder = String(oRow.tgl);
+          }
+        }
+      } catch {}
+    }
+
     const startNorm = toNormDateString(startDate?.trim() || "");
     const endNorm = toNormDateString(endDate?.trim() || "");
-    const tglOrderNorm = toNormDateString(tglOrder?.trim() || "");
+    const tglOrderNorm = toNormDateString(finalTglOrder);
 
     const insertStmt = {
       sql: `INSERT INTO laporan_pekerjaan (task, project, division, bagian, pic, priority, start_date, end_date, start_time, end_time, work_days, note, status, source, tgl_order, start_date_norm, end_date_norm, tgl_order_norm)
@@ -316,7 +337,7 @@ export async function POST(request: NextRequest) {
         workDays?.trim() || "",
         note?.trim() || "",
         status?.trim() || "BELUM DIKERJAKAN",
-        tglOrder?.trim() || "",
+        finalTglOrder,
         startNorm,
         endNorm,
         tglOrderNorm,
@@ -325,8 +346,9 @@ export async function POST(request: NextRequest) {
     let res;
     try {
       res = await db.execute(insertStmt);
-    } catch (e: any) {
-      if (String(e?.message || e).includes("no such column")) {
+    } catch (e: unknown) {
+      const errStr = e instanceof Error ? e.message : String(e);
+      if (errStr.includes("no such column")) {
         await ensureLaporanPekerjaanNorms(db);
         res = await db.execute(insertStmt);
       } else {
@@ -350,7 +372,7 @@ export async function POST(request: NextRequest) {
       work_days: workDays?.trim() || "",
       note: note?.trim() || "",
       status: status?.trim() || "BELUM DIKERJAKAN",
-      tgl_order: tglOrder?.trim() || "",
+      tgl_order: finalTglOrder,
     };
 
     const actionDesc = isOrderOnly
