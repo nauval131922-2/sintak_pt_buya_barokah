@@ -482,6 +482,29 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
     return out;
   }, [detailTotalPages, safeDetailPage]);
 
+  // Export seluruh task hasil filter (bukan hanya halaman yang sedang tampil)
+  const handleExportExcel = async () => {
+    if (sortedDetailTasks.length === 0) return;
+    const { exportRowsToExcel } = await import("@/lib/export-excel");
+    const rows = sortedDetailTasks.map((t, idx) => ({
+      No: idx + 1,
+      Tanggal:
+        t.startDate || t.endDate
+          ? `${t.startDate ? formatDateDisplay(t.startDate) : "-"}${
+              t.endDate && t.endDate !== t.startDate ? ` ~ ${formatDateDisplay(t.endDate)}` : ""
+            }`
+          : "-",
+      Jam: t.startTime || t.endTime ? `${t.startTime || "-"} ~ ${t.endTime || "-"}` : "-",
+      "Project / Order": t.project || "-",
+      Bagian: t.bagian || "-",
+      PIC: t.pic || "-",
+      "Task / Aktivitas": cleanTaskName(t.task || "", t.project || "") || "-",
+      Status: t.status || "-",
+      Note: t.note || "-",
+    }));
+    await exportRowsToExcel(rows, `Rincian Pekerjaan - ${new Date().toISOString().slice(0, 10)}`);
+  };
+
   useEffect(() => {
     const container = detailTableWrapRef.current;
     if (!container) return;
@@ -564,14 +587,26 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
                 )}
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all cursor-pointer shrink-0"
-              title="Tutup Modal"
-            >
-              <X size={18} />
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleExportExcel}
+                disabled={tasks.length === 0}
+                className="px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-default"
+                title="Export seluruh rincian (sesuai filter) ke Excel"
+              >
+                <FileSpreadsheet size={14} />
+                <span className="hidden sm:inline">Export Excel</span>
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-all cursor-pointer shrink-0"
+                title="Tutup Modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
           </div>
           {/* Body */}
           <div className="flex-1 min-h-0 flex flex-col overflow-hidden p-3 sm:p-4">
@@ -3622,52 +3657,6 @@ function TaskDetailModal({
     persistOrder(next);
   };
 
-  // Export sesuai kolom yang terlihat role (kolom tersembunyi tidak ikut terekspor)
-  const handleExportExcel = async () => {
-    if (sortedTasks.length === 0) return;
-    const { exportRowsToExcel } = await import("@/lib/export-excel");
-    const cols = activeColumns.filter((c) => c.key !== "aksi");
-    const rows = sortedTasks.map((task, idx) => {
-      const row: Record<string, unknown> = {};
-      cols.forEach((col) => {
-        switch (col.key) {
-          case "no":
-            row[col.label] = idx + 1;
-            break;
-          case "bagian":
-            row[col.label] = task.bagian || "-";
-            break;
-          case "pic":
-            row[col.label] = task.pic || "-";
-            break;
-          case "task":
-            row[col.label] = cleanTaskName(task.task, selectedProjectGroup.project) || task.task;
-            break;
-          case "priority":
-            row[col.label] = task.priority || "-";
-            break;
-          case "start_end":
-            row[col.label] = `${task.startDate ? formatDateDisplay(task.startDate) : "-"}${
-              task.startTime ? ` (${task.startTime})` : ""
-            } ~ ${task.endDate ? formatDateDisplay(task.endDate) : "-"}${task.endTime ? ` (${task.endTime})` : ""}`;
-            break;
-          case "work_days":
-            row[col.label] = task.workDays ? `${task.workDays} hari` : "-";
-            break;
-          case "status":
-            row[col.label] = task.status || "-";
-            break;
-          case "note":
-            row[col.label] = task.note || "-";
-            break;
-        }
-      });
-      return row;
-    });
-    const safeProject = selectedProjectGroup.project.replace(/[\\/:*?"<>|]/g, "-").slice(0, 80);
-    await exportRowsToExcel(rows, `Laporan Pekerjaan - ${safeProject}`);
-  };
-
   return (
     <Portal>
       <div
@@ -3701,17 +3690,6 @@ function TaskDetailModal({
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              {sortedTasks.length > 0 && (
-                <button
-                  type="button"
-                  onClick={handleExportExcel}
-                  className="px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
-                  title="Export daftar pekerjaan order ini ke Excel"
-                >
-                  <FileSpreadsheet size={14} />
-                  <span className="hidden sm:inline">Export Excel</span>
-                </button>
-              )}
               {canAdd && (
                 <button
                   type="button"
