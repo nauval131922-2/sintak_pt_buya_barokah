@@ -459,14 +459,17 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
   const [detailPage, setDetailPage] = useState<number>(1);
   const detailTotalPages = Math.max(1, Math.ceil(tasks.length / DETAIL_PAGE_SIZE));
   const safeDetailPage = Math.min(detailPage, detailTotalPages);
-  // Sort: nama PIC dulu, lalu kronologis — urutan ini juga dipakai hasil export Excel
+  // Sort: nama PIC dulu (bisa dibalik lewat klik header, seperti kolom Nama Karyawan di JHP),
+  // lalu kronologis — urutan ini juga dipakai hasil export Excel
+  const [picSortDir, setPicSortDir] = useState<"asc" | "desc">("asc");
   const sortedDetailTasks = useMemo(() => {
     const collator = new Intl.Collator("id", { sensitivity: "base" });
+    const dir = picSortDir === "asc" ? 1 : -1;
     return [...tasks].sort((a, b) => {
       const byPic = collator.compare((a.pic || "").trim(), (b.pic || "").trim());
-      return byPic !== 0 ? byPic : compareTasksChronological(a, b);
+      return byPic !== 0 ? byPic * dir : compareTasksChronological(a, b);
     });
-  }, [tasks]);
+  }, [tasks, picSortDir]);
   const detailPageRows = useMemo(
     () => sortedDetailTasks.slice((safeDetailPage - 1) * DETAIL_PAGE_SIZE, safeDetailPage * DETAIL_PAGE_SIZE),
     [sortedDetailTasks, safeDetailPage]
@@ -619,16 +622,27 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
   }, [detailColWidths]);
 
   // ponytail: header kolom modal rincian (resize + tooltip), 1 helper untuk 9 kolom
-  const renderDetailTh = (field: string, label: string, className = "") => (
+  const renderDetailTh = (
+    field: string,
+    label: string,
+    className = "",
+    sort?: { dir: "asc" | "desc"; onToggle: () => void }
+  ) => (
     <th
       style={{
         width: `var(--dcol-${field}, ${detailColWidths[field] || 100}px)`,
         minWidth: `var(--dcol-${field}, ${detailColWidths[field] || 100}px)`,
       }}
-      className={`relative px-2 py-2.5 bg-slate-50 group ${className}`}
-      title={label}
+      className={`relative px-2 py-2.5 bg-slate-50 group ${className} ${
+        sort ? "cursor-pointer select-none hover:bg-slate-100" : ""
+      }`}
+      title={sort ? `${label} — klik untuk urutkan ${sort.dir === "asc" ? "Z→A" : "A→Z"}` : label}
+      onClick={sort?.onToggle}
     >
-      <span className="block truncate">{label}</span>
+      <span className="flex items-center gap-1 truncate">
+        <span className="truncate">{label}</span>
+        {sort && (sort.dir === "asc" ? <ChevronUp size={12} /> : <ChevronDown size={12} />)}
+      </span>
       <div
         onMouseDown={(resizeEvt) => {
           setIsDetailResizing(true);
@@ -723,7 +737,10 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
                   {renderDetailTh("jam", "Jam")}
                   {renderDetailTh("project", "Project / Order")}
                   {renderDetailTh("bagian", "Bagian")}
-                  {renderDetailTh("pic", "PIC")}
+                  {renderDetailTh("pic", "PIC", "", {
+                    dir: picSortDir,
+                    onToggle: () => setPicSortDir((d) => (d === "asc" ? "desc" : "asc")),
+                  })}
                   {renderDetailTh("task", "Task / Aktivitas")}
                   {renderDetailTh("status", "Status")}
                   {renderDetailTh("note", "Note")}
