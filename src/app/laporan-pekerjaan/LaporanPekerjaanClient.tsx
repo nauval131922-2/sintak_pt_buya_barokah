@@ -1598,8 +1598,13 @@ export default function LaporanPekerjaanClient({
 
   const isPicAllowedByRole = useCallback(
     (pic?: string | null, source?: string | null, taskName?: string | null) => {
-      // Order baru (dari SOPD maupun manual placeholder tanpa task) hanya diizinkan untuk role yang bisa tambah pekerjaan (can_add)
-      if (source === 'sopd' || (!pic && !taskName)) {
+      // Order baru dari SOPD (belum ada pekerjaan & PIC) hanya untuk role yang boleh mengambil order tanpa PIC
+      // (Kepala Seksi/Super Admin). Role yang terkunci ke PIC sendiri tidak melihatnya — plotting oleh Kepala Seksi.
+      if (source === 'sopd') {
+        return roleConfig?.can_add !== false && (!allowedPicSet || allowedPicSet.has('@unassigned'));
+      }
+      // Placeholder manual (order dibuat sendiri, tanpa task) tetap terlihat oleh role yang bisa tambah pekerjaan
+      if (!pic && !taskName) {
         return roleConfig?.can_add !== false;
       }
       if (pic && excludedPicSet && excludedPicSet.has(pic.toLowerCase().trim())) {
