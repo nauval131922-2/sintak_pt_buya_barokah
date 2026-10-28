@@ -168,6 +168,13 @@ const formatDateForApi = (val?: Date | string | null): string => {
   return formatDateDisplay(val);
 };
 
+// Urutan bagian baku seperti JHP (CASE UPPER(bagian) di API jurnal harian produksi)
+const BAGIAN_ORDER = ["SETTING", "QUALITY CONTROL", "CETAK", "FINISHING", "GUDANG", "TEKNISI", "MESIN"];
+const bagianRank = (bagian?: string | null): number => {
+  const idx = BAGIAN_ORDER.indexOf((bagian || "").trim().toUpperCase());
+  return idx === -1 ? BAGIAN_ORDER.length : idx;
+};
+
 // Progress & penanda pekerjaan terakhir (SELESAI terakhir)/selanjutnya per order,
 // Urutan kronologis detail pekerjaan: startDate -> startTime -> endDate -> endTime -> id (kosong selalu di belakang)
 const compareTasksChronological = (a: SpreadsheetTask, b: SpreadsheetTask): number => {
@@ -460,8 +467,8 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
   const [detailPage, setDetailPage] = useState<number>(1);
   const detailTotalPages = Math.max(1, Math.ceil(tasks.length / DETAIL_PAGE_SIZE));
   const safeDetailPage = Math.min(detailPage, detailTotalPages);
-  // Urutan PIC default mengikuti JHP: nomor absensi (employee_no) ASC, bukan abjad.
-  // Klik header PIC: abjad A→Z, lalu Z→A, lalu kembali ke absensi.
+  // Urutan default mengikuti JHP: bagian baku (SETTING → … → MESIN), lalu nomor absensi
+  // (employee_no) ASC — bukan abjad. Klik header PIC: abjad A→Z, lalu Z→A, lalu kembali.
   // Urutan ini juga dipakai hasil export Excel.
   const [picSort, setPicSort] = useState<"absensi" | "asc" | "desc">("absensi");
   const absensiByPic = useMemo(() => {
@@ -478,6 +485,11 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
     const absensiOf = (t: SpreadsheetTask) =>
       absensiByPic.get((t.pic || "").trim().toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
     return [...tasks].sort((a, b) => {
+      if (picSort === "absensi") {
+        // Seperti JHP: bagian baku dulu (SETTING → … → MESIN), baru nomor absensi
+        const byBagian = bagianRank(a.bagian) - bagianRank(b.bagian);
+        if (byBagian !== 0) return byBagian;
+      }
       const byPic =
         picSort === "absensi"
           ? absensiOf(a) - absensiOf(b)
@@ -817,7 +829,7 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
                       setPicSort((s) => (s === "absensi" ? "asc" : s === "asc" ? "desc" : "absensi")),
                     title:
                       picSort === "absensi"
-                        ? "PIC — urut nomor absensi seperti JHP; klik untuk urut A→Z"
+                        ? "PIC — urut bagian lalu nomor absensi seperti JHP; klik untuk urut A→Z"
                         : picSort === "asc"
                           ? "PIC — urut A→Z; klik untuk urut Z→A"
                           : "PIC — urut Z→A; klik untuk kembali urut nomor absensi",
