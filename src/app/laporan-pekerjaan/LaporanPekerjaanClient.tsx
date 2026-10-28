@@ -435,12 +435,13 @@ interface RincianModalProps {
   search: string;
   startDate: Date | null;
   endDate: Date | null;
+  employeeOptions: any[];
   onClose: () => void;
   onResizeStart: (field: string, e: React.MouseEvent<HTMLDivElement>, opts: ColumnResizeOpts) => void;
 }
 
 // ponytail: komponen sendiri agar interaksi modal (resize/paginasi) tidak me-render ulang seluruh halaman
-function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate, endDate, onClose, onResizeStart }: RincianModalProps) {
+function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate, endDate, employeeOptions, onClose, onResizeStart }: RincianModalProps) {
   // ponytail: matikan blur backdrop selama drag agar tiap frame tidak repaint blur sehalaman
   const [isDetailResizing, setIsDetailResizing] = useState<boolean>(false);
   // ponytail: lazy init dari localStorage agar tanpa render beruntun saat mount
@@ -459,17 +460,32 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
   const [detailPage, setDetailPage] = useState<number>(1);
   const detailTotalPages = Math.max(1, Math.ceil(tasks.length / DETAIL_PAGE_SIZE));
   const safeDetailPage = Math.min(detailPage, detailTotalPages);
-  // Sort: nama PIC dulu (bisa dibalik lewat klik header, seperti kolom Nama Karyawan di JHP),
-  // lalu kronologis — urutan ini juga dipakai hasil export Excel
-  const [picSortDir, setPicSortDir] = useState<"asc" | "desc">("asc");
+  // Urutan PIC default mengikuti JHP: nomor absensi (employee_no) ASC, bukan abjad.
+  // Klik header PIC: abjad A→Z, lalu Z→A, lalu kembali ke absensi.
+  // Urutan ini juga dipakai hasil export Excel.
+  const [picSort, setPicSort] = useState<"absensi" | "asc" | "desc">("absensi");
+  const absensiByPic = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const e of employeeOptions) {
+      const no = Number(e?.employee_no);
+      if (e?.name && Number.isFinite(no)) map.set(String(e.name).trim().toLowerCase(), no);
+    }
+    return map;
+  }, [employeeOptions]);
   const sortedDetailTasks = useMemo(() => {
     const collator = new Intl.Collator("id", { sensitivity: "base" });
-    const dir = picSortDir === "asc" ? 1 : -1;
+    // PIC tanpa nomor absensi ditaruh paling bawah
+    const absensiOf = (t: SpreadsheetTask) =>
+      absensiByPic.get((t.pic || "").trim().toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
     return [...tasks].sort((a, b) => {
-      const byPic = collator.compare((a.pic || "").trim(), (b.pic || "").trim());
-      return byPic !== 0 ? byPic * dir : compareTasksChronological(a, b);
+      const byPic =
+        picSort === "absensi"
+          ? absensiOf(a) - absensiOf(b)
+          : collator.compare((a.pic || "").trim(), (b.pic || "").trim()) *
+            (picSort === "asc" ? 1 : -1);
+      return byPic !== 0 ? byPic : compareTasksChronological(a, b);
     });
-  }, [tasks, picSortDir]);
+  }, [tasks, picSort, absensiByPic]);
   const detailPageRows = useMemo(
     () => sortedDetailTasks.slice((safeDetailPage - 1) * DETAIL_PAGE_SIZE, safeDetailPage * DETAIL_PAGE_SIZE),
     [sortedDetailTasks, safeDetailPage]
@@ -609,7 +625,61 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
     const safeName = `Rincian Laporan Pekerjaan - ${exportFilterLabel}`
       .replace(/[\\/:*?"<>|]/g, "-")
       .slice(0, 120);
-    XLSX.writeFile(wb, `${safeName}.xlsx`, { cellDates: true });
+
+    // xlsx-js-style belum bisa set page setup cetak → patch XML langsung:
+    // gridlines off, freeze 4 baris judul, A4 landscape fit 1 halaman lebar,
+    // baris 4 (header kolom) diulang sebagai print titles.
+    const rawBuffer = XLSX.write(wb, { type: "array", bookType: "xlsx", cellDates: true });
+    const JSZip = (await import("jszip")).default;
+    const zip = await JSZip.loadAsync(rawBuffer);
+    const printArea = `$A$1:$${XLSX.utils.encode_col(lastCol)}$${4 + body.length}`;
+    const sheetPath = "xl/worksheets/sheet1.xml";
+    const sheetXml = await zip.file(sheetPath)?.async("string");
+    if (sheetXml) {
+      const printSetup =
+        `<printOptions horizontalCentered="1"/>` +
+        `<pageMargins left="0.3" right="0.3" top="0.4" bottom="0.4" header="0.2" footer="0.2"/>` +
+        `<pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/>`;
+      let patched = sheetXml
+        .replace(
+          /<sheetViews>[\s\S]*?<\/sheetViews>/,
+          `<sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane ySplit="4" topLeftCell="A5" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A5" sqref="A5"/></sheetView></sheetViews>`
+        )
+        .replace(
+          /<worksheet([^>]*)>/,
+          `<worksheet$1><sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>`
+        );
+      // pageMargins/pageSetup wajib sebelum ignoredErrors agar urutan elemen OpenXML valid
+      patched = patched.includes("<ignoredErrors")
+        ? patched.replace("<ignoredErrors", printSetup + "<ignoredErrors")
+        : patched.replace("</worksheet>", printSetup + "</worksheet>");
+      zip.file(sheetPath, patched);
+    }
+    const wbPath = "xl/workbook.xml";
+    const wbXml = await zip.file(wbPath)?.async("string");
+    if (wbXml) {
+      const extraNames =
+        `<definedName name="_xlnm.Print_Titles" localSheetId="0">&apos;Rincian&apos;!$4:$4</definedName>` +
+        `<definedName name="_xlnm.Print_Area" localSheetId="0">&apos;Rincian&apos;!${printArea}</definedName>`;
+      zip.file(
+        wbPath,
+        wbXml.includes("</definedNames>")
+          ? wbXml.replace("</definedNames>", extraNames + "</definedNames>")
+          : wbXml.replace("</sheets>", `</sheets><definedNames>${extraNames}</definedNames>`)
+      );
+    }
+    const blob = await zip.generateAsync({
+      type: "blob",
+      mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${safeName}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   useEffect(() => {
@@ -626,7 +696,7 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
     field: string,
     label: string,
     className = "",
-    sort?: { dir: "asc" | "desc"; onToggle: () => void }
+    sort?: { dir: "asc" | "desc"; onToggle: () => void; title?: string }
   ) => (
     <th
       style={{
@@ -636,7 +706,11 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
       className={`relative px-2 py-2.5 bg-slate-50 group ${className} ${
         sort ? "cursor-pointer select-none hover:bg-slate-100" : ""
       }`}
-      title={sort ? `${label} — klik untuk urutkan ${sort.dir === "asc" ? "Z→A" : "A→Z"}` : label}
+      title={
+        sort
+          ? sort.title || `${label} — klik untuk urutkan ${sort.dir === "asc" ? "Z→A" : "A→Z"}`
+          : label
+      }
       onClick={sort?.onToggle}
     >
       <span className="flex items-center gap-1 truncate">
@@ -738,8 +812,15 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
                   {renderDetailTh("project", "Project / Order")}
                   {renderDetailTh("bagian", "Bagian")}
                   {renderDetailTh("pic", "PIC", "", {
-                    dir: picSortDir,
-                    onToggle: () => setPicSortDir((d) => (d === "asc" ? "desc" : "asc")),
+                    dir: picSort === "desc" ? "desc" : "asc",
+                    onToggle: () =>
+                      setPicSort((s) => (s === "absensi" ? "asc" : s === "asc" ? "desc" : "absensi")),
+                    title:
+                      picSort === "absensi"
+                        ? "PIC — urut nomor absensi seperti JHP; klik untuk urut A→Z"
+                        : picSort === "asc"
+                          ? "PIC — urut A→Z; klik untuk urut Z→A"
+                          : "PIC — urut Z→A; klik untuk kembali urut nomor absensi",
                   })}
                   {renderDetailTh("task", "Task / Aktivitas")}
                   {renderDetailTh("status", "Status")}
@@ -3322,6 +3403,7 @@ export default function LaporanPekerjaanClient({
           search={deferredSearchTerm}
           startDate={filterStartDate}
           endDate={filterEndDate}
+          employeeOptions={employeeOptions}
           onClose={() => setShowFilterDetailModal(false)}
           onResizeStart={handleResizeStart}
         />
