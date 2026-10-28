@@ -3622,6 +3622,52 @@ function TaskDetailModal({
     persistOrder(next);
   };
 
+  // Export sesuai kolom yang terlihat role (kolom tersembunyi tidak ikut terekspor)
+  const handleExportExcel = async () => {
+    if (sortedTasks.length === 0) return;
+    const { exportRowsToExcel } = await import("@/lib/export-excel");
+    const cols = activeColumns.filter((c) => c.key !== "aksi");
+    const rows = sortedTasks.map((task, idx) => {
+      const row: Record<string, unknown> = {};
+      cols.forEach((col) => {
+        switch (col.key) {
+          case "no":
+            row[col.label] = idx + 1;
+            break;
+          case "bagian":
+            row[col.label] = task.bagian || "-";
+            break;
+          case "pic":
+            row[col.label] = task.pic || "-";
+            break;
+          case "task":
+            row[col.label] = cleanTaskName(task.task, selectedProjectGroup.project) || task.task;
+            break;
+          case "priority":
+            row[col.label] = task.priority || "-";
+            break;
+          case "start_end":
+            row[col.label] = `${task.startDate ? formatDateDisplay(task.startDate) : "-"}${
+              task.startTime ? ` (${task.startTime})` : ""
+            } ~ ${task.endDate ? formatDateDisplay(task.endDate) : "-"}${task.endTime ? ` (${task.endTime})` : ""}`;
+            break;
+          case "work_days":
+            row[col.label] = task.workDays ? `${task.workDays} hari` : "-";
+            break;
+          case "status":
+            row[col.label] = task.status || "-";
+            break;
+          case "note":
+            row[col.label] = task.note || "-";
+            break;
+        }
+      });
+      return row;
+    });
+    const safeProject = selectedProjectGroup.project.replace(/[\\/:*?"<>|]/g, "-").slice(0, 80);
+    await exportRowsToExcel(rows, `Laporan Pekerjaan - ${safeProject}`);
+  };
+
   return (
     <Portal>
       <div
@@ -3655,6 +3701,17 @@ function TaskDetailModal({
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
+              {sortedTasks.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleExportExcel}
+                  className="px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
+                  title="Export daftar pekerjaan order ini ke Excel"
+                >
+                  <FileSpreadsheet size={14} />
+                  <span className="hidden sm:inline">Export Excel</span>
+                </button>
+              )}
               {canAdd && (
                 <button
                   type="button"
