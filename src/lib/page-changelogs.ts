@@ -45,6 +45,20 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'laporan-pekerjaan-2026-10-28': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-10-28',
+    date: '28 Okt 2026',
+    version: '2026-10-28-1',
+    items: [
+      "Urut rincian pekerjaan berdasarkan hierarki Bagian baku JHP (Setting, QC, Cetak, Finishing, Gudang, Teknisi, Mesin) dan nomor absensi PIC riil (prioritas PIC bernomor terkecil)",
+      "Fitur Export Excel pada modal Rincian Pekerjaan dengan cakupan seluruh tugas hasil filter aktif dan penamaan file dinamis",
+      "Format Excel siap cetak: tata letak A4 landscape, fit to page width, repeat header di setiap halaman, dan gridlines dinonaktifkan",
+      "Optimasi performa query database (eliminasi correlated subquery tanggal order) dan percepatan evaluasi filter rentang tanggal client-side",
+    ],
+  }),
   'roles-2026-10-27': entry({
     pageKey: 'roles',
     title: 'Hak Akses (Roles)',
