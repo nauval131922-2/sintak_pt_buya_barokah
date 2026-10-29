@@ -670,30 +670,42 @@ export default function PricelistClient() {
     return () => window.removeEventListener('sintak:pricelist-saved', handleSaved);
   }, []);
 
-  // Simpan posisi tab aktif dan view mode ke localStorage
+  // Simpan posisi tab aktif, kategori produk, dan view mode ke localStorage (hanya setelah initial load selesai)
   useEffect(() => {
+    if (!isInitialLoaded) return;
     try {
       localStorage.setItem('sintak_pricelist_active_tab', activeTab);
     } catch (e) {
       console.error('Failed to save active tab to localStorage:', e);
     }
-  }, [activeTab]);
+  }, [activeTab, isInitialLoaded]);
+
   useEffect(() => {
+    if (!isInitialLoaded) return;
+    try {
+      localStorage.setItem('sintak_pricelist_selected_category', selectedProductCategory);
+    } catch (e) {
+      console.error('Failed to save selected category to localStorage:', e);
+    }
+  }, [selectedProductCategory, isInitialLoaded]);
+
+  useEffect(() => {
+    if (!isInitialLoaded) return;
     try {
       localStorage.setItem('sintak_pricelist_view_mode', viewMode);
     } catch (e) {
       console.error('Failed to save view mode to localStorage:', e);
     }
-  }, [viewMode]);
+  }, [viewMode, isInitialLoaded]);
 
   useEffect(() => {
+    if (!isInitialLoaded) return;
     try {
       localStorage.setItem('sintak_pricelist_finishing', selectedFinishing);
     } catch (e) {
       console.error('Failed to save finishing mode to localStorage:', e);
     }
-  }, [selectedFinishing]);
-
+  }, [selectedFinishing, isInitialLoaded]);
   // Simpan master parameter ke localStorage per profil (debounced 350ms agar tidak lag saat mengetik)
   useEffect(() => {
     if (!isInitialLoaded) return;
