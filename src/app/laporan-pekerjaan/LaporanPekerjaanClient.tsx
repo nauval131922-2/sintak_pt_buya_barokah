@@ -34,6 +34,7 @@ import {
   Eye,
   Calendar,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import TableFooter from "@/components/TableFooter";
@@ -463,6 +464,7 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
     return defaults;
   });
   const detailTableWrapRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState<boolean>(false);
   const DETAIL_PAGE_SIZE = 100;
   const [detailPage, setDetailPage] = useState<number>(1);
   const detailTotalPages = Math.max(1, Math.ceil(tasks.length / DETAIL_PAGE_SIZE));
@@ -535,9 +537,12 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
 
   // Export seluruh task hasil filter (bukan hanya halaman yang sedang tampil)
   const handleExportExcel = async () => {
-    if (sortedDetailTasks.length === 0) return;
-    const XLSX = (await import("xlsx-js-style")).default;
-
+    if (sortedDetailTasks.length === 0 || isExporting) return;
+    setIsExporting(true);
+    // Beri jeda 1 frame agar spinner loading sempat me-render di UI sebelum CPU memproses XLSX
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    try {
+      const XLSX = (await import("xlsx-js-style")).default;
     const header = [
       "No",
       "Tanggal Mulai",
@@ -691,7 +696,12 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error("Gagal export Excel rincian:", err);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   useEffect(() => {
@@ -795,12 +805,16 @@ function RincianModal({ tasks, fontSize, bagian, pic, status, search, startDate,
               <button
                 type="button"
                 onClick={handleExportExcel}
-                disabled={tasks.length === 0}
+                disabled={tasks.length === 0 || isExporting}
                 className="px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-default"
                 title="Export seluruh rincian (sesuai filter) ke Excel"
               >
-                <FileSpreadsheet size={14} />
-                <span className="hidden sm:inline">Export Excel</span>
+                {isExporting ? (
+                  <Loader2 size={14} className="animate-spin text-emerald-700 shrink-0" />
+                ) : (
+                  <FileSpreadsheet size={14} className="shrink-0" />
+                )}
+                <span className="hidden sm:inline">{isExporting ? "Mengekspor..." : "Export Excel"}</span>
               </button>
               <button
                 type="button"
