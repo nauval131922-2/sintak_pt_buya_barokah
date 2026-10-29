@@ -263,7 +263,7 @@ export default function UndanganMasterParameter({
       </div>
 
       {/* Grid 2 Kolom Seimbang */}
-      <div className="columns-1 md:columns-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
         {/* Card 1: Bahan & kertas */}
         {cardShell(
           'bg-white border-slate-200',

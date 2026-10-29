@@ -287,7 +287,7 @@ export default function BrosurMasterParameter({
       </div>
 
       {/* Grid 2 Kolom Seimbang */}
-      <div className="columns-1 md:columns-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
         {cardShell(
           'bg-white border-slate-200',
           cardHeader('text-emerald-900 bg-emerald-100', 'Kertas', FileText, 'text-emerald-700', '1. Kertas Art Paper & Print Inter'),

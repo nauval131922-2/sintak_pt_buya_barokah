@@ -340,7 +340,7 @@ export default function MajalahMasterParameter({
       </div>
 
       {/* Grid 2 Kolom Seimbang */}
-      <div className="columns-1 md:columns-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
         {cardShell(
           'bg-sky-50/40 border-sky-200',
           cardHeader('text-sky-900 bg-sky-200/80', 'Cover', Printer, 'text-sky-600', '1. Cover & Mesin Cetak Cover'),

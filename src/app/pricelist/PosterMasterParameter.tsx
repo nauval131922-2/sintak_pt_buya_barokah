@@ -321,8 +321,8 @@ export default function PosterMasterParameter({
         )}
       </div>
 
-      {/* 2 Kolom Seimbang Masonry */}
-      <div className="columns-1 lg:columns-2 gap-4 space-y-0">
+      {/* Grid 2 Kolom Seimbang */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
 
         {/* 2. Desain & Mesin Cetak */}
         {cardShell(
