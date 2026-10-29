@@ -266,8 +266,7 @@ _Harga belum termasuk PPN. Hasil cetak kop tajam & jepit kaleng rapi._`;
       
 
       {/* Grid Simulator: Kiri Form, Kanan Hasil Finansial & Breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Kolom Kiri: Form Input */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1">
         <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">

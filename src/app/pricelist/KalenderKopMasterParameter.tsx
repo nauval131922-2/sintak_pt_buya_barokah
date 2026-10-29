@@ -1,7 +1,7 @@
 'use client';
 
 import { toast } from '@/lib/toast';
-
+import ThousandInput from '@/components/ThousandInput';
 import React, { useState, useMemo } from 'react';
 import {
   RotateCcw,
@@ -115,33 +115,43 @@ export default function KalenderKopMasterParameter({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          <div className="relative">
-            {isCurrency && (
-              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-medium">
-                Rp
-              </span>
-            )}
-            <input
-              type="number"
-              step={isFloat ? '0.01' : '1'}
-              value={val === 0 ? '' : val}
-              placeholder="0"
-              onChange={(e) => handleChange(key, e.target.value, isFloat)}
-              className={`w-28 text-right text-xs font-bold py-1.5 rounded-lg border outline-hidden transition-all ${
-                isCurrency ? 'pl-7 pr-2' : 'px-2'
-              } ${
+          {isCurrency ? (
+            <ThousandInput
+              value={typeof val === 'number' ? val : 0}
+              onValueChange={(v) => {
+                setCustomParams((prev) => ({
+                  ...prev,
+                  [key]: v || 0,
+                }));
+              }}
+              prefix="Rp"
+              className={`w-28 text-right text-xs font-bold py-1.5 px-2 rounded-lg border outline-hidden transition-all ${
                 modified
                   ? 'border-amber-400 bg-white text-amber-900 focus:ring-2 focus:ring-amber-400'
                   : 'border-slate-300 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500'
               }`}
             />
-            {!isCurrency && key.includes('Pct') && (
-              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">
-                %
-              </span>
-            )}
-          </div>
-
+          ) : (
+            <div className="relative">
+              <input
+                type="number"
+                step={isFloat ? '0.01' : '1'}
+                value={val === 0 ? '' : val}
+                placeholder="0"
+                onChange={(e) => handleChange(key, e.target.value, isFloat)}
+                className={`w-24 text-right text-xs font-bold py-1.5 px-2 rounded-lg border outline-hidden transition-all ${
+                  modified
+                    ? 'border-amber-400 bg-white text-amber-900 focus:ring-2 focus:ring-amber-400'
+                    : 'border-slate-300 bg-white text-slate-800 focus:ring-2 focus:ring-emerald-500'
+                } ${key.includes('Pct') ? 'pr-6' : ''}`}
+              />
+              {key.includes('Pct') && (
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">
+                  %
+                </span>
+              )}
+            </div>
+          )}
           {modified && (
             <button
               type="button"

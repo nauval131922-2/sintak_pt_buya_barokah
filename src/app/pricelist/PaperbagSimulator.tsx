@@ -211,49 +211,40 @@ export default function PaperbagSimulator({
   return (
     <div className="flex flex-col flex-1 h-[calc(100vh-140px)] min-h-0 space-y-3 pb-2">
       {/* Header Info */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-emerald-100/80 text-emerald-800 rounded-xl border border-emerald-200">
-            <ShoppingBag className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-                Simulator Biaya & Harga Jual Paperbag
-              </h2>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">
-                Pricelist 29
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Kalkulator instan HPP, cetak offset (Oliver/SM), die cut, perakitan tali kur, dan penawaran tas kertas
-            </p>
-          </div>
+      <div className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 shadow-2xs flex items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-2.5">
+          <ShoppingBag className="w-4 h-4 text-emerald-700" />
+          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider">
+            Paperbag (Tas Kertas)
+          </h2>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">
+            Pricelist 29
+          </span>
         </div>
-
-        <div className="flex items-center gap-2 self-end md:self-auto">
+        <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={() => setShowManualModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 transition-all cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
           >
-            <HelpCircle size={14} />
-            <span>Panduan Rumus</span>
+            <HelpCircle size={13} />
+            <span>Panduan</span>
           </button>
           <button
+            type="button"
             onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-all cursor-pointer shadow-2xs"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-all cursor-pointer shadow-2xs"
           >
             <RotateCcw size={13} />
-            <span>Reset Input</span>
+            <span>Reset</span>
           </button>
         </div>
       </div>
 
-
       {/* Main Grid: Form Input & Breakdown Table */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0 pb-1">
         {/* Kolom Kiri: Form Input (5 Kolom di LG) */}
-        <div className="lg:col-span-5 flex flex-col gap-4">
+        <div className="lg:col-span-5 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
               <Sliders size={15} className="text-emerald-700" />
@@ -277,15 +268,15 @@ export default function PaperbagSimulator({
                       onClick={() => setUkuran(opt)}
                       className={`py-2 px-3 rounded-xl text-xs font-bold border text-left transition-all cursor-pointer flex items-center justify-between ${
                         ukuran === opt
-                          ? 'bg-emerald-800 text-white border-emerald-800 shadow-2xs'
-                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                          ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
+                          : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
                       }`}
                     >
                       <div>
                         <span className="block text-xs font-bold">{spec.namaProduk}</span>
                         <span
                           className={`text-[10px] font-normal ${
-                            ukuran === opt ? 'text-emerald-200' : 'text-slate-600'
+                            ukuran === opt ? 'text-slate-900' : 'text-slate-600'
                           }`}
                         >
                           {spec.keterangan}
@@ -294,7 +285,7 @@ export default function PaperbagSimulator({
                       <span
                         className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md ${
                           ukuran === opt
-                            ? 'bg-emerald-700 text-white'
+                            ? 'bg-slate-300 text-slate-900'
                             : 'bg-slate-200 text-slate-700'
                         }`}
                       >
@@ -319,8 +310,8 @@ export default function PaperbagSimulator({
                     onClick={() => setFinishing(opt)}
                     className={`py-1.5 px-2.5 rounded-xl text-xs font-bold border text-left transition-all cursor-pointer ${
                       finishing === opt
-                        ? 'bg-emerald-800 text-white border-emerald-800 shadow-2xs'
-                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
+                        : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
                     }`}
                   >
                     {opt}
@@ -349,8 +340,8 @@ export default function PaperbagSimulator({
                     onClick={() => handleOplahSelect(optVal)}
                     className={`py-1.5 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
                       !isCustomOplah && oplah === optVal
-                        ? 'bg-emerald-800 text-white border-emerald-800 shadow-2xs'
-                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        ? 'border-slate-500 bg-slate-200 text-slate-900 shadow-xs ring-1 ring-slate-400'
+                        : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
                     }`}
                   >
                     {optVal.toLocaleString('id-ID')}
@@ -421,7 +412,7 @@ export default function PaperbagSimulator({
         </div>
 
         {/* Kolom Kanan: Rincian HPP (7 Kolom di LG) */}
-        <div className="lg:col-span-7 flex flex-col gap-4">
+        <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
           {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">

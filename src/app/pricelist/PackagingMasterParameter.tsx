@@ -2,8 +2,8 @@
 
 import React, { useState, useMemo } from 'react';
 import { RotateCcw, Package, Database, HelpCircle, Search, X, Box, Printer, Scissors, Layers, Sparkles } from 'lucide-react';
+import ThousandInput from '@/components/ThousandInput';
 import { PackagingMasterParams, DEFAULT_PACKAGING_PARAMS } from '@/lib/packaging-calculator';
-
 interface PackagingMasterParameterProps {
   customParams: PackagingMasterParams;
   setCustomParams: React.Dispatch<React.SetStateAction<PackagingMasterParams>>;
@@ -96,30 +96,38 @@ export default function PackagingMasterParameter({
             {suffix || (isCurrency ? ' Rp' : '')}
           </span>
         </div>
-        <div className="relative">
-          {isCurrency && (
-            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-600">
-              Rp
-            </span>
-          )}
-          <input
-            type="number"
+        {isCurrency ? (
+          <ThousandInput
             value={customParams[field] ?? 0}
-            onChange={(e) => handleChange(field, parseFloat(e.target.value))}
-            className={`w-full py-1.5 text-xs font-bold text-slate-800 rounded-md border focus:outline-none focus:ring-1 transition-all ${
-              isCurrency ? 'pl-8 pr-2.5' : 'px-2.5'
-            } ${
+            onValueChange={(val) => handleChange(field, val || 0)}
+            prefix="Rp"
+            className={`w-full py-1.5 px-2.5 text-xs font-bold text-slate-800 rounded-md border focus:outline-none focus:ring-1 transition-all text-right ${
               isFieldModified
                 ? 'border-amber-400 bg-amber-50/30 focus:border-amber-500 focus:ring-amber-500/30'
                 : 'border-slate-300 bg-slate-50/50 focus:border-emerald-500 focus:ring-emerald-500/30 focus:bg-white'
             }`}
           />
-          {suffix && (
-            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] font-medium text-slate-600">
-              {suffix}
-            </span>
-          )}
-        </div>
+        ) : (
+          <div className="relative">
+            <input
+              type="number"
+              value={customParams[field] ?? 0}
+              onChange={(e) => handleChange(field, parseFloat(e.target.value))}
+              className={`w-full py-1.5 px-2.5 text-xs font-bold text-slate-800 rounded-md border focus:outline-none focus:ring-1 transition-all ${
+                suffix ? 'pr-8' : ''
+              } ${
+                isFieldModified
+                  ? 'border-amber-400 bg-amber-50/30 focus:border-amber-500 focus:ring-amber-500/30'
+                  : 'border-slate-300 bg-slate-50/50 focus:border-emerald-500 focus:ring-emerald-500/30 focus:bg-white'
+              }`}
+            />
+            {suffix && (
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[11px] font-medium text-slate-600">
+                {suffix}
+              </span>
+            )}
+          </div>
+        )}
       </div>
     );
   };
