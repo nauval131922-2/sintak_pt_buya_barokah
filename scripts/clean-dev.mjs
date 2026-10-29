@@ -3,7 +3,7 @@ import path from 'node:path';
 import Database from 'better-sqlite3';
 
 const isAuto = process.argv.includes('--auto');
-const NEXT_THRESHOLD_MB = 500;
+const NEXT_THRESHOLD_MB = 2000;
 const WAL_THRESHOLD_MB = 20;
 
 function isDirLargerThan(dir, maxBytes, state = { current: 0 }) {
@@ -41,7 +41,7 @@ const maxWalMb = Math.max(...dbFiles.map(getWalSizeMb));
 const walExceeds = maxWalMb > WAL_THRESHOLD_MB;
 
 if (isAuto && !nextExceeds && !walExceeds) {
-  console.log('⚡ [SINTAK predev] Cache `.next` & WAL SQLite masih dalam batas optimal (< 500 MB). Menyalakan dev server...');
+  console.log(`⚡ [SINTAK predev] Cache \`.next\` (< ${NEXT_THRESHOLD_MB} MB) & WAL SQLite (< ${WAL_THRESHOLD_MB} MB) optimal. Menyalakan dev server...`);
   process.exit(0);
 }
 

@@ -150,13 +150,21 @@ const db = {
 
 export default db;
 
-// Auto-initialize schema on startup (once only)
+// Auto-initialize schema on startup only for fresh databases (or when explicitly requested)
 // globalThis guard persists across Turbopack HMR reloads
 const INIT_KEY = '__SINTAK_DB_INITIALIZED';
 const g = globalThis as Record<string, unknown>;
 if (!g[INIT_KEY]) {
   g[INIT_KEY] = (async () => {
     try {
+      // If DB already has core tables, skip heavy schema check on runtime/dev startup
+      if (process.env.AUTO_INIT_SCHEMA !== 'true') {
+        const check = await db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users' LIMIT 1;");
+        if (check.rows && check.rows.length > 0) {
+          return;
+        }
+      }
+      // Exception: Lazy load schema only on fresh DB to prevent bundling 1900-line DDL and circular dependency
       const { initSchema } = await import('./schema');
       await initSchema(db);
     } catch (e) {

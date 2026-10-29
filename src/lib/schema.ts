@@ -1342,24 +1342,11 @@ export async function initSchema(db: any) {
   // 4. SMART AUTOMATED ACTIVITY LOG TRIGGERS
   await initDynamicTriggers(db);
 
-  // 5. FTS5 Search Initialization (Global Search Version incl. ID)
+  // 5. FTS5 Search Initialization (Safe IF NOT EXISTS, no startup DROP)
   try {
-      // Force recreation of FTS5 tables to ensure structure matches triggers
-      await db.execute(`DROP TABLE IF EXISTS bahan_baku_fts`);
-      await db.execute(`DROP TABLE IF EXISTS barang_jadi_fts`);
-      await db.execute(`DROP TABLE IF EXISTS orders_fts`);
-      await db.execute(`DROP TABLE IF EXISTS sales_orders_fts`);
-      await db.execute(`DROP TABLE IF EXISTS sales_reports_fts`);
-      await db.execute(`DROP TABLE IF EXISTS employees_fts`);
-      await db.execute(`DROP TABLE IF EXISTS sph_out_fts`);
-      await db.execute(`DROP TABLE IF EXISTS hpp_kalkulasi_fts`);
-      await db.execute(`DROP TABLE IF EXISTS purchase_orders_fts`);
-      await db.execute(`DROP TABLE IF EXISTS produksi_selesai_fts`);
-      await db.execute(`DROP TABLE IF EXISTS jurnal_harian_produksi_fts`);
-
       // --- FTS5 FOR BAHAN BAKU ---
       await db.execute(`
-         CREATE VIRTUAL TABLE bahan_baku_fts USING fts5(
+         CREATE VIRTUAL TABLE IF NOT EXISTS bahan_baku_fts USING fts5(
            id, nama_barang, nama_prd, kd_barang, faktur, 
            faktur_prd, faktur_aktifitas, kd_cabang, kd_gudang, 
            status, keterangan, fkt_hasil, aktifitas, 
@@ -1370,7 +1357,7 @@ export async function initSchema(db: any) {
 
       // --- FTS5 FOR BARANG JADI ---
       await db.execute(`
-         CREATE VIRTUAL TABLE barang_jadi_fts USING fts5(
+         CREATE VIRTUAL TABLE IF NOT EXISTS barang_jadi_fts USING fts5(
            id, nama_barang, nama_prd, kd_barang, faktur, 
            faktur_prd, faktur_so, kd_pelanggan, keterangan, username,
            tokenize='unicode61 remove_diacritics 1'
@@ -1379,7 +1366,7 @@ export async function initSchema(db: any) {
 
       // --- FTS5 FOR ORDERS ---
       await db.execute(`
-         CREATE VIRTUAL TABLE orders_fts USING fts5(
+         CREATE VIRTUAL TABLE IF NOT EXISTS orders_fts USING fts5(
            id, faktur, nama_prd, nama_pelanggan, satuan,
            tokenize='unicode61 remove_diacritics 1'
          );
@@ -1387,7 +1374,7 @@ export async function initSchema(db: any) {
 
       // --- FTS5 FOR SALES ORDERS ---
       await db.execute(`
-         CREATE VIRTUAL TABLE sales_orders_fts USING fts5(
+         CREATE VIRTUAL TABLE IF NOT EXISTS sales_orders_fts USING fts5(
            id, faktur, nama_pelanggan, kd_pelanggan, nama_prd, kd_barang, 
            faktur_sph, faktur_prd, keterangan,
            tokenize='unicode61 remove_diacritics 1'
@@ -1396,19 +1383,19 @@ export async function initSchema(db: any) {
 
       // --- FTS5 FOR EMPLOYEES ---
       await db.execute(`
-         CREATE VIRTUAL TABLE employees_fts USING fts5(
+         CREATE VIRTUAL TABLE IF NOT EXISTS employees_fts USING fts5(
            id, name, position, department, employee_no,
            tokenize='unicode61 remove_diacritics 1'
          );
       `);
       await db.execute(`
-         CREATE VIRTUAL TABLE hpp_kalkulasi_fts USING fts5(
+         CREATE VIRTUAL TABLE IF NOT EXISTS hpp_kalkulasi_fts USING fts5(
            id, nama_order, keterangan,
            tokenize='unicode61 remove_diacritics 1'
          );
       `);
       await db.execute(`
-         CREATE VIRTUAL TABLE sales_reports_fts USING fts5(
+         CREATE VIRTUAL TABLE IF NOT EXISTS sales_reports_fts USING fts5(
            id, faktur, kd_pelanggan, kd_barang, faktur_so, faktur_prd, 
            nama_prd, nama_pelanggan, dati_2, gol_barang, keterangan_so, recid,
            tokenize='unicode61 remove_diacritics 1'
@@ -1417,7 +1404,7 @@ export async function initSchema(db: any) {
 
       // --- FTS5 FOR SPH OUT ---
       await db.execute(`
-         CREATE VIRTUAL TABLE sph_out_fts USING fts5(
+         CREATE VIRTUAL TABLE IF NOT EXISTS sph_out_fts USING fts5(
             id, faktur, kd_pelanggan, barang, faktur_so,
             tokenize='unicode61 remove_diacritics 1'
          );
@@ -1425,7 +1412,7 @@ export async function initSchema(db: any) {
 
       // --- FTS5 FOR PURCHASE ORDERS ---
       await db.execute(`
-         CREATE VIRTUAL TABLE purchase_orders_fts USING fts5(
+         CREATE VIRTUAL TABLE IF NOT EXISTS purchase_orders_fts USING fts5(
             id, faktur, kd_supplier, faktur_pr, faktur_sph, status,
             tokenize='unicode61 remove_diacritics 1'
          );
@@ -1433,7 +1420,7 @@ export async function initSchema(db: any) {
 
       // --- FTS5 FOR PRODUKSI SELESAI ---
       await db.execute(`
-         CREATE VIRTUAL TABLE produksi_selesai_fts USING fts5(
+         CREATE VIRTUAL TABLE IF NOT EXISTS produksi_selesai_fts USING fts5(
             id, faktur, nama_prd, kd_pelanggan, regu, username,
             tokenize='unicode61 remove_diacritics 1'
          );
@@ -1441,18 +1428,17 @@ export async function initSchema(db: any) {
 
       // --- FTS5 FOR JURNAL HARIAN PRODUKSI ---
       await db.execute(`
-         CREATE VIRTUAL TABLE jurnal_harian_produksi_fts USING fts5(
+         CREATE VIRTUAL TABLE IF NOT EXISTS jurnal_harian_produksi_fts USING fts5(
             id, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, bagian, shift, no_order_2, nama_order_2, jenis_pekerjaan_2,
             tokenize='unicode61 remove_diacritics 1'
          );
       `);
 
-      // Background rebuild of index if empty or structure changed
+      // One-time initial seeding only if FTS table is completely empty
       try {
         // Sync Bahan Baku
-        const ftsCountBB = await db.execute("SELECT COUNT(*) as count FROM bahan_baku_fts");
-        const bbCount = await db.execute("SELECT COUNT(*) as count FROM bahan_baku");
-        if (Number(ftsCountBB.rows[0].count) < Number(bbCount.rows[0].count)) {
+        const bbHasData = (await db.execute("SELECT 1 FROM bahan_baku_fts LIMIT 1;")).rows.length > 0;
+        if (!bbHasData) {
            await db.batch([
               "DELETE FROM bahan_baku_fts",
               `INSERT INTO bahan_baku_fts(id, rowid, nama_barang, nama_prd, kd_barang, faktur, faktur_prd, faktur_aktifitas, kd_cabang, kd_gudang, status, keterangan, fkt_hasil, aktifitas, username, kd_pelanggan, recid)
@@ -1461,9 +1447,8 @@ export async function initSchema(db: any) {
         }
 
         // Sync Barang Jadi
-        const ftsCountBJ = await db.execute("SELECT COUNT(*) as count FROM barang_jadi_fts");
-        const bjCount = await db.execute("SELECT COUNT(*) as count FROM barang_jadi");
-        if (Number(ftsCountBJ.rows[0].count) < Number(bjCount.rows[0].count)) {
+        const bjHasData = (await db.execute("SELECT 1 FROM barang_jadi_fts LIMIT 1;")).rows.length > 0;
+        if (!bjHasData) {
            await db.batch([
               "DELETE FROM barang_jadi_fts",
               `INSERT INTO barang_jadi_fts(id, rowid, nama_barang, nama_prd, kd_barang, faktur, faktur_prd)
@@ -1472,9 +1457,8 @@ export async function initSchema(db: any) {
         }
 
         // Sync Orders
-        const ftsCountORD = await db.execute("SELECT COUNT(*) as count FROM orders_fts");
-        const ordCount = await db.execute("SELECT COUNT(*) as count FROM orders");
-        if (Number(ftsCountORD.rows[0].count) < Number(ordCount.rows[0].count)) {
+        const ordHasData = (await db.execute("SELECT 1 FROM orders_fts LIMIT 1;")).rows.length > 0;
+        if (!ordHasData) {
            await db.batch([
               "DELETE FROM orders_fts",
               `INSERT INTO orders_fts(id, rowid, faktur, nama_prd, nama_pelanggan, satuan)
@@ -1483,9 +1467,8 @@ export async function initSchema(db: any) {
         }
 
         // Sync Sales Orders
-        const ftsCountSO = await db.execute("SELECT COUNT(*) as count FROM sales_orders_fts");
-        const soCount = await db.execute("SELECT COUNT(*) as count FROM sales_orders");
-        if (Number(ftsCountSO.rows[0].count) < Number(soCount.rows[0].count)) {
+        const soHasData = (await db.execute("SELECT 1 FROM sales_orders_fts LIMIT 1;")).rows.length > 0;
+        if (!soHasData) {
            await db.batch([
               "DELETE FROM sales_orders_fts",
               `INSERT INTO sales_orders_fts(id, rowid, faktur, nama_pelanggan, kd_pelanggan, nama_prd, kd_barang, faktur_sph, faktur_prd, keterangan)
@@ -1494,9 +1477,8 @@ export async function initSchema(db: any) {
         }
 
         // Sync Employees
-        const ftsCountEMP = await db.execute("SELECT COUNT(*) as count FROM employees_fts");
-        const empCount = await db.execute("SELECT COUNT(*) as count FROM employees");
-        if (Number(ftsCountEMP.rows[0].count) < Number(empCount.rows[0].count)) {
+        const empHasData = (await db.execute("SELECT 1 FROM employees_fts LIMIT 1;")).rows.length > 0;
+        if (!empHasData) {
            await db.batch([
               "DELETE FROM employees_fts",
               `INSERT INTO employees_fts(id, rowid, name, position, department, employee_no)
@@ -1505,9 +1487,8 @@ export async function initSchema(db: any) {
         }
 
         // Sync HPP Kalkulasi
-        const ftsCountHPP = await db.execute("SELECT COUNT(*) as count FROM hpp_kalkulasi_fts");
-        const hppCount = await db.execute("SELECT COUNT(*) as count FROM hpp_kalkulasi");
-        if (Number(ftsCountHPP.rows[0].count) < Number(hppCount.rows[0].count)) {
+        const hppHasData = (await db.execute("SELECT 1 FROM hpp_kalkulasi_fts LIMIT 1;")).rows.length > 0;
+        if (!hppHasData) {
            await db.batch([
               "DELETE FROM hpp_kalkulasi_fts",
               `INSERT INTO hpp_kalkulasi_fts(id, rowid, nama_order, keterangan)
@@ -1516,9 +1497,8 @@ export async function initSchema(db: any) {
         }
 
         // Sync Sales Reports
-        const ftsCountSR = await db.execute("SELECT COUNT(*) as count FROM sales_reports_fts");
-        const srCount = await db.execute("SELECT COUNT(*) as count FROM sales_reports");
-        if (Number(ftsCountSR.rows[0].count) < Number(srCount.rows[0].count)) {
+        const srHasData = (await db.execute("SELECT 1 FROM sales_reports_fts LIMIT 1;")).rows.length > 0;
+        if (!srHasData) {
            await db.batch([
               "DELETE FROM sales_reports_fts",
               `INSERT INTO sales_reports_fts(id, rowid, faktur, kd_pelanggan, kd_barang, faktur_so, faktur_prd, nama_prd, nama_pelanggan, dati_2, gol_barang, keterangan_so, recid)
@@ -1527,9 +1507,8 @@ export async function initSchema(db: any) {
         }
 
         // Sync SPH Out
-        const ftsCountSPH = await db.execute("SELECT COUNT(*) as count FROM sph_out_fts");
-        const sphCount = await db.execute("SELECT COUNT(*) as count FROM sph_out");
-        if (Number(ftsCountSPH.rows[0].count) < Number(sphCount.rows[0].count)) {
+        const sphHasData = (await db.execute("SELECT 1 FROM sph_out_fts LIMIT 1;")).rows.length > 0;
+        if (!sphHasData) {
            await db.batch([
               "DELETE FROM sph_out_fts",
               `INSERT INTO sph_out_fts(id, rowid, faktur, kd_pelanggan, barang, faktur_so)
@@ -1538,9 +1517,8 @@ export async function initSchema(db: any) {
         }
 
         // Sync Purchase Orders
-        const ftsCountPO = await db.execute("SELECT COUNT(*) as count FROM purchase_orders_fts");
-        const poCount = await db.execute("SELECT COUNT(*) as count FROM purchase_orders");
-        if (Number(ftsCountPO.rows[0].count) < Number(poCount.rows[0].count)) {
+        const poHasData = (await db.execute("SELECT 1 FROM purchase_orders_fts LIMIT 1;")).rows.length > 0;
+        if (!poHasData) {
            await db.batch([
               "DELETE FROM purchase_orders_fts",
               `INSERT INTO purchase_orders_fts(id, rowid, faktur, kd_supplier, faktur_pr, faktur_sph, status)
@@ -1549,9 +1527,8 @@ export async function initSchema(db: any) {
         }
 
         // Sync Produksi Selesai
-        const ftsCountPS = await db.execute("SELECT COUNT(*) as count FROM produksi_selesai_fts");
-        const psCount = await db.execute("SELECT COUNT(*) as count FROM produksi_selesai");
-        if (Number(ftsCountPS.rows[0].count) < Number(psCount.rows[0].count)) {
+        const psHasData = (await db.execute("SELECT 1 FROM produksi_selesai_fts LIMIT 1;")).rows.length > 0;
+        if (!psHasData) {
            await db.batch([
               "DELETE FROM produksi_selesai_fts",
               `INSERT INTO produksi_selesai_fts(id, rowid, faktur, nama_prd, kd_pelanggan, regu, username)
@@ -1560,9 +1537,8 @@ export async function initSchema(db: any) {
         }
 
         // Sync Jurnal Harian Produksi
-        const ftsCountJHP = await db.execute("SELECT COUNT(*) as count FROM jurnal_harian_produksi_fts");
-        const jhpCount = await db.execute("SELECT COUNT(*) as count FROM jurnal_harian_produksi WHERE deleted_at IS NULL");
-        if (Number(ftsCountJHP.rows[0].count) < Number(jhpCount.rows[0].count)) {
+        const jhpHasData = (await db.execute("SELECT 1 FROM jurnal_harian_produksi_fts LIMIT 1;")).rows.length > 0;
+        if (!jhpHasData) {
            await db.batch([
               "DELETE FROM jurnal_harian_produksi_fts",
               `INSERT INTO jurnal_harian_produksi_fts(id, rowid, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, bagian, shift, no_order_2, nama_order_2, jenis_pekerjaan_2)
