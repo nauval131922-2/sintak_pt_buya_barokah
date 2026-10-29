@@ -45,6 +45,18 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'laporan-pekerjaan-2026-10-29': entry({
+    pageKey: 'laporan-pekerjaan',
+    title: 'Laporan Pekerjaan',
+    permissionKeys: ['produksi_laporan_pekerjaan'],
+    sortDate: '2026-10-29',
+    date: '29 Okt 2026',
+    version: '2026-10-29-1',
+    items: [
+      "Penambahan indikator visual loading spinner dan teks 'Mengekspor...' pada tombol Export Excel di modal Rincian Pekerjaan",
+      "Pencegahan klik ganda (disable otomatis) saat proses perakitan berkas Excel sedang berlangsung di browser",
+    ],
+  }),
   'laporan-pekerjaan-2026-10-28': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',
