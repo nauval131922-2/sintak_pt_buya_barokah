@@ -262,47 +262,51 @@ export default function UndanganMasterParameter({
         )}
       </div>
 
-      {/* Grid 2 Kolom Seimbang */}
+      {/* Grid 2 Kolom Seimbang (Bebas Gap) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        {/* Card 1: Bahan & kertas */}
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('bg-emerald-100 text-emerald-800', 'Bahan', Package, 'text-emerald-600', '1. Bahan & Kertas'),
-          [UNDANGAN_GROUPS[0]],
-          <p className="text-[10px] text-slate-500">
-            Bahan file: Art Carton 230 gsm (opsi: {UNDANGAN_BAHAN_OPTIONS.join(', ')}; gramatur {UNDANGAN_GRAMATUR_OPTIONS.join(', ')}). Up: Oliver 5%, Print 0%.
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {/* Card 1: Bahan & kertas */}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('bg-emerald-100 text-emerald-800', 'Bahan', Package, 'text-emerald-600', '1. Bahan & Kertas'),
+            [UNDANGAN_GROUPS[0]],
+            <p className="text-[10px] text-slate-500">
+              Bahan file: Art Carton 230 gsm (opsi: {UNDANGAN_BAHAN_OPTIONS.join(', ')}; gramatur {UNDANGAN_GRAMATUR_OPTIONS.join(', ')}). Up: Oliver 5%, Print 0%.
+            </p>
+          )}
 
-        {/* Card 2: Cetak */}
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('bg-blue-100 text-blue-800', 'Cetak', Printer, 'text-blue-600', '2. Cetak: Desain, Print, Plate'),
-          [UNDANGAN_GROUPS[1]],
-          <p className="text-[10px] text-slate-500">
-            Plate Oliver Rp 45.000/plat (jml = warna×muka), min Rp 90.000/plat, drek over Rp 40 (Q−1000). Print Inter: tanpa plate, R×tarif.
-          </p>
-        )}
+          {/* Card 3: OPP, label & jasa */}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('bg-sky-100 text-sky-800', 'Jasa & OPP', Layers, 'text-sky-600', '3. OPP, Label & Jasa'),
+            [UNDANGAN_GROUPS[2]],
+            <p className="text-[10px] text-slate-500">
+              Label + print label masuk total hanya bila AT26=√. Lipat &amp; pasang plastik ikut UMR (nunggu toggle di simulator, default X=0).
+            </p>
+          )}
+        </div>
 
-        {/* Card 3: OPP, label & jasa */}
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('bg-sky-100 text-sky-800', 'Jasa & OPP', Layers, 'text-sky-600', '3. OPP, Label & Jasa'),
-          [UNDANGAN_GROUPS[2]],
-          <p className="text-[10px] text-slate-500">
-            Label + print label masuk total hanya bila AT26=√. Lipat &amp; pasang plastik ikut UMR (nunggu toggle di simulator, default X=0).
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {/* Card 2: Cetak */}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('bg-blue-100 text-blue-800', 'Cetak', Printer, 'text-blue-600', '2. Cetak: Desain, Print, Plate'),
+            [UNDANGAN_GROUPS[1]],
+            <p className="text-[10px] text-slate-500">
+              Plate Oliver Rp 45.000/plat (jml = warna×muka), min Rp 90.000/plat, drek over Rp 40 (Q−1000). Print Inter: tanpa plate, R×tarif.
+            </p>
+          )}
 
-        {/* Card 4: Finishing & laba */}
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('bg-amber-100 text-amber-800', 'Finishing & Laba', Info, 'text-amber-600', '4. Sisir, Laminasi, Kardus & Laba'),
-          [UNDANGAN_GROUPS[3]],
-          <p className="text-[10px] text-slate-500">
-            Sisir min Rp 7.000. Laminasi/UV bila dipilih (min Rp 50.000). Laba 30% → final ROUNDUP puluhan.
-          </p>
-        )}
+          {/* Card 4: Finishing & laba */}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('bg-amber-100 text-amber-800', 'Finishing & Laba', Info, 'text-amber-600', '4. Sisir, Laminasi, Kardus & Laba'),
+            [UNDANGAN_GROUPS[3]],
+            <p className="text-[10px] text-slate-500">
+              Sisir min Rp 7.000. Laminasi/UV bila dipilih (min Rp 50.000). Laba 30% → final ROUNDUP puluhan.
+            </p>
+          )}
+        </div>
       </div>
 
       {showManualModal && (

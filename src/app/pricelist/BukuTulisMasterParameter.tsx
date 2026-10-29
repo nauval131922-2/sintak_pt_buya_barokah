@@ -313,34 +313,38 @@ export default function BukuTulisMasterParameter({
         )}
       </div>
 
-      {/* Grid 2 Kolom Seimbang */}
+      {/* Grid 2 Kolom Seimbang (Bebas Gap) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-emerald-900 bg-emerald-100', 'Kertas', FileText, 'text-emerald-700', '1. Bahan Kertas & Insheet'),
-          KERTAS_INSHEET_GROUPS
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-emerald-900 bg-emerald-100', 'Kertas', FileText, 'text-emerald-700', '1. Bahan Kertas & Insheet'),
+            KERTAS_INSHEET_GROUPS
+          )}
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-blue-900 bg-blue-100', 'Mesin', Printer, 'text-blue-600', '2. Cetak & Desain'),
-          CETAK_DESAIN_GROUPS
-        )}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-emerald-900 bg-emerald-100', 'Finishing', Sliders, 'text-emerald-700', '3. Finishing & Packing'),
+            FINISHING_GROUPS
+          )}
+        </div>
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-emerald-900 bg-emerald-100', 'Finishing', Sliders, 'text-emerald-700', '3. Finishing & Packing'),
-          FINISHING_GROUPS
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-blue-900 bg-blue-100', 'Mesin', Printer, 'text-blue-600', '2. Cetak & Desain'),
+            CETAK_DESAIN_GROUPS
+          )}
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-amber-900 bg-amber-100', 'Margin', Layers, 'text-amber-600', '4. Margin & Nego Standar'),
-          MARGIN_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Margin 20% &amp; nego 4% sesuai PRICELIST 2026 sheet HARGA JULI 2026. HPP dihitung per pcs dengan pembulatan ke kelipatan Rp 10.
-          </p>
-        )}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-amber-900 bg-amber-100', 'Margin', Layers, 'text-amber-600', '4. Margin & Nego Standar'),
+            MARGIN_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Margin 20% &amp; nego 4% sesuai PRICELIST 2026 sheet HARGA JULI 2026. HPP dihitung per pcs dengan pembulatan ke kelipatan Rp 10.
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Manual Modal */}

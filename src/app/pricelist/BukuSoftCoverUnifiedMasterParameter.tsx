@@ -319,54 +319,58 @@ export default function BukuSoftCoverUnifiedMasterParameter({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        {cardShell(
-          'bg-sky-50/40 border-sky-200',
-          cardHeader('text-sky-900 bg-sky-200/80', 'Cover', Printer, 'text-sky-600', '1. Cover'),
-          COVER_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Cover Print Inter: Rp {customParams.tarifPrintCoverA3.toLocaleString('id-ID')}/lbr A3+. Cover Oliver: Harga Per kg + Plate mengikuti Master.
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-sky-50/40 border-sky-200',
+            cardHeader('text-sky-900 bg-sky-200/80', 'Cover', Printer, 'text-sky-600', '1. Cover'),
+            COVER_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Cover Print Inter: Rp {customParams.tarifPrintCoverA3.toLocaleString('id-ID')}/lbr A3+. Cover Oliver: Harga Per kg + Plate mengikuti Master.
+            </p>
+          )}
 
-        {cardShell(
-          'bg-blue-50/40 border-blue-200',
-          cardHeader('text-blue-900 bg-blue-200/80', 'Isi', BookCopy, 'text-blue-600', '2. Isi HVS'),
-          ISI_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Plate/Min/Drek hanya untuk 17.
-          </p>
-        )}
+          {cardShell(
+            'bg-violet-50/40 border-violet-200',
+            cardHeader('text-violet-900 bg-violet-200/80', 'Jasa', Scissors, 'text-violet-600', '3. Jasa, Kawat & Packing'),
+            JASA_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Lipat, Sisir, Susun, Stiching, Sring & Packing mengikuti Master dan Catatan.
+            </p>
+          )}
 
-        {cardShell(
-          'bg-violet-50/40 border-violet-200',
-          cardHeader('text-violet-900 bg-violet-200/80', 'Jasa', Scissors, 'text-violet-600', '3. Jasa, Kawat & Packing'),
-          JASA_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Lipat, Sisir, Susun, Stiching, Sring & Packing mengikuti Master dan Catatan.
-          </p>
-        )}
-
-        {cardShell(
-          'bg-amber-50/40 border-amber-200',
-          cardHeader('text-amber-900 bg-amber-200/80', 'Finishing', Layers, 'text-amber-600', '4. Bending, Laminasi & Laba'),
-          FINISH_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Min Finishing Rp {customParams.minFinishing.toLocaleString('id-ID')}, Min Bending Rp {customParams.minBending.toLocaleString('id-ID')}. Laba {customParams.marginDefaultPct}%, dibulatkan. Tanpa Nego.
-          </p>
-        )}
-
-        {/* 5. Lanjutan — terbuka seperti kartu lain */}
-        {rareVisible && (
-          <div className="bg-slate-50/60 border border-slate-200 rounded-xl p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-600 bg-slate-200/80 px-2 py-0.5 rounded">Lanjutan</span>
-              <h3 className="text-xs font-bold text-slate-700">5. Target & Harga Min</h3>
+          {/* 5. Lanjutan — terbuka seperti kartu lain */}
+          {rareVisible && (
+            <div className="bg-slate-50/60 border border-slate-200 rounded-xl p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-600 bg-slate-200/80 px-2 py-0.5 rounded">Lanjutan</span>
+                <h3 className="text-xs font-bold text-slate-700">5. Target & Harga Min</h3>
+              </div>
+              <div className="flex flex-col gap-2.5">
+                {RARE_GROUPS.map(subGroup)}
+              </div>
             </div>
-            <div className="flex flex-col gap-2.5">
-              {RARE_GROUPS.map(subGroup)}
-            </div>
-          </div>
-        )}
+          )}
+        </div>
+
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-blue-50/40 border-blue-200',
+            cardHeader('text-blue-900 bg-blue-200/80', 'Isi', BookCopy, 'text-blue-600', '2. Isi HVS'),
+            ISI_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Plate/Min/Drek hanya untuk 17.
+            </p>
+          )}
+
+          {cardShell(
+            'bg-amber-50/40 border-amber-200',
+            cardHeader('text-amber-900 bg-amber-200/80', 'Finishing', Layers, 'text-amber-600', '4. Bending, Laminasi & Laba'),
+            FINISH_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Min Finishing Rp {customParams.minFinishing.toLocaleString('id-ID')}, Min Bending Rp {customParams.minBending.toLocaleString('id-ID')}. Laba {customParams.marginDefaultPct}%, dibulatkan. Tanpa Nego.
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Modal Panduan & Rumus */}

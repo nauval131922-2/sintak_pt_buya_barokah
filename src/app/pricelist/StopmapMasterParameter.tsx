@@ -313,43 +313,47 @@ export default function StopmapMasterParameter({
         )}
       </div>
 
-      {/* Grid 2 Kolom Seimbang */}
+      {/* Grid 2 Kolom Seimbang (Bebas Gap) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-emerald-900 bg-emerald-100', 'Bahan', DollarSign, 'text-emerald-600', '1. Standar Upah & Bahan Kertas'),
-          CARD1_GROUPS
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-emerald-900 bg-emerald-100', 'Bahan', DollarSign, 'text-emerald-600', '1. Standar Upah & Bahan Kertas'),
+            CARD1_GROUPS
+          )}
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-blue-900 bg-blue-100', 'A4', Printer, 'text-blue-600', '2. Cetak Digital Print Inter (A4)'),
-          CARD2_GROUPS
-        )}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-indigo-900 bg-indigo-100', 'Folio', Printer, 'text-indigo-600', '3. Cetak Offset Oliver 4W'),
+            CARD3_GROUPS
+          )}
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-indigo-900 bg-indigo-100', 'Folio', Printer, 'text-indigo-600', '3. Cetak Offset Oliver 4W'),
-          CARD3_GROUPS
-        )}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-amber-900 bg-amber-100', 'Finishing', Layers, 'text-amber-600', '5. Jasa Finishing Tenaga UMR'),
+            CARD5_GROUPS
+          )}
+        </div>
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-purple-900 bg-purple-100', 'Kantong', Scissors, 'text-purple-600', '4. Bahan Kupingan / Kantong'),
-          CARD4_GROUPS
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-blue-900 bg-blue-100', 'A4', Printer, 'text-blue-600', '2. Cetak Digital Print Inter (A4)'),
+            CARD2_GROUPS
+          )}
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-amber-900 bg-amber-100', 'Finishing', Layers, 'text-amber-600', '5. Jasa Finishing Tenaga UMR'),
-          CARD5_GROUPS
-        )}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-purple-900 bg-purple-100', 'Kantong', Scissors, 'text-purple-600', '4. Bahan Kupingan / Kantong'),
+            CARD4_GROUPS
+          )}
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-rose-900 bg-rose-100', 'Kemasan', PackageCheck, 'text-rose-600', '6. Laminasi & Pengemasan'),
-          CARD6_GROUPS
-        )}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-rose-900 bg-rose-100', 'Kemasan', PackageCheck, 'text-rose-600', '6. Laminasi & Pengemasan'),
+            CARD6_GROUPS
+          )}
+        </div>
       </div>
 
       {/* Modal Manual Pengguna & Pemetaan Sumber Excel */}

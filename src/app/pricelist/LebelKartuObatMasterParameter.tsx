@@ -257,37 +257,41 @@ export default function LebelKartuObatMasterParameter({
         )}
       </div>
 
-      {/* Grid 2 Kolom Seimbang */}
+      {/* Grid 2 Kolom Seimbang (Bebas Gap) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        {/* Card 1: Kertas & Desain */}
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('bg-blue-100 text-blue-800', 'Kertas & Desain', Printer, 'text-blue-600', '1. Kertas & Desain'),
-          [LEBEL_KARTU_OBAT_GROUPS[0]],
-          <p className="text-[10px] text-slate-500">
-            HVS 70 gsm Folio 21,5×33 cm Rp 15.700/kg +5% (rim Rp 40.936/500), insheet 30 lbr polos (tanpa koefisien), desain Rp 10.000/order.
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {/* Card 1: Kertas & Desain */}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('bg-blue-100 text-blue-800', 'Kertas & Desain', Printer, 'text-blue-600', '1. Kertas & Desain'),
+            [LEBEL_KARTU_OBAT_GROUPS[0]],
+            <p className="text-[10px] text-slate-500">
+              HVS 70 gsm Folio 21,5×33 cm Rp 15.700/kg +5% (rim Rp 40.936/500), insheet 30 lbr polos (tanpa koefisien), desain Rp 10.000/order.
+            </p>
+          )}
 
-        {/* Card 2: Cetak */}
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('bg-sky-100 text-sky-800', 'Plate, Cetak & Sisir', Scissors, 'text-sky-600', '2. Plate, Cetak & Sisir'),
-          [LEBEL_KARTU_OBAT_GROUPS[1]],
-          <p className="text-[10px] text-slate-500">
-            Plate Rp 10.000×(warna×muka) — Rp 0 saat ONGKOS CETAK. Over = P−500 (Rp 30×plat). Sisir (Q/500)×Rp 10.000 hanya saat finishing SISIR.
-          </p>
-        )}
+          {/* Card 3: Margin */}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('bg-amber-100 text-amber-800', 'Margin', Layers, 'text-amber-600', '3. Margin Standar'),
+            [LEBEL_KARTU_OBAT_GROUPS[2]],
+            <p className="text-[10px] text-slate-500">
+              Margin 30% dari HPP per rim, harga dibulatkan ke puluhan. Excel tidak punya kolom nego — nego dihapus.
+            </p>
+          )}
+        </div>
 
-        {/* Card 3: Margin */}
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('bg-amber-100 text-amber-800', 'Margin', Layers, 'text-amber-600', '3. Margin Standar'),
-          [LEBEL_KARTU_OBAT_GROUPS[2]],
-          <p className="text-[10px] text-slate-500">
-            Margin 30% dari HPP per rim, harga dibulatkan ke puluhan. Excel tidak punya kolom nego — nego dihapus.
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {/* Card 2: Cetak */}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('bg-sky-100 text-sky-800', 'Plate, Cetak & Sisir', Scissors, 'text-sky-600', '2. Plate, Cetak & Sisir'),
+            [LEBEL_KARTU_OBAT_GROUPS[1]],
+            <p className="text-[10px] text-slate-500">
+              Plate Rp 10.000×(warna×muka) — Rp 0 saat ONGKOS CETAK. Over = P−500 (Rp 30×plat). Sisir (Q/500)×Rp 10.000 hanya saat finishing SISIR.
+            </p>
+          )}
+        </div>
       </div>
 
       {showManualModal && (

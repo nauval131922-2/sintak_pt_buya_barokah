@@ -282,25 +282,29 @@ export default function NotaMasterParameter({
         )}
       </div>
 
-      {/* Grid 2 Kolom Seimbang */}
+      {/* Grid 2 Kolom Seimbang (Bebas Gap) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-emerald-900 bg-emerald-100', 'Kertas', FileText, 'text-emerald-700', '1. Bahan Kertas Nota (HVS 70 & NCR 55)'),
-          KERTAS_NOTA_GROUPS
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-emerald-900 bg-emerald-100', 'Kertas', FileText, 'text-emerald-700', '1. Bahan Kertas Nota (HVS 70 & NCR 55)'),
+            KERTAS_NOTA_GROUPS
+          )}
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-blue-900 bg-blue-100', 'Mesin', Printer, 'text-blue-600', '2. Mesin Cetak Toko / Ryobi'),
-          MESIN_CETAK_GROUPS
-        )}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-amber-900 bg-amber-100', 'Jilid', Layers, 'text-amber-600', '3. Ongkos Jilid & Finishing'),
+            JILID_FINISHING_GROUPS
+          )}
+        </div>
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-amber-900 bg-amber-100', 'Jilid', Layers, 'text-amber-600', '3. Ongkos Jilid & Finishing'),
-          JILID_FINISHING_GROUPS
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-blue-900 bg-blue-100', 'Mesin', Printer, 'text-blue-600', '2. Mesin Cetak Toko / Ryobi'),
+            MESIN_CETAK_GROUPS
+          )}
+        </div>
       </div>
 
       {/* Modal Manual Pengguna Master Parameter */}

@@ -286,31 +286,35 @@ export default function BrosurMasterParameter({
         )}
       </div>
 
-      {/* Grid 2 Kolom Seimbang */}
+      {/* Grid 2 Kolom Seimbang (Bebas Gap) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-emerald-900 bg-emerald-100', 'Kertas', FileText, 'text-emerald-700', '1. Kertas Art Paper & Print Inter'),
-          KERTAS_PRINT_GROUPS
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-emerald-900 bg-emerald-100', 'Kertas', FileText, 'text-emerald-700', '1. Kertas Art Paper & Print Inter'),
+            KERTAS_PRINT_GROUPS
+          )}
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-blue-900 bg-blue-100', 'Mesin', Printer, 'text-blue-600', '2. Mesin Cetak Offset Oliver'),
-          OFFSET_OLIVER_GROUPS
-        )}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-emerald-900 bg-emerald-100', 'Finishing', Sliders, 'text-emerald-700', '3. Finishing Sisir, Packing & Laminasi'),
+            FINISHING_GROUPS
+          )}
+        </div>
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-emerald-900 bg-emerald-100', 'Finishing', Sliders, 'text-emerald-700', '3. Finishing Sisir, Packing & Laminasi'),
-          FINISHING_GROUPS
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-blue-900 bg-blue-100', 'Mesin', Printer, 'text-blue-600', '2. Mesin Cetak Offset Oliver'),
+            OFFSET_OLIVER_GROUPS
+          )}
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-amber-900 bg-amber-100', 'Margin', Layers, 'text-amber-600', '4. Margin & Nego Standar'),
-          MARGIN_GROUPS
-        )}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-amber-900 bg-amber-100', 'Margin', Layers, 'text-amber-600', '4. Margin & Nego Standar'),
+            MARGIN_GROUPS
+          )}
+        </div>
       </div>
 
       {/* Manual Modal */}

@@ -284,43 +284,47 @@ export default function RaportKalebMasterParameter({
         )}
       </div>
 
-      {/* Grid 2 Kolom Seimbang */}
+      {/* Grid 2 Kolom Seimbang (Bebas Gap) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-emerald-900 bg-emerald-100', 'Bahan', Layers, 'text-emerald-700', '1. Bahan Map Kaleb & Kantong Mika'),
-          CARD1_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Biaya map kosongan dihitung per order oplah. Kantong plastik mika dihitung berdasarkan varian isi (4, 6, 8, 10, 12 lbr) atau custom.
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-emerald-900 bg-emerald-100', 'Bahan', Layers, 'text-emerald-700', '1. Bahan Map Kaleb & Kantong Mika'),
+            CARD1_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Biaya map kosongan dihitung per order oplah. Kantong plastik mika dihitung berdasarkan varian isi (4, 6, 8, 10, 12 lbr) atau custom.
+            </p>
+          )}
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-amber-900 bg-amber-100', 'Klise', Sparkles, 'text-amber-600', '2. Desain & Matres Klise Foil Emas'),
-          CARD2_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Klise foil emas dibebankan Rp 350.000 untuk pesanan kecil (≤ 120 pcs). Untuk oplah di atas 120 pcs, biaya klise otomatis digratiskan (Rp 0).
-          </p>
-        )}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-blue-900 bg-blue-100', 'Packing', Package, 'text-blue-600', '3. Packing Kardus & Lakban'),
+            CARD3_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Di sheet BUKU cell X6 default bernilai non-aktif (&quot;X&quot;). Jika diaktifkan, otomatis menghitung jumlah box kardus dan kebutuhan roll lakban.
+            </p>
+          )}
+        </div>
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-blue-900 bg-blue-100', 'Packing', Package, 'text-blue-600', '3. Packing Kardus & Lakban'),
-          CARD3_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Di sheet BUKU cell X6 default bernilai non-aktif (&quot;X&quot;). Jika diaktifkan, otomatis menghitung jumlah box kardus dan kebutuhan roll lakban.
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-amber-900 bg-amber-100', 'Klise', Sparkles, 'text-amber-600', '2. Desain & Matres Klise Foil Emas'),
+            CARD2_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Klise foil emas dibebankan Rp 350.000 untuk pesanan kecil (≤ 120 pcs). Untuk oplah di atas 120 pcs, biaya klise otomatis digratiskan (Rp 0).
+            </p>
+          )}
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-emerald-900 bg-emerald-100', 'Margin', DollarSign, 'text-emerald-600', '4. Margin Laba & Nego Standar'),
-          CARD4_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Standar pricelist resmi menggunakan margin 25% dan toleransi nego 4% dengan pembulatan ke atas ratusan (ROUNDUP -2).
-          </p>
-        )}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-emerald-900 bg-emerald-100', 'Margin', DollarSign, 'text-emerald-600', '4. Margin Laba & Nego Standar'),
+            CARD4_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Standar pricelist resmi menggunakan margin 25% dan toleransi nego 4% dengan pembulatan ke atas ratusan (ROUNDUP -2).
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Modal Manual Pengguna */}

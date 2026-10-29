@@ -339,43 +339,47 @@ export default function MajalahMasterParameter({
         )}
       </div>
 
-      {/* Grid 2 Kolom Seimbang */}
+      {/* Grid 2 Kolom Seimbang (Bebas Gap) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        {cardShell(
-          'bg-sky-50/40 border-sky-200',
-          cardHeader('text-sky-900 bg-sky-200/80', 'Cover', Printer, 'text-sky-600', '1. Cover & Mesin Cetak Cover'),
-          COVER_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Cover AC 230 gsm 1 Muka Full Colour. Print Inter (oplah ≤500 pcs) / Offset Oliver 4 Plat (oplah ≥600 pcs).
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-sky-50/40 border-sky-200',
+            cardHeader('text-sky-900 bg-sky-200/80', 'Cover', Printer, 'text-sky-600', '1. Cover & Mesin Cetak Cover'),
+            COVER_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Cover AC 230 gsm 1 Muka Full Colour. Print Inter (oplah ≤500 pcs) / Offset Oliver 4 Plat (oplah ≥600 pcs).
+            </p>
+          )}
 
-        {cardShell(
-          'bg-blue-50/40 border-blue-200',
-          cardHeader('text-blue-900 bg-blue-200/80', 'Isi', Layers, 'text-blue-600', '2. Isi Art Paper 120 gsm Full Colour'),
-          ISI_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Isi 32 Halaman (8 Lembar) Full Colour. Print Inter 2 Muka (oplah ≤200 pcs) / Offset Oliver 16 Plat (oplah ≥250 pcs).
-          </p>
-        )}
+          {cardShell(
+            'bg-violet-50/40 border-violet-200',
+            cardHeader('text-violet-900 bg-violet-200/80', 'Jasa', Scissors, 'text-violet-600', '3. Jilid, Finishing & Kemasan'),
+            JASA_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Upah UMR Rp 2.818.850. Oplah ≤200 pcs menggunakan model Susun Staples Lipat. Oplah ≥250 pcs menggunakan Kawat Stiching & Sisir 3 Sisi.
+            </p>
+          )}
+        </div>
 
-        {cardShell(
-          'bg-violet-50/40 border-violet-200',
-          cardHeader('text-violet-900 bg-violet-200/80', 'Jasa', Scissors, 'text-violet-600', '3. Jilid, Finishing & Kemasan'),
-          JASA_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Upah UMR Rp 2.818.850. Oplah ≤200 pcs menggunakan model Susun Staples Lipat. Oplah ≥250 pcs menggunakan Kawat Stiching & Sisir 3 Sisi.
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-blue-50/40 border-blue-200',
+            cardHeader('text-blue-900 bg-blue-200/80', 'Isi', Layers, 'text-blue-600', '2. Isi Art Paper 120 gsm Full Colour'),
+            ISI_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Isi 32 Halaman (8 Lembar) Full Colour. Print Inter 2 Muka (oplah ≤200 pcs) / Offset Oliver 16 Plat (oplah ≥250 pcs).
+            </p>
+          )}
 
-        {cardShell(
-          'bg-amber-50/40 border-amber-200',
-          cardHeader('text-amber-900 bg-amber-200/80', 'Finishing', Database, 'text-amber-600', '4. Finishing Tambahan & Margin'),
-          FINISH_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Luas cover terbuka: 30 × 21,25 cm = 637,5 cm². Min Laminasi Rp 50.000, Min Lem Bending Rp 100.000.
-          </p>
-        )}
+          {cardShell(
+            'bg-amber-50/40 border-amber-200',
+            cardHeader('text-amber-900 bg-amber-200/80', 'Finishing', Database, 'text-amber-600', '4. Finishing Tambahan & Margin'),
+            FINISH_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Luas cover terbuka: 30 × 21,25 cm = 637,5 cm². Min Laminasi Rp 50.000, Min Lem Bending Rp 100.000.
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Manual Modal */}

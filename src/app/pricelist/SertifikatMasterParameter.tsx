@@ -270,47 +270,51 @@ export default function SertifikatMasterParameter({
         )}
       </div>
 
-      {/* Grid 2 Kolom Seimbang */}
+      {/* Grid 2 Kolom Seimbang (Bebas Gap) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        {/* Card 1: Bahan per jenis */}
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('bg-emerald-100 text-emerald-800', 'Bahan', Package, 'text-emerald-600', '1. Bahan per Jenis'),
-          [SERTIFIKAT_GROUPS[0]],
-          <p className="text-[10px] text-slate-500">
-            Harga per rim dihitung dari dimensi, gramatur, harga per kg, dan persentase up. Gramatur: {SERTIFIKAT_GRAMATUR_OPTIONS.join(', ')} gsm.
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {/* Card 1: Bahan per jenis */}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('bg-emerald-100 text-emerald-800', 'Bahan', Package, 'text-emerald-600', '1. Bahan per Jenis'),
+            [SERTIFIKAT_GROUPS[0]],
+            <p className="text-[10px] text-slate-500">
+              Harga per rim dihitung dari dimensi, gramatur, harga per kg, dan persentase up. Gramatur: {SERTIFIKAT_GRAMATUR_OPTIONS.join(', ')} gsm.
+            </p>
+          )}
 
-        {/* Card 2: Up per kombinasi */}
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('bg-sky-100 text-sky-800', 'Up Harga', Layers, 'text-sky-600', '2. Up Harga per Kombinasi'),
-          [SERTIFIKAT_GROUPS[1]],
-          <p className="text-[10px] text-slate-500">
-            Nilai file: Ac 5/0, BC 5/5, Linen 0/0 (offset/print). SM &amp; Ryobi ikut pola offset.
-          </p>
-        )}
+          {/* Card 3: Cetak */}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('bg-blue-100 text-blue-800', 'Cetak', Printer, 'text-blue-600', '3. Cetak: Desain, Print, Insheet, Plate'),
+            [SERTIFIKAT_GROUPS[2]],
+            <p className="text-[10px] text-slate-500">
+              Plate: Oliver Rp 45.000 / SM Rp 78.000 / Ryobi Rp 10.000 (jml = warna×muka). Min &amp; drek: 90000/40, 310000/100, 15000/30.
+            </p>
+          )}
+        </div>
 
-        {/* Card 3: Cetak */}
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('bg-blue-100 text-blue-800', 'Cetak', Printer, 'text-blue-600', '3. Cetak: Desain, Print, Insheet, Plate'),
-          [SERTIFIKAT_GROUPS[2]],
-          <p className="text-[10px] text-slate-500">
-            Plate: Oliver Rp 45.000 / SM Rp 78.000 / Ryobi Rp 10.000 (jml = warna×muka). Min &amp; drek: 90000/40, 310000/100, 15000/30.
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {/* Card 2: Up per kombinasi */}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('bg-sky-100 text-sky-800', 'Up Harga', Layers, 'text-sky-600', '2. Up Harga per Kombinasi'),
+            [SERTIFIKAT_GROUPS[1]],
+            <p className="text-[10px] text-slate-500">
+              Nilai file: Ac 5/0, BC 5/5, Linen 0/0 (offset/print). SM &amp; Ryobi ikut pola offset.
+            </p>
+          )}
 
-        {/* Card 4: Finishing & laba */}
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('bg-amber-100 text-amber-800', 'Finishing & Laba', Info, 'text-amber-600', '4. Finishing, Foil, Kardus & Laba'),
-          [SERTIFIKAT_GROUPS[3]],
-          <p className="text-[10px] text-slate-500">
-            Laminasi/UV dikenakan bila dipilih (min Rp 50.000). Foil masuk total hanya bila AP27=√. Laba 30% → final ROUNDUP puluhan.
-          </p>
-        )}
+          {/* Card 4: Finishing & laba */}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('bg-amber-100 text-amber-800', 'Finishing & Laba', Info, 'text-amber-600', '4. Finishing, Foil, Kardus & Laba'),
+            [SERTIFIKAT_GROUPS[3]],
+            <p className="text-[10px] text-slate-500">
+              Laminasi/UV dikenakan bila dipilih (min Rp 50.000). Foil masuk total hanya bila AP27=√. Laba 30% → final ROUNDUP puluhan.
+            </p>
+          )}
+        </div>
       </div>
 
       {showManualModal && (

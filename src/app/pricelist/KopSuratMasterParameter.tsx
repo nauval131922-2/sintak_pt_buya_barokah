@@ -320,47 +320,51 @@ export default function KopSuratMasterParameter({
         )}
       </div>
 
-      {/* Grid 2 Kolom Seimbang */}
+      {/* Grid 2 Kolom Seimbang (Bebas Gap) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-emerald-900 bg-emerald-100', 'Bahan', Package, 'text-emerald-600', '1. Bahan & Harga Kertas'),
-          CARD1_GROUPS,
-          bahanSelects.length > 0 ? <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{bahanSelects}</div> : null,
-          <p className="text-[10px] text-slate-500">
-            Harga per rim dihitung dari dimensi, gramatur, harga per kg, dan persentase up. Gramatur: {KOP_SURAT_GRAMATUR_OPTIONS.join(', ')}.
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-emerald-900 bg-emerald-100', 'Bahan', Package, 'text-emerald-600', '1. Bahan & Harga Kertas'),
+            CARD1_GROUPS,
+            bahanSelects.length > 0 ? <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">{bahanSelects}</div> : null,
+            <p className="text-[10px] text-slate-500">
+              Harga per rim dihitung dari dimensi, gramatur, harga per kg, dan persentase up. Gramatur: {KOP_SURAT_GRAMATUR_OPTIONS.join(', ')}.
+            </p>
+          )}
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-sky-900 bg-sky-100', 'Insheet', Layers, 'text-sky-600', '2. Insheet Lembar Cetak'),
-          CARD2_GROUPS,
-          null,
-          <p className="text-[10px] text-slate-500">
-            Nilai bawaan file: 30 / 30 / 40 / 50. Simulator otomatis memakai default file sesuai jumlah warna, masih bisa dioverride per simulasi.
-          </p>
-        )}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-blue-900 bg-blue-100', 'Plat', Printer, 'text-blue-600', '3. Desain, Film & Plate'),
+            CARD3_GROUPS,
+            null,
+            <p className="text-[10px] text-slate-500">
+              Plate: CETAK = Rp 10.000/plat, ONGKOS CETAK = Rp 0. Min order Rp 15.000/plat, drek over Rp 30 (tetap di kedua mode). Jml plat auto = warna × muka.
+            </p>
+          )}
+        </div>
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-blue-900 bg-blue-100', 'Plat', Printer, 'text-blue-600', '3. Desain, Film & Plate'),
-          CARD3_GROUPS,
-          null,
-          <p className="text-[10px] text-slate-500">
-            Plate: CETAK = Rp 10.000/plat, ONGKOS CETAK = Rp 0. Min order Rp 15.000/plat, drek over Rp 30 (tetap di kedua mode). Jml plat auto = warna × muka.
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-sky-900 bg-sky-100', 'Insheet', Layers, 'text-sky-600', '2. Insheet Lembar Cetak'),
+            CARD2_GROUPS,
+            null,
+            <p className="text-[10px] text-slate-500">
+              Nilai bawaan file: 30 / 30 / 40 / 50. Simulator otomatis memakai default file sesuai jumlah warna, masih bisa dioverride per simulasi.
+            </p>
+          )}
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-amber-900 bg-amber-100', 'Margin', Info, 'text-amber-600', '4. Laba & Referensi'),
-          CARD4_GROUPS,
-          null,
-          <p className="text-[10px] text-slate-500">
-            Laba dihitung dari HPP per rim × margin %. Harga final dibulatkan ke puluhan.
-          </p>
-        )}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-amber-900 bg-amber-100', 'Margin', Info, 'text-amber-600', '4. Laba & Referensi'),
+            CARD4_GROUPS,
+            null,
+            <p className="text-[10px] text-slate-500">
+              Laba dihitung dari HPP per rim × margin %. Harga final dibulatkan ke puluhan.
+            </p>
+          )}
+        </div>
       </div>
 
       {showManualModal && (

@@ -411,58 +411,62 @@ export default function BukuHardCoverUnifiedMasterParameter({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        {cardShell(
-          'bg-sky-50/40 border-sky-200',
-          cardHeader('text-sky-900 bg-sky-200/80', 'Cover', Printer, 'text-sky-600', '1. Cover & Cetak Cover'),
-          COVER_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Cover Print Inter: Rp {customParams.tarifPrintCoverA3.toLocaleString('id-ID')}/lbr A3+. Oliver & SM: Plat + Min Ongkos + Drek mengikuti standar Master.
-          </p>
-        )}
-
-        {cardShell(
-          'bg-amber-50/40 border-amber-200',
-          cardHeader('text-amber-900 bg-amber-200/80', 'Board', Layers, 'text-amber-600', '2. Board, Casing & Skiblat'),
-          BOARD_SKIBLAT_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Yellow Board No. 30 per pack isi 30 lembar. Kapasitas potong: 10,5x14,8 (12 pcs), 14,5x20,25 (7 pcs), 21x29,7 (3 pcs).
-          </p>
-        )}
-
-        {cardShell(
-          'bg-blue-50/40 border-blue-200',
-          cardHeader('text-blue-900 bg-blue-200/80', 'Isi', BookCopy, 'text-blue-600', '3. Kertas Isi & Cetak Isi'),
-          ISI_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            HVS 70 gsm plano 61x86 cm. Ryobi hanya untuk A5 & A6 (min ongkos Rp {customParams.minOngkosIsiRyobi.toLocaleString('id-ID')}).
-          </p>
-        )}
-
-        {cardShell(
-          'bg-violet-50/40 border-violet-200',
-          cardHeader('text-violet-900 bg-violet-200/80', 'Finishing', Scissors, 'text-violet-600', '4. Finishing Jilid & Aksesoris'),
-          FINISHING_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Upah lipat, susun, jahit, casing-in, headband, pita, dan craft berbasis UMR harian Rp {(customParams.umr / 25).toLocaleString('id-ID', { maximumFractionDigits: 0 })}.
-          </p>
-        )}
-
-        {/* 5. Lanjutan — Terbuka Penuh */}
-        {lanjutanVisible && (
-          <div className="bg-slate-50/60 border border-slate-200 rounded-xl p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid mb-4">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-600 bg-slate-200/80 px-2 py-0.5 rounded">Lanjutan</span>
-              <Sliders className="w-4 h-4 text-slate-600" />
-              <h3 className="text-xs font-bold text-slate-700">5. Finishing Khusus & Margin</h3>
-            </div>
-            <div className="flex flex-col gap-2.5">
-              {LANJUTAN_GROUPS.map(subGroup)}
-            </div>
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-sky-50/40 border-sky-200',
+            cardHeader('text-sky-900 bg-sky-200/80', 'Cover', Printer, 'text-sky-600', '1. Cover & Cetak Cover'),
+            COVER_GROUPS,
             <p className="text-[10px] text-slate-500">
-              Laminasi, Foil, Spot UV, Emboss dihitung saat dipilih di simulator. Laba standar {customParams.marginPersen}%, pembulatan puluhan ke atas.
+              Cover Print Inter: Rp {customParams.tarifPrintCoverA3.toLocaleString('id-ID')}/lbr A3+. Oliver & SM: Plat + Min Ongkos + Drek mengikuti standar Master.
             </p>
-          </div>
-        )}
+          )}
+
+          {cardShell(
+            'bg-blue-50/40 border-blue-200',
+            cardHeader('text-blue-900 bg-blue-200/80', 'Isi', BookCopy, 'text-blue-600', '3. Kertas Isi & Cetak Isi'),
+            ISI_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              HVS 70 gsm plano 61x86 cm. Ryobi hanya untuk A5 & A6 (min ongkos Rp {customParams.minOngkosIsiRyobi.toLocaleString('id-ID')}).
+            </p>
+          )}
+
+          {/* 5. Lanjutan — Terbuka Penuh */}
+          {lanjutanVisible && (
+            <div className="bg-slate-50/60 border border-slate-200 rounded-xl p-4 shadow-2xs flex flex-col gap-3 break-inside-avoid">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-600 bg-slate-200/80 px-2 py-0.5 rounded">Lanjutan</span>
+                <Sliders className="w-4 h-4 text-slate-600" />
+                <h3 className="text-xs font-bold text-slate-700">5. Finishing Khusus & Margin</h3>
+              </div>
+              <div className="flex flex-col gap-2.5">
+                {LANJUTAN_GROUPS.map(subGroup)}
+              </div>
+              <p className="text-[10px] text-slate-500">
+                Laminasi, Foil, Spot UV, Emboss dihitung saat dipilih di simulator. Laba standar {customParams.marginPersen}%, pembulatan puluhan ke atas.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-amber-50/40 border-amber-200',
+            cardHeader('text-amber-900 bg-amber-200/80', 'Board', Layers, 'text-amber-600', '2. Board, Casing & Skiblat'),
+            BOARD_SKIBLAT_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Yellow Board No. 30 per pack isi 30 lembar. Kapasitas potong: 10,5x14,8 (12 pcs), 14,5x20,25 (7 pcs), 21x29,7 (3 pcs).
+            </p>
+          )}
+
+          {cardShell(
+            'bg-violet-50/40 border-violet-200',
+            cardHeader('text-violet-900 bg-violet-200/80', 'Finishing', Scissors, 'text-violet-600', '4. Finishing Jilid & Aksesoris'),
+            FINISHING_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Upah lipat, susun, jahit, casing-in, headband, pita, dan craft berbasis UMR harian Rp {(customParams.umr / 25).toLocaleString('id-ID', { maximumFractionDigits: 0 })}.
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Modal Panduan & Rumus */}

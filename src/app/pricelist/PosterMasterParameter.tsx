@@ -321,29 +321,32 @@ export default function PosterMasterParameter({
         )}
       </div>
 
-      {/* Grid 2 Kolom Seimbang */}
+      {/* Grid 2 Kolom Seimbang (Bebas Gap) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+        <div className="flex flex-col gap-4">
+          {/* 1. Desain & Mesin Cetak */}
+          {cardShell(
+            'bg-blue-50/40 border-blue-200/80',
+            cardHeader('bg-blue-100 text-blue-800 border border-blue-300', '1. Mesin', Printer, 'text-blue-600', 'Setting Desain & Mesin Cetak'),
+            GROUPS_MESIN
+          )}
+        </div>
 
-        {/* 2. Desain & Mesin Cetak */}
-        {cardShell(
-          'bg-blue-50/40 border-blue-200/80',
-          cardHeader('bg-blue-100 text-blue-800 border border-blue-300', '2. Mesin', Printer, 'text-blue-600', 'Setting Desain & Mesin Cetak'),
-          GROUPS_MESIN
-        )}
+        <div className="flex flex-col gap-4">
+          {/* 2. Finishing & Operasional */}
+          {cardShell(
+            'bg-violet-50/40 border-violet-200/80',
+            cardHeader('bg-violet-100 text-violet-800 border border-violet-300', '2. Operasional', Scissors, 'text-violet-600', 'Upah Sisir, Transport & Kemasan'),
+            GROUPS_OPERASIONAL
+          )}
 
-        {/* 3. Finishing & Operasional */}
-        {cardShell(
-          'bg-violet-50/40 border-violet-200/80',
-          cardHeader('bg-violet-100 text-violet-800 border border-violet-300', '3. Operasional', Scissors, 'text-violet-600', 'Upah Sisir, Transport & Kemasan'),
-          GROUPS_OPERASIONAL
-        )}
-
-        {/* 4. Finishing Tambahan & Margin */}
-        {cardShell(
-          'bg-amber-50/40 border-amber-200/80',
-          cardHeader('bg-amber-100 text-amber-800 border border-amber-300', '4. Finishing & Laba', Layers, 'text-amber-600', 'Laminasi, UV Varnish & Target Penjualan'),
-          GROUPS_FINISHING_MARGIN
-        )}
+          {/* 3. Finishing Tambahan & Margin */}
+          {cardShell(
+            'bg-amber-50/40 border-amber-200/80',
+            cardHeader('bg-amber-100 text-amber-800 border border-amber-300', '3. Finishing & Laba', Layers, 'text-amber-600', 'Laminasi, UV Varnish & Target Penjualan'),
+            GROUPS_FINISHING_MARGIN
+          )}
+        </div>
       </div>
 
       {/* Modal Panduan & Rumus */}

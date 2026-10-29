@@ -262,43 +262,47 @@ export default function AmplopMasterParameter({
         )}
       </div>
 
-      {/* Grid 2 Kolom Seimbang */}
+      {/* Grid 2 Kolom Seimbang (Bebas Gap) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-emerald-900 bg-emerald-100', 'Bahan', Package, 'text-emerald-600', '1. Amplop Jadi & Insheet'),
-          CARD1_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Pack @100 pcs (Besar Rp 25.000, Tgg Rp 15.800). Insheet hanya hidup saat Tanggung; ukuran Besar otomatis 3% proporsional.
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-emerald-900 bg-emerald-100', 'Bahan', Package, 'text-emerald-600', '1. Amplop Jadi & Insheet'),
+            CARD1_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Pack @100 pcs (Besar Rp 25.000, Tgg Rp 15.800). Insheet hanya hidup saat Tanggung; ukuran Besar otomatis 3% proporsional.
+            </p>
+          )}
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-blue-900 bg-blue-100', 'Print', Printer, 'text-blue-600', '2. Tarif Print per Pack'),
-          CARD2_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            P2 per pack @100. Besar: Ungu Rp 55.000 / Buya Rp 50.000 (file Besar 1 Warna). Tanggung: Rp 35.000 keduanya.
-          </p>
-        )}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-sky-900 bg-sky-100', 'Jasa', Layers, 'text-sky-600', '3. Desain, Plate & Jasa'),
+            CARD3_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              Desain Rp 5.000, kecuali Besar+Print Rp 2.500 (file Besar FC). Plate Rp 10.000/plat (Ryobi saja), min Rp 15.000/plat, drek over Rp 30. Desain hanya dihitung bila H &lt; 1000.
+            </p>
+          )}
+        </div>
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-sky-900 bg-sky-100', 'Jasa', Layers, 'text-sky-600', '3. Desain, Plate & Jasa'),
-          CARD3_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            Desain Rp 5.000, kecuali Besar+Print Rp 2.500 (file Besar FC). Plate Rp 10.000/plat (Ryobi saja), min Rp 15.000/plat, drek over Rp 30. Desain hanya dihitung bila H &lt; 1000.
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-blue-900 bg-blue-100', 'Print', Printer, 'text-blue-600', '2. Tarif Print per Pack'),
+            CARD2_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              P2 per pack @100. Besar: Ungu Rp 55.000 / Buya Rp 50.000 (file Besar 1 Warna). Tanggung: Rp 35.000 keduanya.
+            </p>
+          )}
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-amber-900 bg-amber-100', 'Overhead', Info, 'text-amber-600', '4. BTKL, BOP & Laba'),
-          CARD4_GROUPS,
-          <p className="text-[10px] text-slate-500">
-            BTKL 20% &amp; BOP 10% hanya bila Ryobi dan H ≥ 1000. Laba 30% → harga final pack dibulatkan satuan (ROUNDUP 0).
-          </p>
-        )}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-amber-900 bg-amber-100', 'Overhead', Info, 'text-amber-600', '4. BTKL, BOP & Laba'),
+            CARD4_GROUPS,
+            <p className="text-[10px] text-slate-500">
+              BTKL 20% &amp; BOP 10% hanya bila Ryobi dan H ≥ 1000. Laba 30% → harga final pack dibulatkan satuan (ROUNDUP 0).
+            </p>
+          )}
+        </div>
       </div>
 
       {showManualModal && (

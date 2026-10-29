@@ -350,25 +350,29 @@ export default function ManasikMasterParameter({
         )}
       </div>
 
-      {/* Grid 2 Kolom Seimbang */}
+      {/* Grid 2 Kolom Seimbang (Bebas Gap) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-amber-900 bg-amber-100', 'Varian 1', Printer, 'text-amber-700', '1. Kosongan (10 x 15,5 cm)'),
-          KOSONGAN_GROUPS
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-amber-900 bg-amber-100', 'Varian 1', Printer, 'text-amber-700', '1. Kosongan (10 x 15,5 cm)'),
+            KOSONGAN_GROUPS
+          )}
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-emerald-900 bg-emerald-100', 'Varian 2', BookOpen, 'text-emerald-700', '2. Custom Cover (10 x 15,5 cm)'),
-          CUSTOM_COVER_GROUPS
-        )}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-purple-900 bg-purple-100', 'Varian 3', Sparkles, 'text-purple-600', '3. Cocard Mini TikTok (6,3 x 10,3 cm)'),
+            MINI_TIKTOK_GROUPS
+          )}
+        </div>
 
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('text-purple-900 bg-purple-100', 'Varian 3', Sparkles, 'text-purple-600', '3. Cocard Mini TikTok (6,3 x 10,3 cm)'),
-          MINI_TIKTOK_GROUPS
-        )}
+        <div className="flex flex-col gap-4">
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('text-emerald-900 bg-emerald-100', 'Varian 2', BookOpen, 'text-emerald-700', '2. Custom Cover (10 x 15,5 cm)'),
+            CUSTOM_COVER_GROUPS
+          )}
+        </div>
       </div>
 
       {/* Manual Modal */}

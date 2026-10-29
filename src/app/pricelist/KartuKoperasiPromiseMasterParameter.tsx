@@ -291,47 +291,51 @@ export default function KartuKoperasiPromiseMasterParameter({
         )}
       </div>
 
-      {/* Grid 2 Kolom Seimbang */}
+      {/* Grid 2 Kolom Seimbang (Bebas Gap) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-        {/* Card 1: Kertas & Desain */}
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('bg-blue-100 text-blue-800', 'Kertas & Desain', Printer, 'text-blue-600', '1. Kertas & Desain'),
-          [KARTU_KOPERASI_PROMISE_GROUPS[0]],
-          <p className="text-[10px] text-slate-500">
-            Default file: kertas Rp 34.800 +5% &amp; desain Rp 15.000 (varian 10,5) vs Rp 33.000 +0% &amp; tanpa desain (12,7×16,3) — simulator otomatis memakai bawaan tiap file kecuali field diubah manual.
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {/* Card 1: Kertas & Desain */}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('bg-blue-100 text-blue-800', 'Kertas & Desain', Printer, 'text-blue-600', '1. Kertas & Desain'),
+            [KARTU_KOPERASI_PROMISE_GROUPS[0]],
+            <p className="text-[10px] text-slate-500">
+              Default file: kertas Rp 34.800 +5% &amp; desain Rp 15.000 (varian 10,5) vs Rp 33.000 +0% &amp; tanpa desain (12,7×16,3) — simulator otomatis memakai bawaan tiap file kecuali field diubah manual.
+            </p>
+          )}
 
-        {/* Card 2: Cetak */}
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('bg-sky-100 text-sky-800', 'Plate & Cetak', CreditCard, 'text-sky-600', '2. Plate, Cetak & Jasa'),
-          [KARTU_KOPERASI_PROMISE_GROUPS[1]],
-          <p className="text-[10px] text-slate-500">
-            Plate Rp 10.000 &amp; min cetak Rp 15.000 per plat hanya untuk Ryobi (Print Inter = Rp 0). Jumlah plat = warna × muka (12,7 override 1 plat). Drek over: Rp 40 (10,5) / Rp 30 (12,7).
-          </p>
-        )}
+          {/* Card 3: Finishing */}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('bg-violet-100 text-violet-800', 'Finishing', Layers, 'text-violet-600', '3. Finishing Pound, Sisir & Laminasi'),
+            [KARTU_KOPERASI_PROMISE_GROUPS[2]],
+            <p className="text-[10px] text-slate-500">
+              Pound = (UMR/25)/target (target 800 utk 10,5 / 1.200 utk 12,7), min Rp 50.000. Laminasi/UV = luas×rate×oplah, floor Rp 50.000, aktif sesuai pilihan finishing.
+            </p>
+          )}
+        </div>
 
-        {/* Card 3: Finishing */}
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('bg-violet-100 text-violet-800', 'Finishing', Layers, 'text-violet-600', '3. Finishing Pound, Sisir & Laminasi'),
-          [KARTU_KOPERASI_PROMISE_GROUPS[2]],
-          <p className="text-[10px] text-slate-500">
-            Pound = (UMR/25)/target (target 800 utk 10,5 / 1.200 utk 12,7), min Rp 50.000. Laminasi/UV = luas×rate×oplah, floor Rp 50.000, aktif sesuai pilihan finishing.
-          </p>
-        )}
+        <div className="flex flex-col gap-4">
+          {/* Card 2: Cetak */}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('bg-sky-100 text-sky-800', 'Plate & Cetak', CreditCard, 'text-sky-600', '2. Plate, Cetak & Jasa'),
+            [KARTU_KOPERASI_PROMISE_GROUPS[1]],
+            <p className="text-[10px] text-slate-500">
+              Plate Rp 10.000 &amp; min cetak Rp 15.000 per plat hanya untuk Ryobi (Print Inter = Rp 0). Jumlah plat = warna × muka (12,7 override 1 plat). Drek over: Rp 40 (10,5) / Rp 30 (12,7).
+            </p>
+          )}
 
-        {/* Card 4: Packing & Margin */}
-        {cardShell(
-          'bg-white border-slate-200',
-          cardHeader('bg-amber-100 text-amber-800', 'Packing & Margin', Package, 'text-amber-600', '4. Packing & Margin'),
-          [KARTU_KOPERASI_PROMISE_GROUPS[3]],
-          <p className="text-[10px] text-slate-500">
-            Kardus CEIL(oplah/3000)×Rp 8.500 + lakban (oplah/3000)/(7650/196)×Rp 8.000. Margin 30% dari HPP, harga dibulatkan ke puluhan (Excel tidak punya kolom nego — nego dihapus).
-          </p>
-        )}
+          {/* Card 4: Packing & Margin */}
+          {cardShell(
+            'bg-white border-slate-200',
+            cardHeader('bg-amber-100 text-amber-800', 'Packing & Margin', Package, 'text-amber-600', '4. Packing & Margin'),
+            [KARTU_KOPERASI_PROMISE_GROUPS[3]],
+            <p className="text-[10px] text-slate-500">
+              Kardus CEIL(oplah/3000)×Rp 8.500 + lakban (oplah/3000)/(7650/196)×Rp 8.000. Margin 30% dari HPP, harga dibulatkan ke puluhan (Excel tidak punya kolom nego — nego dihapus).
+            </p>
+          )}
+        </div>
       </div>
 
       {showManualModal && (
