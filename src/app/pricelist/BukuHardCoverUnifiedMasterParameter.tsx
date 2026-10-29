@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   RotateCcw,
   Printer,
@@ -9,6 +9,7 @@ import {
   BookCopy,
   Search,
   Sliders,
+  X,
 } from 'lucide-react';
 import {
   DEFAULT_BUKU_HARD_COVER_UNIFIED_PARAMS,
@@ -252,10 +253,22 @@ export default function BukuHardCoverUnifiedMasterParameter({
     (customParams[key] ?? DEFAULT_BUKU_HARD_COVER_UNIFIED_PARAMS[key]) !==
     DEFAULT_BUKU_HARD_COVER_UNIFIED_PARAMS[key];
 
+  const isModified = useMemo(
+    () =>
+      (Object.keys(DEFAULT_BUKU_HARD_COVER_UNIFIED_PARAMS) as (keyof BukuHardCoverUnifiedParams)[]).some(
+        (k) => (customParams[k] ?? DEFAULT_BUKU_HARD_COVER_UNIFIED_PARAMS[k]) !== DEFAULT_BUKU_HARD_COVER_UNIFIED_PARAMS[k]
+      ),
+    [customParams]
+  );
+
   const handleChange = (key: keyof BukuHardCoverUnifiedParams, val: number) => {
     setCustomParams((prev) => ({ ...prev, [key]: val }));
   };
 
+  const handleResetAll = () => {
+    setCustomParams({ ...DEFAULT_BUKU_HARD_COVER_UNIFIED_PARAMS });
+    toast.success('Semua parameter Buku Hard Cover dikembalikan ke standar Master.');
+  };
   const handleResetField = (key: keyof BukuHardCoverUnifiedParams) => {
     setCustomParams((prev) => ({
       ...prev,
@@ -358,16 +371,37 @@ export default function BukuHardCoverUnifiedMasterParameter({
 
   return (
     <div className="flex flex-col gap-4 pb-8 overflow-y-auto">
-      {/* Sticky Search Bar */}
-      <div className="sticky top-0 z-10 relative bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
-        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-        <input
-          type="text"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Cari parameter tarif, kertas, plat, atau upah…"
-          className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs"
-        />
+      {/* Sticky Search Bar & Actions */}
+      <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs py-1.5 -my-1 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Cari parameter tarif, kertas, plat, atau upah…"
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 shadow-2xs font-medium"
+          />
+          {q && (
+            <button
+              type="button"
+              onClick={() => setQ('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
+            >
+              <X size={13} />
+            </button>
+          )}
+        </div>
+        {isModified && (
+          <button
+            type="button"
+            onClick={handleResetAll}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 shadow-2xs transition cursor-pointer shrink-0"
+          >
+            <RotateCcw size={14} />
+            <span>Reset Semua</span>
+          </button>
+        )}
       </div>
 
       <div className="columns-1 md:columns-2 gap-4">
