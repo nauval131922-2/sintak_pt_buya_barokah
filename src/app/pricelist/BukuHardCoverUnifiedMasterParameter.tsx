@@ -10,6 +10,7 @@ import {
   Search,
   Sliders,
   X,
+  HelpCircle,
 } from 'lucide-react';
 import {
   DEFAULT_BUKU_HARD_COVER_UNIFIED_PARAMS,
@@ -248,7 +249,7 @@ export default function BukuHardCoverUnifiedMasterParameter({
   setCustomParams,
 }: BukuHardCoverUnifiedMasterParameterProps) {
   const [q, setQ] = useState('');
-
+  const [showManualModal, setShowManualModal] = useState(false);
   const isFieldModified = (key: keyof BukuHardCoverUnifiedParams) =>
     (customParams[key] ?? DEFAULT_BUKU_HARD_COVER_UNIFIED_PARAMS[key]) !==
     DEFAULT_BUKU_HARD_COVER_UNIFIED_PARAMS[key];
@@ -392,6 +393,14 @@ export default function BukuHardCoverUnifiedMasterParameter({
             </button>
           )}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer shrink-0"
+        >
+          <HelpCircle size={14} className="text-slate-500" />
+          <span>Panduan & Rumus</span>
+        </button>
         {isModified && (
           <button
             type="button"
@@ -458,6 +467,85 @@ export default function BukuHardCoverUnifiedMasterParameter({
           </div>
         )}
       </div>
+
+      {/* Modal Panduan & Rumus */}
+      {showManualModal && (
+        <div
+          onClick={() => setShowManualModal(false)}
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-2xl max-h-[85vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
+          >
+            <div className="p-4 bg-emerald-50 border-b border-emerald-100 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-emerald-900">
+                <HelpCircle size={18} className="text-emerald-700" />
+                <h3 className="font-bold text-sm">Panduan Parameter Master Buku Hard Cover</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowManualModal(false)}
+                className="p-1 rounded-lg hover:bg-emerald-100 text-slate-500 hover:text-slate-700 transition cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="p-5 overflow-y-auto space-y-4 text-xs text-slate-600 leading-relaxed">
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1.5">
+                <span className="font-bold text-slate-800 block text-xs">
+                  Spesifikasi Standar Buku Hard Cover (3 Varian Ukuran)
+                </span>
+                <p>
+                  Mencakup varian ukuran 10,5×14,8 cm (A6), 14,5×20,25 cm (A5/Katalog 18, 21, 25), dan 21×29,7 cm (A4).
+                  Cover dicetak pada Art Paper 150 gsm laminasi doff/glossy dilapisi Yellow Board tebal No. 30/40 dengan Skiblat pembatas AC 230 gsm polos.
+                  Isi menggunakan kertas HVS 70 gsm atau Bookpaper.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <span className="font-bold text-slate-800 block text-xs">
+                  Alur &amp; Kombinasi Mesin Cetak (Cover &amp; Isi)
+                </span>
+                <ul className="list-disc list-inside space-y-1 text-slate-600 pl-1">
+                  <li>
+                    <strong>Cover Casing</strong>: Print Digital A3+ untuk oplah kecil atau Offset Oliver / SM untuk oplah menengah &amp; besar.
+                  </li>
+                  <li>
+                    <strong>Isi Mesin Ryobi</strong>: Digunakan khusus untuk cetak isi buku ukuran A5 &amp; A6 dengan ongkos minimal plate &amp; cetak ekonomis.
+                  </li>
+                  <li>
+                    <strong>Isi Mesin Oliver 58 / SM 102</strong>: Digunakan untuk cetak isi ukuran besar (A4) atau oplah tinggi dengan perhitungan plate, min ongkos, dan drek over.
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-2">
+                <span className="font-bold text-slate-800 block text-xs">
+                  Komponen Casing-In, Finishing &amp; Tenaga Kerja
+                </span>
+                <ul className="list-disc list-inside space-y-1 text-slate-600 pl-1">
+                  <li><strong>Board No. 30</strong>: Kapasitas potong per lembar plano Yellow Board: 10,5×14,8 cm (12 pcs), 14,5×20,25 cm (7 pcs), 21×29,7 cm (3 pcs).</li>
+                  <li><strong>Finishing Eksklusif</strong>: Lem Panas (Bending), Jahit Benang, Pasang Pita Pembatas, Headband, Casing-In, Rounding Corner Cover, dan Pembungkusan Shrink.</li>
+                  <li><strong>Basis Upah Tenaga Kerja</strong>: Dihitung secara proporsional dari basis UMR harian (UMR dibagi 25 hari kerja).</li>
+                  <li><strong>Laba / Margin Standar</strong>: Diterapkan dari total HPP seluruh komponen produksi secara otomatis dengan pembulatan ke atas.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="p-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowManualModal(false)}
+                className="px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition cursor-pointer"
+              >
+                Tutup Panduan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

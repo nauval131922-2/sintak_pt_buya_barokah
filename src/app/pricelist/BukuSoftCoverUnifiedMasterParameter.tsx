@@ -9,6 +9,7 @@ import {
   BookCopy,
   Search,
   X,
+  HelpCircle,
 } from 'lucide-react';
 import {
   DEFAULT_SOFT_COVER_UNIFIED,
@@ -160,6 +161,7 @@ export default function BukuSoftCoverUnifiedMasterParameter({
   setCustomParams,
 }: BukuSoftCoverUnifiedMasterParameterProps) {
   const [q, setQ] = useState('');
+  const [showManualModal, setShowManualModal] = useState(false);
 
   const isFieldModified = (key: keyof SoftCoverUnifiedParams) =>
     (customParams[key] ?? DEFAULT_SOFT_COVER_UNIFIED[key]) !== DEFAULT_SOFT_COVER_UNIFIED[key];
@@ -300,6 +302,14 @@ export default function BukuSoftCoverUnifiedMasterParameter({
             </button>
           )}
         </div>
+        <button
+          type="button"
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs transition cursor-pointer shrink-0"
+        >
+          <HelpCircle size={14} className="text-slate-500" />
+          <span>Panduan & Rumus</span>
+        </button>
         {isModified && (
           <button
             type="button"
@@ -362,6 +372,85 @@ export default function BukuSoftCoverUnifiedMasterParameter({
           </div>
         )}
       </div>
+
+      {/* Modal Panduan & Rumus */}
+      {showManualModal && (
+        <div
+          onClick={() => setShowManualModal(false)}
+          className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150 cursor-pointer"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white w-full max-w-2xl max-h-[85vh] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden cursor-default"
+          >
+            <div className="p-4 bg-emerald-50 border-b border-emerald-100 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-emerald-900">
+                <HelpCircle size={18} className="text-emerald-700" />
+                <h3 className="font-bold text-sm">Panduan Parameter Master Buku Soft Cover</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowManualModal(false)}
+                className="p-1 rounded-lg hover:bg-emerald-100 text-slate-500 hover:text-slate-700 transition cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="p-5 overflow-y-auto space-y-4 text-xs text-slate-600 leading-relaxed">
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-1.5">
+                <span className="font-bold text-slate-800 block text-xs">
+                  Spesifikasi &amp; Cakupan Lini Buku Soft Cover (18 Lini Ukuran)
+                </span>
+                <p>
+                  Mencakup Buku Soft Cover ukuran 10,5×14,8 cm (A6), 14,5×20,25 cm (A5/Katalog 18, 19, 21), dan 21×29,7 cm (A4).
+                  Cover dicetak pada Art Carton 210/230/260 gsm Full Colour.
+                  Isi menggunakan kertas HVS 70/80 gsm atau Bookpaper 55/72 gsm 1 Muka atau 2 Muka (BW / Full Colour).
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <span className="font-bold text-slate-800 block text-xs">
+                  Alur &amp; Kombinasi Mesin Cetak (Cover &amp; Isi)
+                </span>
+                <ul className="list-disc list-inside space-y-1 text-slate-600 pl-1">
+                  <li>
+                    <strong>Cover</strong>: Print Digital A3+ untuk oplah kecil atau Offset Oliver (4 Plat) untuk oplah besar.
+                  </li>
+                  <li>
+                    <strong>Isi Offset Oliver / SM</strong>: Dihitung berbasis kebutuhan plat cetak, ongkos minimal order, dan tarif drek per warna.
+                  </li>
+                  <li>
+                    <strong>Isi Print Inter Digital</strong>: Dihitung per lembar klik A3+ bolak-balik untuk oplah ekonomis skala kecil.
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-2">
+                <span className="font-bold text-slate-800 block text-xs">
+                  Finishing Jilid &amp; Ketentuan Minimal Order
+                </span>
+                <ul className="list-disc list-inside space-y-1 text-slate-600 pl-1">
+                  <li><strong>Jilid Lem Panas (Bending)</strong>: Memiliki batas minimal ongkos kerja (Min Bending) jika total biaya di bawah tarif minimum.</li>
+                  <li><strong>Jilid Kawat (Stiching)</strong>: Digunakan untuk buku tipis (majalah/buklet) dengan tarif per buku atau per kawat.</li>
+                  <li><strong>Laminasi Cover</strong>: Doff atau Glossy 1 muka dihitung dari luas plano cover terbuka dengan batas minimal order.</li>
+                  <li><strong>Laba / Margin Standar</strong>: Diterapkan dari total HPP seluruh komponen produksi secara otomatis.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="p-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowManualModal(false)}
+                className="px-4 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-900 text-white transition cursor-pointer"
+              >
+                Tutup Panduan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
