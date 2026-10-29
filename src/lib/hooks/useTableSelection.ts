@@ -17,6 +17,9 @@ export function useTableSelection<T extends { id: any }>(data: T[]) {
           const start = Math.min(currentIndex, lastIndex);
           const end = Math.max(currentIndex, lastIndex);
           
+          if (!e.ctrlKey && !e.metaKey) {
+            next.clear();
+          }
           for (let i = start; i <= end; i++) {
             next.add(data[i].id);
           }

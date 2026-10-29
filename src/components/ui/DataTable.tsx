@@ -109,10 +109,16 @@ function DataTableInner<TData extends { id: number | string }>({
   const onMouseDown = (e: React.MouseEvent) => {
     if (!parentRef.current) return;
     if (e.button !== 0) return;
+
+    const target = e.target as HTMLElement;
+    const isInteractive = target.closest('input, textarea, select, button, a, [contenteditable="true"]');
+    if (!isInteractive) {
+      parentRef.current.focus({ preventScroll: true });
+    }
+
     // Jangan aktifkan drag-scroll kalau klik dimulai dari dalam sel (td/th) —
     // biarkan browser handle text selection secara normal
-    if ((e.target as HTMLElement).closest('td, th')) return;
-
+    if (target.closest('td, th')) return;
     setIsPointerDown(true);
     startX.current = e.pageX - parentRef.current.offsetLeft;
     startY.current = e.pageY - parentRef.current.offsetTop;
@@ -217,6 +223,80 @@ function DataTableInner<TData extends { id: number | string }>({
     return map;
   }, [headers, columnSizing]);
 
+  const focusedIndexRef = React.useRef<number | null>(null);
+
+  const handleKeyDown = React.useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!onRowClick || rows.length === 0) return;
+
+    const target = e.target as HTMLElement;
+    if (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'TEXTAREA' ||
+      target.tagName === 'SELECT' ||
+      target.tagName === 'BUTTON' ||
+      target.isContentEditable
+    ) {
+      return;
+    }
+
+    const navigationKeys = ['ArrowDown', 'ArrowUp', 'Home', 'End', 'PageDown', 'PageUp'];
+    if (!navigationKeys.includes(e.key)) return;
+
+    e.preventDefault();
+
+    let currentIdx = focusedIndexRef.current;
+    if (
+      currentIdx === null ||
+      currentIdx < 0 ||
+      currentIdx >= rows.length ||
+      (selectedIds && !selectedIds.has(rows[currentIdx]?.original.id))
+    ) {
+      if (selectedIds && selectedIds.size > 0) {
+        currentIdx = rows.findIndex(r => selectedIds.has(r.original.id));
+      } else {
+        currentIdx = -1;
+      }
+    }
+
+    let nextIdx = 0;
+    if (e.key === 'ArrowDown') {
+      nextIdx = currentIdx === -1 ? 0 : Math.min(rows.length - 1, currentIdx + 1);
+    } else if (e.key === 'ArrowUp') {
+      nextIdx = currentIdx === -1 ? rows.length - 1 : Math.max(0, currentIdx - 1);
+    } else if (e.key === 'Home') {
+      nextIdx = 0;
+    } else if (e.key === 'End') {
+      nextIdx = rows.length - 1;
+    } else if (e.key === 'PageDown') {
+      nextIdx = currentIdx === -1 ? 0 : Math.min(rows.length - 1, currentIdx + 10);
+    } else if (e.key === 'PageUp') {
+      nextIdx = currentIdx === -1 ? 0 : Math.max(0, currentIdx - 10);
+    }
+
+    if (nextIdx < 0 || nextIdx >= rows.length) return;
+
+    // Jika sudah di ujung dan baris tersebut sudah terpilih, hindari toggle off selection
+    if (nextIdx === currentIdx && selectedIds && selectedIds.has(rows[nextIdx].original.id)) {
+      return;
+    }
+
+    focusedIndexRef.current = nextIdx;
+    virtualizer.scrollToIndex(nextIdx, { align: 'auto' });
+
+    const targetRow = rows[nextIdx];
+    if (targetRow) {
+      const syntheticEvent = {
+        shiftKey: e.shiftKey,
+        ctrlKey: e.ctrlKey,
+        metaKey: e.metaKey,
+        preventDefault: () => e.preventDefault(),
+        stopPropagation: () => e.stopPropagation(),
+      } as unknown as React.MouseEvent;
+
+      onRowClick(targetRow.original.id, syntheticEvent);
+    }
+  }, [onRowClick, rows, selectedIds, virtualizer]);
+
   if (!isMounted) return <div className={`bg-white border border-gray-100 shadow-sm rounded-[12px] overflow-hidden flex flex-col min-h-0 relative ${height} animate-pulse`} />;
 
   return (
@@ -225,15 +305,19 @@ function DataTableInner<TData extends { id: number | string }>({
         <style dangerouslySetInnerHTML={{ __html: `.is-resizing { user-select: none !important; cursor: col-resize !important; } .is-resizing * { cursor: col-resize !important; } .is-dragging * { user-select: none !important; cursor: grabbing !important; }` }} />
         <div
           ref={parentRef}
-          className={`overflow-auto custom-scrollbar flex-1 min-h-0 relative bg-white ${isDragging ? 'cursor-grabbing select-none' : ''}`} 
+          tabIndex={0}
+          role="region"
+          aria-label="Tabel Data"
+          className={`overflow-auto custom-scrollbar flex-1 min-h-0 relative bg-white outline-none focus:outline-none focus-visible:outline-none ${isDragging ? 'cursor-grabbing select-none' : ''}`} 
           onScroll={onScroll}
           onMouseDown={onMouseDown}
           onMouseLeave={onMouseLeave}
           onMouseUp={onMouseUp}
           onMouseMove={onMouseMove}
+          onKeyDown={handleKeyDown}
         >
-        <div style={{ width: totalWidth }}>
-          <table 
+          <div style={{ width: totalWidth }}>
+            <table
             className="text-left relative border-separate border-spacing-0"
             style={{ tableLayout: 'fixed', width: totalWidth }}
           >
