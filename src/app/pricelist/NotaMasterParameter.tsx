@@ -41,15 +41,6 @@ interface GroupDef {
 
 const KERTAS_NOTA_GROUPS: GroupDef[] = [
   {
-    title: 'Kertas HVS 70 gsm (Nota 1 Rangkap)',
-    border: 'border-emerald-300',
-    labelCls: 'text-emerald-800',
-    fields: [
-      { key: 'tarifHvs70Kg', label: 'HVS 70 gsm (Rp/Kg)' },
-      { key: 'upHvsPct', label: 'Markup / Up HVS', opts: { rupiah: false, suffix: '%' } },
-    ],
-  },
-  {
     title: 'Kertas NCR 55 gsm (Nota 2, 3 & 4 Rangkap)',
     border: 'border-emerald-300',
     labelCls: 'text-emerald-800',
@@ -102,8 +93,6 @@ const JILID_FINISHING_GROUPS: GroupDef[] = [
 ];
 
 const NOTA_VISIBLE_KEYS: (keyof NotaMasterParams)[] = [
-  'tarifHvs70Kg',
-  'upHvsPct',
   'tarifNcrTopRim',
   'tarifNcrMiddleRim',
   'tarifNcrBottomRim',

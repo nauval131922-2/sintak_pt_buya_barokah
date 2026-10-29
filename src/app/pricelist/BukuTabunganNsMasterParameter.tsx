@@ -26,8 +26,8 @@ interface BukuTabunganNsMasterParameterProps {
 
 const BUKU_TABUNGAN_NS_VISIBLE_KEYS: (keyof BukuTabunganNsMasterParams)[] = [
   'jumlahHalaman', 'umr',
-  'tarifKertasCoverKg', 'upKertasCoverPct', 'insheetCover', 'tarifDesainCover', 'tarifPrintCoverA3', 'tarifFilmBw',
-  'tarifKertasIsiKg', 'upKertasIsiPct', 'insheetIsi', 'tarifDesainIsiPerLbr', 'tarifPrintIsiA3', 'tarifFilmWarna', 'tarifJasaPrintBuya',
+  'insheetCover', 'tarifDesainCover', 'tarifPrintCoverA3', 'tarifFilmBw',
+  'insheetIsi', 'tarifDesainIsiPerLbr', 'tarifPrintIsiA3', 'tarifFilmWarna', 'tarifJasaPrintBuya',
   'tarifKawatStiching', 'tarifTintaSpotUvKg', 'tarifPlastikSringRoll', 'tarifSteplesPack', 'tarifLakbanRoll', 'tarifKardusBox', 'royalty',
   'targetSusunLipat', 'targetJahit', 'targetPound', 'targetSpotUv', 'targetEmboss', 'targetSring', 'targetLakban',
   'tarifPisauPound', 'tarifSisirPaket', 'tarifBending', 'tarifLamGlossy', 'tarifLamDoff', 'tarifUvVarnish',
@@ -185,8 +185,6 @@ export default function BukuTabunganNsMasterParameter({
           [
             fieldRow('jumlahHalaman', 'Jumlah Halaman', { rupiah: false }),
             fieldRow('umr', 'UMR Acuan'),
-            fieldRow('tarifKertasCoverKg', 'Kertas Cover /kg'),
-            fieldRow('upKertasCoverPct', 'Up Kertas Cover %', { rupiah: false, suffix: '%' }),
             fieldRow('insheetCover', 'Insheet Cover (lbr)', { rupiah: false }),
             fieldRow('tarifDesainCover', 'Desain Cover /order'),
             fieldRow('tarifPrintCoverA3', 'Print Cover A3+'),
@@ -199,8 +197,6 @@ export default function BukuTabunganNsMasterParameter({
           '2. Kertas Isi & Cetak Isi',
           'Isi Print Buya: kertas diganti jasa; Inter: proporsional lembar cetak.',
           [
-            fieldRow('tarifKertasIsiKg', 'Kertas Isi /kg'),
-            fieldRow('upKertasIsiPct', 'Up Kertas Isi %', { rupiah: false, suffix: '%' }),
             fieldRow('insheetIsi', 'Insheet Isi (lbr)', { rupiah: false }),
             fieldRow('tarifDesainIsiPerLbr', 'Desain Isi /lbr'),
             fieldRow('tarifPrintIsiA3', 'Print Isi A3+'),

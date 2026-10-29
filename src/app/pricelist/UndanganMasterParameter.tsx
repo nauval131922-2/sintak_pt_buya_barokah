@@ -45,11 +45,10 @@ interface GroupDef {
 
 const UNDANGAN_GROUPS: GroupDef[] = [
   {
-    title: '1. Bahan & Kertas',
+    title: '1. Spesifikasi Bahan & Toleransi',
     border: 'border-emerald-300',
     labelCls: 'text-emerald-800',
     fields: [
-      { key: 'hargaPerKg', label: 'Harga / kg (Rp)' },
       { key: 'gramatur', label: 'Gramatur (gsm)', opts: { rupiah: false } },
       { key: 'upOffsetPct', label: 'Up Oliver (%)', opts: { rupiah: false, suffix: '%' } },
       { key: 'upPrintPct', label: 'Up Print (%)', opts: { rupiah: false, suffix: '%' } },

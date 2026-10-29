@@ -38,11 +38,9 @@ type GroupDef = {
 
 const COVER_GROUPS: GroupDef[] = [
   {
-    title: 'Kertas', border: 'border-sky-300', labelCls: 'text-sky-800',
+    title: 'Spesifikasi & Insheet', border: 'border-sky-300', labelCls: 'text-sky-800',
     fields: [
-      { key: 'tarifKertasCoverKg', label: 'Harga Cover / kg' },
       { key: 'gramaturCover', label: 'Gramatur', opts: { rupiah: false } },
-      { key: 'upCoverPct', label: 'Up Cover (%)', opts: { rupiah: false, suffix: '%' } },
       { key: 'insheetCover', label: 'Insheet Cover' },
     ],
   },
@@ -57,10 +55,8 @@ const COVER_GROUPS: GroupDef[] = [
 
 const ISI_GROUPS: GroupDef[] = [
   {
-    title: 'Kertas', border: 'border-blue-300', labelCls: 'text-blue-800',
+    title: 'Spesifikasi & Insheet', border: 'border-blue-300', labelCls: 'text-blue-800',
     fields: [
-      { key: 'tarifKertasIsiKg', label: 'Harga Isi / kg' },
-      { key: 'upIsiPct', label: 'Up Isi (%)', opts: { rupiah: false, suffix: '%' } },
       { key: 'gramaturIsi', label: 'Gramatur', opts: { rupiah: false } },
       { key: 'insheetIsi', label: 'Insheet Isi' },
     ],

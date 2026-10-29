@@ -42,14 +42,6 @@ interface GroupDef {
 
 const KOSONGAN_GROUPS: GroupDef[] = [
   {
-    title: 'Bahan Baku Kertas',
-    border: 'border-amber-300',
-    labelCls: 'text-amber-800',
-    fields: [
-      { key: 'tarifKertasHvs70Kg', label: 'Kertas HVS 70 gsm / Kg', badge: 'Folio HVS' },
-    ],
-  },
-  {
     title: 'Insheet Kertas Cetak Isi (Toleransi)',
     border: 'border-amber-300',
     labelCls: 'text-amber-800',
@@ -163,7 +155,6 @@ const MANASIK_VISIBLE_KEYS: (keyof ManasikMasterParams)[] = [
   'tarifDesainCover',
   'tarifDesainMiniTikTok',
   'insheetCover',
-  'tarifKertasHvs70Kg',
   'tarifPrintSisipanA3',
   'tarifPrintBuyaPerLbr',
   'insheetIsiBuya',

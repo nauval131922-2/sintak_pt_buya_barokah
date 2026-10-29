@@ -42,12 +42,10 @@ interface GroupDef {
 
 const LEBEL_KARTU_OBAT_GROUPS: GroupDef[] = [
   {
-    title: '1. Kertas & Desain',
+    title: '1. Spesifikasi Bahan & Desain',
     border: 'border-blue-300',
     labelCls: 'text-blue-800',
     fields: [
-      { key: 'tarifKertasKg', label: 'Kertas HVS / kg (Rp)' },
-      { key: 'upKertasPct', label: 'Up Kertas (%)', opts: { rupiah: false, suffix: '%' } },
       { key: 'gramaturGsm', label: 'Gramatur (gsm)', opts: { rupiah: false } },
       { key: 'insheetLbr', label: 'Insheet (lbr)', opts: { rupiah: false } },
       { key: 'tarifDesain', label: 'Desain / Order (Rp)' },
@@ -77,8 +75,6 @@ const LEBEL_KARTU_OBAT_GROUPS: GroupDef[] = [
 ];
 
 const LEBEL_KARTU_OBAT_VISIBLE_KEYS: (keyof LebelKartuObatMasterParams)[] = [
-  'tarifKertasKg',
-  'upKertasPct',
   'gramaturGsm',
   'insheetLbr',
   'tarifDesain',

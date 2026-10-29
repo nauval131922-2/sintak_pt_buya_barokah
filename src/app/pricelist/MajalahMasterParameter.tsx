@@ -48,7 +48,6 @@ const COVER_GROUPS: GroupDef[] = [
     labelCls: 'text-sky-800',
     fields: [
       { key: 'tarifPrintCoverA3', label: 'Print Cover A3+ (Print Inter)' },
-      { key: 'tarifKertasAc230Kg', label: 'Harga Kertas AC 230 / kg' },
       { key: 'tarifDesainCover', label: 'Desain Cover (per order)' },
     ],
   },
@@ -70,7 +69,6 @@ const ISI_GROUPS: GroupDef[] = [
     border: 'border-blue-300',
     labelCls: 'text-blue-800',
     fields: [
-      { key: 'tarifKertasAp120Kg', label: 'Harga Kertas AP 120 / kg' },
       { key: 'tarifDesainIsi', label: 'Desain Isi 32 Halaman' },
       { key: 'tarifPrintIsiA3', label: 'Print Isi A3+ / sisi (Print Inter)' },
     ],
@@ -140,12 +138,9 @@ const FINISH_GROUPS: GroupDef[] = [
 const ALL_KEYS: (keyof MajalahMasterParams)[] = [
   'umr',
   'tarifPrintCoverA3',
-  'tarifKertasAc230Kg',
   'tarifDesainCover',
   'tarifPlateCoverOliver',
   'minOngkosCoverOliver',
-  'drekCoverOliver',
-  'tarifKertasAp120Kg',
   'tarifDesainIsi',
   'tarifPrintIsiA3',
   'tarifPlateIsiOliver',

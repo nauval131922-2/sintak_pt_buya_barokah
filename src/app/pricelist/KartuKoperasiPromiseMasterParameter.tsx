@@ -43,12 +43,10 @@ interface GroupDef {
 
 const KARTU_KOPERASI_PROMISE_GROUPS: GroupDef[] = [
   {
-    title: '1. Kertas & Desain',
+    title: '1. Spesifikasi Bahan & Desain',
     border: 'border-blue-300',
     labelCls: 'text-blue-800',
     fields: [
-      { key: 'tarifKertasKg', label: 'Kertas / kg (Rp)' },
-      { key: 'upKertasPct', label: 'Up Kertas (%)', opts: { rupiah: false, suffix: '%' } },
       { key: 'gramaturGsm', label: 'Gramatur (gsm)', opts: { rupiah: false } },
       { key: 'insheet', label: 'Insheet (lbr)', opts: { rupiah: false } },
       { key: 'koefInsheet', label: 'Koef. Insheet', opts: { rupiah: false, decimal: true } },
@@ -99,8 +97,6 @@ const KARTU_KOPERASI_PROMISE_GROUPS: GroupDef[] = [
 
 const KARTU_KOPERASI_PROMISE_VISIBLE_KEYS: (keyof KartuKoperasiPromiseMasterParams)[] = [
   'umr',
-  'tarifKertasKg',
-  'upKertasPct',
   'insheet',
   'koefInsheet',
   'gramaturGsm',

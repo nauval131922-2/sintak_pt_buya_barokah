@@ -42,17 +42,6 @@ interface GroupDef {
 
 const KERTAS_INSHEET_GROUPS: GroupDef[] = [
   {
-    title: 'Bahan Kertas Cover & Isi',
-    border: 'border-emerald-300',
-    labelCls: 'text-emerald-800',
-    fields: [
-      { key: 'tarifArtCarton230Kg', label: 'Art Carton 230 (Rp/Kg)' },
-      { key: 'upArtCartonPct', label: 'Markup AC 230 (%)', opts: { rupiah: false, suffix: '%' } },
-      { key: 'tarifHvs70Kg', label: 'Kertas HVS 70 (Rp/Kg)' },
-      { key: 'upHvsPct', label: 'Markup HVS 70 (%)', opts: { rupiah: false, suffix: '%' } },
-    ],
-  },
-  {
     title: 'Insheet Cover & Isi',
     border: 'border-emerald-300',
     labelCls: 'text-emerald-800',
@@ -125,10 +114,6 @@ const MARGIN_GROUPS: GroupDef[] = [
 ];
 
 const BUKU_TULIS_VISIBLE_KEYS: (keyof BukuTulisMasterParams)[] = [
-  'tarifArtCarton230Kg',
-  'upArtCartonPct',
-  'tarifHvs70Kg',
-  'upHvsPct',
   'insheetCoverPod',
   'insheetCoverOffset',
   'insheetIsiRyobi',

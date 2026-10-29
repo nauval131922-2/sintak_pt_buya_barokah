@@ -45,13 +45,11 @@ interface GroupDef {
 
 const CARD1_GROUPS: GroupDef[] = [
   {
-    title: 'Standar Upah & Bahan Kertas',
+    title: 'Standar Upah UMR',
     border: 'border-emerald-300',
     labelCls: 'text-emerald-800',
     fields: [
       { key: 'standarUMR', label: 'Standar UMR / Bulan (Rp)', helpText: 'Basis hitungan upah per hari (UMR / 25)' },
-      { key: 'tarifArtCartonKg', label: 'Harga Art Carton 230 /Kg', helpText: 'Harga dasar bahan kertas per kg' },
-      { key: 'upArtCartonPct', label: 'Markup Kertas (%)', opts: { rupiah: false, suffix: '%' }, helpText: 'Kenaikan harga kertas (default 5%)' },
     ],
   },
 ];

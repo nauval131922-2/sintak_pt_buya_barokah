@@ -39,11 +39,10 @@ type GroupDef = {
 
 const COVER_GROUPS: GroupDef[] = [
   {
-    title: 'Kertas Cover',
+    title: 'Spesifikasi Cover & Insheet',
     border: 'border-sky-300',
     labelCls: 'text-sky-800',
     fields: [
-      { key: 'hargaKertasCoverPerKg', label: 'Harga Kertas Cover / kg' },
       { key: 'gramaturCover', label: 'Gramatur Cover', opts: { rupiah: false, suffix: ' gsm' } },
       { key: 'insheetCoverOffset', label: 'Insheet Cover (Offset)', opts: { rupiah: false, suffix: ' lbr' } },
       { key: 'insheetCoverPrint', label: 'Insheet Cover (Print)', opts: { rupiah: false, suffix: ' lbr' } },
@@ -107,7 +106,6 @@ const BOARD_SKIBLAT_GROUPS: GroupDef[] = [
     border: 'border-orange-300',
     labelCls: 'text-orange-800',
     fields: [
-      { key: 'hargaKertasSkiblatPerKg', label: 'Harga Kertas Skiblat / kg' },
       { key: 'gramaturSkiblat', label: 'Gramatur Skiblat', opts: { rupiah: false, suffix: ' gsm' } },
       { key: 'insheetSkiblat', label: 'Insheet Skiblat', opts: { rupiah: false, suffix: ' lbr' } },
       { key: 'tarifPrintSkiblatA3', label: 'Tarif Print A3+ Skiblat' },
@@ -118,11 +116,10 @@ const BOARD_SKIBLAT_GROUPS: GroupDef[] = [
 
 const ISI_GROUPS: GroupDef[] = [
   {
-    title: 'Kertas Isi (HVS)',
+    title: 'Spesifikasi Isi & Insheet',
     border: 'border-blue-300',
     labelCls: 'text-blue-800',
     fields: [
-      { key: 'hargaKertasIsiPerKg', label: 'Harga Kertas Isi / kg' },
       { key: 'gramaturIsi', label: 'Gramatur Isi', opts: { rupiah: false, suffix: ' gsm' } },
       { key: 'insheetIsiOffset', label: 'Insheet Isi (Offset)', opts: { rupiah: false, suffix: ' lbr' } },
       { key: 'insheetIsiPrint', label: 'Insheet Isi (Print)', opts: { rupiah: false, suffix: ' lbr' } },

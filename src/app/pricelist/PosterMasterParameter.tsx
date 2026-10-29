@@ -42,17 +42,6 @@ interface GroupDef {
   fields: FieldDef[];
 }
 
-const GROUPS_KERTAS: GroupDef[] = [
-  {
-    title: 'Kertas & Bahan Dasar',
-    border: 'border-sky-300',
-    labelCls: 'text-sky-800',
-    fields: [
-      { key: 'tarifArtCarton230Kg', label: 'Tarif Kertas Art Carton 230 /kg' },
-      { key: 'upKertasPct', label: 'Mark-up Kertas', opts: { rupiah: false, suffix: '%' } },
-    ],
-  },
-];
 
 const GROUPS_MESIN: GroupDef[] = [
   {
@@ -131,8 +120,6 @@ const GROUPS_FINISHING_MARGIN: GroupDef[] = [
 ];
 
 const ALL_KEYS: (keyof PosterMasterParams)[] = [
-  'tarifArtCarton230Kg',
-  'upKertasPct',
   'tarifDesain',
   'tarifPrintA3',
   'oliverPlatUnit',
@@ -336,15 +323,6 @@ export default function PosterMasterParameter({
 
       {/* 2 Kolom Seimbang Masonry */}
       <div className="columns-1 lg:columns-2 gap-4 space-y-0">
-        {/* 1. Kertas & Bahan Dasar */}
-        {cardShell(
-          'bg-sky-50/40 border-sky-200/80',
-          cardHeader('bg-sky-100 text-sky-800 border border-sky-300', '1. Kertas', Database, 'text-sky-600', 'Bahan Baku Poster (Art Carton 230 gsm)'),
-          GROUPS_KERTAS,
-          <p className="text-[10px] text-slate-500 italic">
-            * Ukuran plano standar: 79×109 cm (untuk 32×48 cm, 50×70 cm, 70×100 cm) dan 65×100 cm (untuk 48×64 cm).
-          </p>
-        )}
 
         {/* 2. Desain & Mesin Cetak */}
         {cardShell(

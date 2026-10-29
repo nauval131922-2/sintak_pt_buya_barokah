@@ -42,12 +42,10 @@ interface GroupDef {
 
 const KERTAS_PRINT_GROUPS: GroupDef[] = [
   {
-    title: 'Bahan Kertas Art Paper & Print Inter',
+    title: 'Print Inter & Desain',
     border: 'border-emerald-300',
     labelCls: 'text-emerald-800',
     fields: [
-      { key: 'tarifArtPaperKg', label: 'Art Paper (Rp/Kg)' },
-      { key: 'upKertasPct', label: 'Markup / Up Kertas (%)', opts: { rupiah: false, suffix: '%' } },
       { key: 'tarifPrintInter1Muka', label: 'Print Inter 1 Muka (Rp/A3+)' },
       { key: 'tarifPrintInter2Muka', label: 'Print Inter 2 Muka (Rp/A3+)' },
       { key: 'tarifDesainBrosur', label: 'Biaya Desain Brosur (Rp)' },
@@ -99,8 +97,6 @@ const MARGIN_GROUPS: GroupDef[] = [
 ];
 
 const BROSUR_VISIBLE_KEYS: (keyof BrosurMasterParams)[] = [
-  'tarifArtPaperKg',
-  'upKertasPct',
   'tarifPrintInter1Muka',
   'tarifPrintInter2Muka',
   'tarifPlatOliver',
