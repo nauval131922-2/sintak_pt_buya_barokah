@@ -5,6 +5,7 @@ import { saveCalculationToDb } from '@/lib/pricelist-db-sync';
 import {
   DollarSign,
   TrendingUp,
+  Percent,
   BookmarkCheck,
   Bookmark,
   Share2,
@@ -479,7 +480,8 @@ _Harga belum termasuk PPN. Hasil cetak tajam, daya rekat kuat & tahan air._`;
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
               {stepChip(6)} Kalkulasi Total
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {/* Card 1: HPP */}
               <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-500 mb-1">
                   <span className="text-[11px] font-semibold">HPP Per Pcs</span>
@@ -495,6 +497,7 @@ _Harga belum termasuk PPN. Hasil cetak tajam, daya rekat kuat & tahan air._`;
                 </div>
               </div>
 
+              {/* Card 2: Harga Jual */}
               <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-xl border border-emerald-200 p-3.5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-emerald-800 mb-1">
                   <span className="text-[11px] font-bold">Harga Per Pcs (+{marginPct}%)</span>
@@ -505,11 +508,30 @@ _Harga belum termasuk PPN. Hasil cetak tajam, daya rekat kuat & tahan air._`;
                     Rp {result.hargaJualPerPcs.toLocaleString('id-ID')}
                   </span>
                   <span className="block text-[10px] text-emerald-700/80 mt-0.5">
-                    Laba {marginPct}%{negoDiskonPct > 0 ? ` • Nego Rp ${result.negoPerPcs.toLocaleString('id-ID')}` : ''}
+                    Laba {marginPct}%
                   </span>
                 </div>
               </div>
 
+              {/* Card 3: Harga Nego */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-blue-800 mb-1">
+                  <span className="text-[11px] font-bold">Harga Nego (-{negoDiskonPct}%)</span>
+                  <Percent size={13} className="text-blue-600" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
+                    Rp {result.negoPerPcs.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-blue-700/80 mt-0.5">
+                    {negoDiskonPct > 0
+                      ? `Total Nego: Rp ${Math.round(result.negoPerPcs * oplah).toLocaleString('id-ID')}`
+                      : 'Batas aman diskon'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Card 4: Harga Total */}
               <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-500 mb-1">
                   <span className="text-[11px] font-semibold">Harga Total</span>

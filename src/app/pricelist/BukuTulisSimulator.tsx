@@ -530,7 +530,7 @@ export default function BukuTulisSimulator({
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
               {stepChip(6)} Kalkulasi Total
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {/* Card 1: HPP Per Pcs */}
               <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-500 mb-1">
@@ -561,7 +561,25 @@ export default function BukuTulisSimulator({
                 </div>
               </div>
 
-              {/* Card 3: Harga Total */}
+              {/* Card 3: Harga Nego */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-blue-800 mb-1">
+                  <span className="text-[11px] font-bold">Harga Nego (-{negoDiskonPct}%)</span>
+                  <Percent size={13} className="text-blue-600" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
+                    Rp {result.hargaNegoPerPcs.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-blue-700/80 mt-0.5">
+                    {negoDiskonPct > 0
+                      ? `Total Nego: Rp ${result.totalHargaNego.toLocaleString('id-ID')}`
+                      : 'Batas aman diskon'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Card 4: Harga Total */}
               <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-500 mb-1">
                   <span className="text-[11px] font-semibold">Harga Total</span>

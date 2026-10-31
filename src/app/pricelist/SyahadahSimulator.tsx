@@ -557,12 +557,12 @@ export default function SyahadahSimulator({
 
         {/* Kolom Kanan: Rincian & Hasil (lg:col-span-7) */}
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
-          {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
+          {/* Sticky 4-Kartu Metrik Ringkasan Finansial Baku */}
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
               {stepChip(6)} Kalkulasi Total
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {/* Card 1: HPP */}
               <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-500 mb-1">
@@ -595,7 +595,25 @@ export default function SyahadahSimulator({
                 </div>
               </div>
 
-              {/* Card 3: Harga Total */}
+              {/* Card 3: Harga Nego */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-blue-800 mb-1">
+                  <span className="text-[11px] font-bold">Harga Nego (-{negoDiskonPct}%)</span>
+                  <Percent size={13} className="text-blue-600" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
+                    Rp {result.hargaNegoPerPcs.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-blue-700/80 mt-0.5">
+                    {negoDiskonPct > 0
+                      ? `Total Nego: Rp ${result.totalHargaNego.toLocaleString('id-ID')}`
+                      : 'Batas aman diskon'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Card 4: Harga Total */}
               <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-500 mb-1">
                   <span className="text-[11px] font-semibold">Harga Total</span>

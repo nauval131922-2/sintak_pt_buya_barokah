@@ -20,6 +20,7 @@ import {
   FileText,
   Image as ImageIcon,
   Sliders,
+  Percent,
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import ThousandInput from '@/components/ThousandInput';
@@ -459,12 +460,12 @@ PT Buya Barokah
 
         {/* Kolom Kanan: Hasil Finansial Baku & Breakdown Tabel Mandiri */}
         <div className="lg:col-span-7 h-full min-h-0 overflow-y-auto pr-1.5 pb-2 space-y-4">
-          {/* Sticky 3-Kartu Metrik Ringkasan Finansial Baku */}
+          {/* Sticky 4-Kartu Metrik Ringkasan Finansial Baku */}
           <div className="sticky top-0 z-10 space-y-2 bg-slate-50/95 backdrop-blur-xs py-1 -my-1">
             <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-emerald-900">
               {stepChip(7)} Kalkulasi Total
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {/* Card 1: HPP Per Exp */}
               <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-500 mb-1">
@@ -496,8 +497,25 @@ PT Buya Barokah
                   </span>
                 </div>
               </div>
+              {/* Card 3: Harga Nego */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-200 p-3.5 shadow-xs flex flex-col justify-between">
+                <div className="flex items-center justify-between text-blue-800 mb-1">
+                  <span className="text-[11px] font-bold">Harga Nego (-{negoDiskonPct}%)</span>
+                  <Percent size={13} className="text-blue-600" />
+                </div>
+                <div>
+                  <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
+                    Rp {calcResult.negoPerPcs.toLocaleString('id-ID')}
+                  </span>
+                  <span className="block text-[10px] text-blue-700/80 mt-0.5">
+                    {negoDiskonPct > 0
+                      ? `Total Nego: Rp ${Math.round(calcResult.negoPerPcs * oplah).toLocaleString('id-ID')}`
+                      : 'Batas aman diskon'}
+                  </span>
+                </div>
+              </div>
 
-              {/* Card 3: Harga Total & Profit */}
+              {/* Card 4: Harga Total & Profit */}
               <div className="bg-white rounded-xl border border-slate-200 p-3.5 shadow-xs flex flex-col justify-between">
                 <div className="flex items-center justify-between text-slate-500 mb-1">
                   <span className="text-[11px] font-semibold">Harga Total</span>
@@ -512,17 +530,6 @@ PT Buya Barokah
                   </span>
                 </div>
               </div>
-            </div>
-
-            {/* Sub-Card Info Toleransi Nego Diskon */}
-            <div className="bg-amber-50/70 border border-amber-200/80 rounded-xl px-3.5 py-2 flex items-center justify-between text-xs">
-              <span className="text-amber-800 font-bold flex items-center gap-1.5">
-                <Info size={14} className="text-amber-600 shrink-0" />
-                Batas Toleransi Nego Diskon ({negoDiskonPct}%):
-              </span>
-              <span className="font-mono font-black text-amber-900">
-                Rp {calcResult.negoPerPcs.toLocaleString('id-ID')} / pcs
-              </span>
             </div>
           </div>
 
