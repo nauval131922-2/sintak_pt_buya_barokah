@@ -507,7 +507,7 @@ export default function LabelKhqSimulator({
                 </div>
                 <div>
                   <span className="text-base sm:text-lg font-black text-blue-800 font-mono">
-                    Rp {result.hargaNegoPerLbr.toFixed(2)}
+                    Rp {result.hargaNegoPerLbr.toLocaleString('id-ID')}
                   </span>
                   <span className="block text-[10px] text-blue-700/80 mt-0.5">
                     {negoDiskonPct > 0
