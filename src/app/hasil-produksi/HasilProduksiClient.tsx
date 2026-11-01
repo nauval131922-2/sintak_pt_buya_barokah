@@ -443,7 +443,7 @@ export default function HasilProduksiClient() {
     if (tbody) {
       tbody.querySelectorAll(`tr[data-index]:not(.bg-emerald-100) td:nth-child(${i+1})`).forEach(td => { maxW = Math.max(maxW, measure(td as HTMLElement)); });
     }
-    setColWidths(p => { const n = [...p]; n[i] = Math.max(COL_MIN[i], maxW + 8); return n; });
+    setColWidths(p => { const n = [...p]; n[i] = Math.min(500, Math.max(COL_MIN[i], maxW + 8)); return n; });
   };
   const [ctxCol, setCtxCol] = useState<{ i: number; x: number; y: number; val: string } | null>(null);
   useEffect(() => {
@@ -1014,15 +1014,15 @@ export default function HasilProduksiClient() {
               {group.code || '-'}
             </td>
           <td className="px-4 py-3.5 text-[11px] font-bold border-r border-gray-100 truncate text-gray-600" style={{ width: cw(5), minWidth: cw(5), maxWidth: cw(5) }} title={item.bahan_kertas || ''}>{item.bahan_kertas || '-'}</td>
-          <td className="px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700" style={{ width: cw(6), minWidth: cw(6) }}>{formatCellVal(item.jml_plate)}</td>
+          <td className="px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700 truncate" style={{ width: cw(6), minWidth: cw(6), maxWidth: cw(6) }} title={item.jml_plate != null ? String(item.jml_plate) : ''}>{formatCellVal(item.jml_plate)}</td>
           <td className="px-4 py-3.5 text-[11px] font-bold border-r border-gray-100 truncate text-gray-600" style={{ width: cw(7), minWidth: cw(7), maxWidth: cw(7) }} title={item.warna || ''}>{item.warna || '-'}</td>
-          <td className="px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700" style={{ width: cw(8), minWidth: cw(8) }}>{formatCellVal(item.inscheet)}</td>
-          <td className="px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-rose-600" style={{ width: cw(9), minWidth: cw(9) }}>{formatCellVal(item.rijek)}</td>
-          <td className="px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700 truncate" style={{ width: cw(10), minWidth: cw(10) }} title={item.jam || ''}>{item.jam || '-'}</td>
-          <td className="px-4 py-3.5 text-[11px] font-bold border-r border-gray-100 truncate text-rose-600" style={{ width: cw(11), minWidth: cw(11) }} title={item.kendala || ''}>{item.kendala || '-'}</td>
-          <td className="px-4 py-3.5 text-[11px] font-bold border-r border-gray-100 text-gray-500 truncate" style={{ width: cw(12), minWidth: cw(12) }} title={item.keterangan || ''}>{item.keterangan || '-'}</td>
-          <td className="px-4 py-3.5 text-[12px] xl:text-[13px] font-bold text-right tabular-nums border-r border-gray-100 text-gray-700" style={{ width: cw(13), minWidth: cw(13) }}>{Number(item.target).toLocaleString('id-ID')}</td>
-          <td className="px-4 py-3.5 text-[13px] xl:text-[15px] font-semibold text-right tabular-nums bg-emerald-50 text-emerald-900" style={{ width: cw(14), minWidth: cw(14) }}>{Number(item.realisasi).toLocaleString('id-ID')}</td>
+          <td className="px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700 truncate" style={{ width: cw(8), minWidth: cw(8), maxWidth: cw(8) }} title={item.inscheet != null ? String(item.inscheet) : ''}>{formatCellVal(item.inscheet)}</td>
+          <td className="px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-rose-600 truncate" style={{ width: cw(9), minWidth: cw(9), maxWidth: cw(9) }} title={item.rijek != null ? String(item.rijek) : ''}>{formatCellVal(item.rijek)}</td>
+          <td className="px-4 py-3.5 text-[11px] xl:text-[12px] font-bold border-r border-gray-100 text-gray-700 truncate" style={{ width: cw(10), minWidth: cw(10), maxWidth: cw(10) }} title={item.jam || ''}>{item.jam || '-'}</td>
+          <td className="px-4 py-3.5 text-[11px] font-bold border-r border-gray-100 truncate text-rose-600" style={{ width: cw(11), minWidth: cw(11), maxWidth: cw(11) }} title={item.kendala || ''}>{item.kendala || '-'}</td>
+          <td className="px-4 py-3.5 text-[11px] font-bold border-r border-gray-100 text-gray-500 truncate" style={{ width: cw(12), minWidth: cw(12), maxWidth: cw(12) }} title={item.keterangan || ''}>{item.keterangan || '-'}</td>
+          <td className="px-4 py-3.5 text-[12px] xl:text-[13px] font-bold text-right tabular-nums border-r border-gray-100 text-gray-700 truncate" style={{ width: cw(13), minWidth: cw(13), maxWidth: cw(13) }}>{Number(item.target).toLocaleString('id-ID')}</td>
+          <td className="px-4 py-3.5 text-[13px] xl:text-[15px] font-semibold text-right tabular-nums bg-emerald-50 text-emerald-900 truncate" style={{ width: cw(14), minWidth: cw(14), maxWidth: cw(14) }}>{Number(item.realisasi).toLocaleString('id-ID')}</td>
         </tr>
       );
     });

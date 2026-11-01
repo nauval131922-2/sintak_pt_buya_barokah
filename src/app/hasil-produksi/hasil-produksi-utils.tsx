@@ -30,7 +30,10 @@ export const formatCellVal = (val: any) => {
   const isNum = !isNaN(Number(val));
   const display = isNum ? Number(val).toLocaleString('id-ID') : String(val);
   return (
-    <div className={`whitespace-pre-wrap ${isNum ? 'text-right tabular-nums' : 'text-left'}`}>
+    <div
+      className={`truncate ${isNum ? 'text-right tabular-nums' : 'text-left'}`}
+      title={String(val)}
+    >
       {display}
     </div>
   );
