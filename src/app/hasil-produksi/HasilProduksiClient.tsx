@@ -3,10 +3,12 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { BarChart3, Search, ChevronDown, ChevronUp, Filter, RotateCcw, RefreshCw, ClipboardList, TrendingUp, X, Target, AlertCircle, Package, ArrowUpDown, ArrowUp, ArrowDown, List, Table2, ChevronRight } from 'lucide-react';
-import { 
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  BarChart, Bar, Cell 
-} from 'recharts';
+import dynamic from 'next/dynamic';
+
+const DailyTrendChartModal = dynamic(
+  () => import('./DailyTrendChartModal'),
+  { ssr: false }
+);
 import PageHeader from "@/components/PageHeader";
 import DatePicker from '@/components/DatePicker';
 import SearchableDropdown from '@/components/SearchableDropdown';
@@ -333,8 +335,10 @@ export default function HasilProduksiClient() {
   const navIdleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [selectedRowKey, setSelectedRowKey] = useState<string | null>(null);
-  const [hideGudang, setHideGudang] = useState(false);
-  const [hideJurnal, setHideJurnal] = useState(false);
+  const [cardLimit, setCardLimit] = useState(50);
+  useEffect(() => {
+    setCardLimit(50);
+  }, [selectedSopd, selectedBagian, selectedPekerjaan, debouncedDataQuery]);
   const [detailLevel, setDetailLevel] = useState(2);
   useEffect(() => {
     if (!isMounted) return;
@@ -863,24 +867,39 @@ export default function HasilProduksiClient() {
       );
     }
 
-    return displayRows.map((row, idx) => {
-      if (row.type === 'subtotal') {
-        return <JurnalSubtotalCard key={`sc-${idx}`} row={row} />;
-      }
-      if (!row.item) return null;
+    const visibleRows = displayRows.slice(0, cardLimit);
+    return (
+      <>
+        {visibleRows.map((row, idx) => {
+          if (row.type === 'subtotal') {
+            return <JurnalSubtotalCard key={`sc-${idx}`} row={row} />;
+          }
+          if (!row.item) return null;
 
-      const { item } = row;
-      const hasExtra = !!(
-        isValidVal(item.bahan_kertas) ||
-        isValidVal(item.jml_plate) ||
-        isValidVal(item.warna) ||
-        isValidVal(item.inscheet) ||
-        isValidVal(item.kendala) ||
-        isValidVal(item.keterangan)
-      );
-      return <JurnalCard key={`jc-${idx}`} item={item} hasExtra={hasExtra} />;
-    });
-  }, [displayRows, loadingDetails]);
+          const { item } = row;
+          const hasExtra = !!(
+            isValidVal(item.bahan_kertas) ||
+            isValidVal(item.jml_plate) ||
+            isValidVal(item.warna) ||
+            isValidVal(item.inscheet) ||
+            isValidVal(item.kendala) ||
+            isValidVal(item.keterangan)
+          );
+          return <JurnalCard key={`jc-${idx}`} item={item} hasExtra={hasExtra} />;
+        })}
+        {displayRows.length > cardLimit && (
+          <div className="flex justify-center pt-2 pb-4">
+            <button
+              onClick={() => setCardLimit(p => p + 50)}
+              className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-[11px] font-bold rounded-lg transition-colors shadow-sm"
+            >
+              Tampilkan 50 data lagi ({displayRows.length - cardLimit} tersisa)
+            </button>
+          </div>
+        )}
+      </>
+    );
+  }, [displayRows, loadingDetails, cardLimit]);
 
   const rowVirtualizer = useVirtualizer({
     count: viewMode === 'table' ? displayRows.length : 0,
@@ -1450,136 +1469,13 @@ export default function HasilProduksiClient() {
         )}
 
 
-            {/* Daily Trend Chart - MODAL VERSION */}
+            {/* Daily Trend Chart - MODAL VERSION (Dynamically Imported) */}
             {showChart && chartData.length > 0 && (
-              <div 
-                className="fixed inset-0 z-[200] flex items-center justify-center p-2 sm:p-10 bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 cursor-pointer"
-                onClick={() => setShowChart(false)}
-              >
-                <div 
-                  className="w-full max-w-5xl bg-white border border-gray-100 rounded-xl shadow-md flex flex-col animate-in zoom-in-95 duration-300 cursor-default overflow-hidden"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {/* Modal Header */}
-                  <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-50 bg-gray-50/50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                        <TrendingUp size={16} />
-                      </div>
-                      <div className="flex flex-col">
-                        <h3 className="text-lg sm:text-xl font-bold tracking-tight text-gray-800 leading-tight">Tren Produksi Harian</h3>
-                        <span className="text-[11px] sm:text-[12px] font-medium text-gray-500 mt-1">
-                          Grafik perbandingan Barang Jadi dan Realisasi Pekerjaan
-                        </span>
-                      </div>
-                    </div>
-                    <button 
-                      onClick={() => setShowChart(false)}
-                      className="p-2.5 rounded-lg bg-white border border-gray-100 shadow-sm hover:bg-red-50 hover:text-red-600 transition-all text-gray-400"
-                    >
-                      <X size={18} />
-                    </button>
-                  </div>
-
-                  {/* Modal Content */}
-                  <div className="p-4 sm:p-10 min-h-[300px] sm:min-h-[450px] flex flex-col">
-                    <div className="mb-6 sm:mb-10 flex flex-wrap gap-4 sm:gap-8 text-[11px] font-bold">
-                      <button 
-                        onClick={() => setHideGudang(!hideGudang)}
-                        className={`flex items-center gap-3 cursor-pointer transition-all hover:opacity-80 ${hideGudang ? 'opacity-40' : 'opacity-100'}`}
-                      >
-                        <div className="w-5 h-5 rounded-lg border border-blue-100 shadow-sm" style={{ backgroundColor: '#2563eb' }}></div>
-                        <span className={hideGudang ? 'line-through text-gray-300' : 'text-gray-800'}>Barang Jadi</span>
-                      </button>
-                      {selectedPekerjaan && (
-                        <button 
-                          onClick={() => setHideJurnal(!hideJurnal)}
-                          className={`flex items-center gap-3 cursor-pointer transition-all hover:opacity-80 ${hideJurnal ? 'opacity-40' : 'opacity-100'}`}
-                        >
-                          <div className="w-5 h-5 rounded-lg border border-orange-100 shadow-sm" style={{ backgroundColor: '#f97316' }}></div>
-                          <span className={hideJurnal ? 'line-through text-gray-300' : 'text-gray-800'}>{selectedPekerjaan}</span>
-                        </button>
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 w-full">
-                      <ResponsiveContainer width="100%" height={350}>
-                        <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 10, bottom: 20 }}>
-                          <defs>
-                            <linearGradient id="colorGudang" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#2563eb" stopOpacity={0.1}/>
-                              <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
-                            </linearGradient>
-                            <linearGradient id="colorJurnal" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#f97316" stopOpacity={0.1}/>
-                              <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
-                          <XAxis 
-                            dataKey="displayDate" 
-                            fontSize={10} 
-                            fontWeight={700} 
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fill: '#9ca3af', textAnchor: 'end' }}
-                            angle={-30}
-                            height={80}
-                            dy={4}
-                            label={{ value: 'Tanggal', position: 'insideBottom', offset: -10, fill: '#9ca3af', fontSize: 10, fontWeight: 700 }}
-                          />
-                          <YAxis 
-                            width={80}
-                            fontSize={10} 
-                            fontWeight={700}
-                            axisLine={false}
-                            tickLine={false}
-                            tickFormatter={(val) => val.toLocaleString('id-ID')}
-                            tick={{ fill: '#9ca3af' }}
-                            dx={-10}
-                            label={{ value: 'Qty / Realisasi', angle: -90, position: 'insideLeft', fill: '#9ca3af', fontSize: 10, fontWeight: 700, offset: 0 }}
-                          />
-                          <Tooltip 
-                            contentStyle={{ 
-                              backgroundColor: '#fff', 
-                              border: '1px solid #f3f4f6', 
-                              borderRadius: '16px',
-                              boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
-                              fontSize: '12px',
-                              fontWeight: '700',
-                              padding: '12px'
-                            }}
-                          />
-                          {!hideGudang && (
-                            <Area 
-                              type="monotone" 
-                              dataKey="gudang" 
-                              name="Barang Jadi" 
-                              stroke="#2563eb" 
-                              strokeWidth={3}
-                              fillOpacity={1} 
-                              fill="url(#colorGudang)" 
-                              animationDuration={1000}
-                            />
-                          )}
-                          {!hideJurnal && selectedPekerjaan && (
-                            <Area 
-                              type="monotone" 
-                              dataKey="jurnal" 
-                              name={selectedPekerjaan} 
-                              stroke="#f97316" 
-                              strokeWidth={3}
-                              fillOpacity={1} 
-                              fill="url(#colorJurnal)" 
-                              animationDuration={1000}
-                            />
-                          )}
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <DailyTrendChartModal
+                chartData={chartData}
+                selectedPekerjaan={selectedPekerjaan}
+                onClose={() => setShowChart(false)}
+              />
             )}
         
         {selectedSopd ? (

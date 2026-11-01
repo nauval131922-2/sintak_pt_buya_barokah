@@ -20,6 +20,8 @@ export async function GET(request: NextRequest) {
     const args: any[] = [];
 
     const all = searchParams.get('all') === 'true' || searchParams.get('all') === '1';
+    const limitParam = parseInt(searchParams.get('limit') || '', 10);
+    const limit = Number.isFinite(limitParam) && limitParam > 0 ? Math.min(limitParam, 500) : (search ? 500 : 300);
 
     if (search) {
       sopdSql += ` AND (no_sopd LIKE ? OR nama_order LIKE ?)`;
@@ -29,8 +31,8 @@ export async function GET(request: NextRequest) {
     }
 
     if (!all) {
-      sopdSql += ` ORDER BY ${sortExpr} DESC LIMIT ${search ? 500 : 300}`;
-      ordersSql += ` ORDER BY ${sortExpr} DESC LIMIT ${search ? 500 : 300}`;
+      sopdSql += ` ORDER BY ${sortExpr} DESC LIMIT ${limit}`;
+      ordersSql += ` ORDER BY ${sortExpr} DESC LIMIT ${limit}`;
     } else {
       sopdSql += ` ORDER BY ${sortExpr} DESC`;
       ordersSql += ` ORDER BY ${sortExpr} DESC`;
@@ -42,20 +44,26 @@ export async function GET(request: NextRequest) {
     ], 'read');
 
     const combined = [
-      ...ordersResult.rows.map((r: any) => ({ 
-        no_sopd: r.no_sopd, 
-        nama_order: r.nama_order, 
-        tgl: r.tgl,
-        qty: Number(r.qty_sopd || 0),
-        unit: r.unit || ''
-      })),
-      ...sopdResult.rows.map((r: any) => ({ 
-        no_sopd: r.no_sopd, 
-        nama_order: r.nama_order, 
-        tgl: r.tgl,
-        qty: Number(r.qty_sopd || 0),
-        unit: r.unit || ''
-      }))
+      ...ordersResult.rows.map((r) => {
+        const row = r as Record<string, unknown>;
+        return { 
+          no_sopd: String(row.no_sopd || ''), 
+          nama_order: String(row.nama_order || ''), 
+          tgl: String(row.tgl || ''),
+          qty: Number(row.qty_sopd || 0),
+          unit: String(row.unit || '')
+        };
+      }),
+      ...sopdResult.rows.map((r) => {
+        const row = r as Record<string, unknown>;
+        return { 
+          no_sopd: String(row.no_sopd || ''), 
+          nama_order: String(row.nama_order || ''), 
+          tgl: String(row.tgl || ''),
+          qty: Number(row.qty_sopd || 0),
+          unit: String(row.unit || '')
+        };
+      })
     ];
 
     // Deduplicate by no_sopd, keeping the last occurrence (which is now SOPD due to the reversed spread)

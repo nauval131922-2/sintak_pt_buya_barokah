@@ -4,6 +4,11 @@ import { getSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
+// In-memory cache for master_pekerjaan to avoid fetching 2,400+ rows on every request
+let cachedMasterPekerjaan: Map<string, string> | null = null;
+let masterPekerjaanCacheTime = 0;
+const MASTER_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
 export async function GET(request: NextRequest) {
   // Guard: halaman tanpa permission khusus — minimal session login
   const session = await getSession();
@@ -45,7 +50,7 @@ export async function GET(request: NextRequest) {
     queries.push({ sql: jobSql, args: jobArgs });
 
     // Query 3: Barang Jadi Items
-    let bjSql = `SELECT tgl, qty, satuan, faktur, nama_barang, nama_prd, raw_data 
+    let bjSql = `SELECT tgl, qty, satuan, faktur, nama_barang, nama_prd 
                  FROM barang_jadi 
                  WHERE (faktur_prd LIKE ? OR nama_prd LIKE ? OR faktur = ?)`;
     const bjArgs: any[] = [`%${noSopd}%`, `%${noSopd}%`, noSopd];
@@ -106,42 +111,54 @@ export async function GET(request: NextRequest) {
     jSql += ` ORDER BY tgl ASC`;
     queries.push({ sql: jSql, args: jArgs });
 
-    // Query 5: Master pekerjaan for code mapping
-    queries.push({ sql: 'SELECT code, name FROM master_pekerjaan', args: [] });
+    // Query 5: Master pekerjaan for code mapping (only query when cache is stale)
+    const needsMasterQuery = !cachedMasterPekerjaan || (Date.now() - masterPekerjaanCacheTime > MASTER_CACHE_TTL_MS);
+    const masterIdx = needsMasterQuery ? queries.length : -1;
+    if (needsMasterQuery) {
+      queries.push({ sql: 'SELECT code, name FROM master_pekerjaan', args: [] });
+    }
 
-    // Query 6: Unfiltered timeseries data for trend chart (only bounded by SOPD and Dates)
-    // ponytail: get Jurnal timeseries unfiltered by Bagian / Pekerjaan to keep trend accurate
-    let trendSql = `SELECT tgl, realisasi FROM jurnal_harian_produksi WHERE ((no_order = ? AND deleted_at IS NULL) OR (no_order_2 = ? AND deleted_at IS NULL))`;
-    const trendArgs: any[] = [noSopd, noSopd];
-    if (startDate) {
-      trendSql += ` AND tgl >= ?`;
-      trendArgs.push(startDate);
+    // Query 6: Unfiltered timeseries data for trend chart (only needed when Bagian / Pekerjaan / Search filters are active)
+    const needsTrendQuery = !!(bagian || pekerjaan || search);
+    const trendIdx = needsTrendQuery ? queries.length : -1;
+    if (needsTrendQuery) {
+      let trendSql = `SELECT tgl, realisasi FROM jurnal_harian_produksi WHERE ((no_order = ? AND deleted_at IS NULL) OR (no_order_2 = ? AND deleted_at IS NULL))`;
+      const trendArgs: any[] = [noSopd, noSopd];
+      if (startDate) {
+        trendSql += ` AND tgl >= ?`;
+        trendArgs.push(startDate);
+      }
+      if (endDate) {
+        trendSql += ` AND tgl <= ?`;
+        trendArgs.push(endDate);
+      }
+      queries.push({ sql: trendSql, args: trendArgs });
     }
-    if (endDate) {
-      trendSql += ` AND tgl <= ?`;
-      trendArgs.push(endDate);
-    }
-    queries.push({ sql: trendSql, args: trendArgs });
 
     // Execute all in one go
     const batchResults = await db.batch(queries);
     
-    const availableBagian = (batchResults[0].rows as any[]).map(r => r.bagian);
-    const availablePekerjaan = (batchResults[1].rows as any[]).map(r => r.jenis_pekerjaan);
-    const bjRows = batchResults[2].rows as any[];
-    const jurnalRows = batchResults[3].rows as any[];
+    const availableBagian = (batchResults[0].rows as unknown as Record<string, unknown>[]).map(r => String(r.bagian || ''));
+    const availablePekerjaan = (batchResults[1].rows as unknown as Record<string, unknown>[]).map(r => String(r.jenis_pekerjaan || ''));
+    const bjRows = batchResults[2].rows as unknown as Record<string, unknown>[];
+    const jurnalRows = batchResults[3].rows as unknown as Record<string, unknown>[];
 
-    // Build name-to-code map from master_pekerjaan
-    const nameToCode = new Map<string, string>();
-    const masterPekerjaanRows = (batchResults[4]?.rows as any[]) || [];
-    masterPekerjaanRows.forEach((r: any) => {
-      if (r.name && r.code) {
-        nameToCode.set(String(r.name).trim().toLowerCase(), String(r.code));
-      }
-    });
+    // Update cache if queried
+    if (needsMasterQuery && masterIdx !== -1) {
+      const map = new Map<string, string>();
+      const masterPekerjaanRows = (batchResults[masterIdx]?.rows as unknown as Record<string, unknown>[]) || [];
+      masterPekerjaanRows.forEach((r) => {
+        if (r.name && r.code) {
+          map.set(String(r.name).trim().toLowerCase(), String(r.code));
+        }
+      });
+      cachedMasterPekerjaan = map;
+      masterPekerjaanCacheTime = Date.now();
+    }
+
     const getCode = (jobName: string) => {
-      if (!jobName) return '';
-      return nameToCode.get(jobName.trim().toLowerCase()) || '';
+      if (!jobName || !cachedMasterPekerjaan) return '';
+      return cachedMasterPekerjaan.get(jobName.trim().toLowerCase()) || '';
     };
 
     // 1. Calculate first occurrence for each job to enable grouping by job starting date
@@ -184,18 +201,13 @@ export async function GET(request: NextRequest) {
     let grandTotal = 0;
 
     bjRows.forEach(row => {
-      let parsedRaw = {};
-      if (row.raw_data) {
-        try { parsedRaw = JSON.parse(row.raw_data); } catch (e) {}
-      }
-      const mergedRow = { ...row, ...parsedRaw };
-      const date = mergedRow.tgl;
+      const date = row.tgl;
       if (!groupedByDate[date]) {
         groupedByDate[date] = { date, items: [], total: 0 };
       }
-      groupedByDate[date].items.push(mergedRow);
-      groupedByDate[date].total += Number(mergedRow.qty || 0);
-      grandTotal += Number(mergedRow.qty || 0);
+      groupedByDate[date].items.push(row);
+      groupedByDate[date].total += Number(row.qty || 0);
+      grandTotal += Number(row.qty || 0);
     });
 
     // 3. Group jurnal by Job (since they are now sorted by job)
@@ -228,13 +240,20 @@ export async function GET(request: NextRequest) {
       grandTotalTarget += Number(row.target) || 0;
     });
 
-    // Query 6 results
-    const trendRows = (batchResults[5]?.rows as any[]) || [];
+    // Trend results: use separate query if filters were active, otherwise aggregate directly from jurnalRows
     const trendMap: Record<string, number> = {};
-    trendRows.forEach(row => {
-      const tgl = row.tgl;
-      trendMap[tgl] = (trendMap[tgl] || 0) + (Number(row.realisasi) || 0);
-    });
+    if (needsTrendQuery && trendIdx !== -1) {
+      const trendRows = (batchResults[trendIdx]?.rows as unknown as Record<string, unknown>[]) || [];
+      trendRows.forEach(row => {
+        const tgl = row.tgl;
+        trendMap[tgl] = (trendMap[tgl] || 0) + (Number(row.realisasi) || 0);
+      });
+    } else {
+      jurnalRows.forEach(row => {
+        const tgl = row.tgl;
+        trendMap[tgl] = (trendMap[tgl] || 0) + (Number(row.realisasi) || 0);
+      });
+    }
 
     return NextResponse.json({ 
       success: true, 
