@@ -42,7 +42,7 @@ function wrapLines(text: string, perLine: number): number {
   return lines;
 }
 
-// Tulis workbook usulan (11 kolom A-K + footer 3 kolom), kembalikan Buffer xlsx.
+// Tulis workbook usulan (11 kolom A-K + footer ttd PPIC & Manager), kembalikan Buffer xlsx.
 // Pakai Workbook biasa (bukan stream writer): stream writer tidak menulis <sheetPr fitToPage>,
 // sehingga Ctrl+P jatuh ke "No Scaling" dan kolom kanan terpotong.
 export async function buildPenonaktifanWorkbook(cutoff: string, rows: PenonaktifanExportRow[], signer: string): Promise<Buffer> {
@@ -110,9 +110,9 @@ export async function buildPenonaktifanWorkbook(cutoff: string, rows: Penonaktif
   const footLabel = 5 + rows.length + 1;
   const nameRow = footLabel + 4;
   const titleRow = footLabel + 5;
-  const labels: Record<number, string> = { 2: 'Hormat Kami,', 5: 'Menyetujui,', 8: 'Mengetahui,' };
-  const names: Record<number, string> = { 2: signer, 5: '(Sri Yatun)', 8: '(Triswadi)' };
-  const titles: Record<number, string> = { 2: 'PPIC', 5: 'Customer Service', 8: 'Manager' };
+  const labels: Record<number, string> = { 2: 'Hormat Kami,', 8: 'Mengetahui,' };
+  const names: Record<number, string> = { 2: signer, 8: '(Triswadi)' };
+  const titles: Record<number, string> = { 2: 'PPIC', 8: 'Manager' };
   const lr = ws.getRow(footLabel);
   Object.entries(labels).forEach(([col, v]) => {
     const c = lr.getCell(Number(col));

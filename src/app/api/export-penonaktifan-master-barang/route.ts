@@ -55,7 +55,7 @@ function xlsx(buffer: Buffer, cutoff: string): NextResponse {
 }
 
 // GET /api/export-penonaktifan-master-barang?cutoff=yyyy-mm-dd — regenerate murni dari server.
-// Unduh Excel usulan (11 kolom A-K + footer 3 kolom). Tidak menonaktifkan apa pun.
+// Unduh Excel usulan (11 kolom A-K + footer ttd PPIC & Manager). Tidak menonaktifkan apa pun.
 export async function GET(request: NextRequest) {
   const gate = await requireApiPermission('produksi_penonaktifan_master');
   if (gate.error) return gate.error;

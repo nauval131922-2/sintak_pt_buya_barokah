@@ -155,7 +155,7 @@ export default function ManualModal() {
        'Gunakan **Kotak Pencarian** untuk memfilter kode/nama; klik baris untuk menandai; footer menampilkan jumlah dan waktu muat.',
        'Butuh kode yang belum ada di hasil? Pakai **Tambah Usulan Manual** — ketik kode/nama (ada auto-suggest), isi alasan, lalu Tambah.',
        'Butuh persetujuan pihak lain? Klik **Bagikan** — kirim link review (tanpa login) ke pengecek; mereka hanya bisa usul hapus/tambah + alasan. Putuskan per baris di **Rekap koreksi** (Setuju/Tolak, auto-refresh 30 detik). File Excel ikut isi tabel final yang sudah dikoreksi.',
-       'Klik **Unduh Excel usulan** — file siap tanda tangan PPIC, Customer Service, dan Manager (kolom penanda tangan otomatis terisi nama user login).',
+      'Klik **Unduh Excel usulan** — file siap tanda tangan PPIC dan Manager (kolom penanda tangan otomatis terisi nama user login).',
        'Serahkan ke PPIC — pastikan sync master terbaru sebelum eksekusi, karena saldo 0 di Sintak diasumsikan N PERSD 0.',
      ],
     tips: 'Transaksi dievaluasi sampai tanggal cutoff: barang jadi yang masih ada transaksi aktif atau memiliki sisa saldo/WIP pada tanggal cutoff otomatis ditahan oleh filter pelindung.',
