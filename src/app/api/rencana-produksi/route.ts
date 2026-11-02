@@ -231,7 +231,7 @@ export async function GET(request: NextRequest) {
             SUM(target) as target,
             SUM(realisasi) as realisasi,
             MAX(CASE WHEN kendala IS NOT NULL AND kendala != '' AND kendala != '-' THEN 1 ELSE 0 END) as stage_kendala
-          FROM jurnal_harian_produksi INDEXED BY idx_jurnal_order_del_bag
+          FROM jurnal_harian_produksi
           WHERE deleted_at IS NULL AND no_order IN (${placeholders})
           GROUP BY no_order, bagian
           ORDER BY no_order, MIN(tgl) ASC
