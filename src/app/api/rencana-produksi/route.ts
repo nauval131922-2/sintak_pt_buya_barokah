@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { requireApiPermission } from '@/lib/api-guard';
+import { getSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,13 +22,36 @@ export async function GET(request: NextRequest) {
 
   try {
     const searchParams = request.nextUrl.searchParams;
+    const orderParam = searchParams.get('order')?.trim();
+
+    // Jika ada parameter ?order=..., kembalikan detail rencana tunggal
+    if (orderParam) {
+      const planRes = await db.execute({
+        sql: `SELECT * FROM rencana_produksi WHERE no_order = ?`,
+        args: [orderParam],
+      });
+      const plan = planRes.rows[0] || null;
+      let tahapan: unknown[] = [];
+      if (plan) {
+        const tahapanRes = await db.execute({
+          sql: `SELECT * FROM rencana_produksi_tahapan WHERE rencana_id = ? ORDER BY urutan ASC`,
+          args: [(plan as any).id],
+        });
+        tahapan = tahapanRes.rows;
+      }
+      return NextResponse.json({
+        success: true,
+        plan,
+        tahapan,
+      });
+    }
+
     const search = searchParams.get('search')?.trim() || '';
     const filterBagian = searchParams.get('bagian')?.trim() || 'ALL';
     const statusFilter = searchParams.get('status')?.trim() || 'ALL';
     const startDate = searchParams.get('startDate')?.trim() || '';
     const endDate = searchParams.get('endDate')?.trim() || '';
     const limit = Math.min(100, Math.max(10, Number(searchParams.get('limit')) || 40));
-    // 1. Fetch recent distinct orders from JHP with aggregated stats
     let whereClause = `WHERE deleted_at IS NULL AND no_order IS NOT NULL AND no_order != '' AND no_order != '-'`;
     const queryArgs: unknown[] = [];
 
@@ -67,7 +91,11 @@ export async function GET(request: NextRequest) {
         jhp.total_realisasi,
         jhp.count_bagian,
         jhp.daftar_bagian,
-        jhp.has_kendala
+        jhp.has_kendala,
+        rp.id as plan_id,
+        rp.tgl_mulai_rencana as plan_start,
+        rp.tgl_selesai_rencana as plan_end,
+        rp.status as plan_status
       FROM (
         SELECT 
           no_order,
@@ -86,6 +114,7 @@ export async function GET(request: NextRequest) {
       LEFT JOIN orders o ON o.faktur = jhp.no_order
       LEFT JOIN sopd s ON s.no_sopd = jhp.no_order
       LEFT JOIN sopd_harga sh ON sh.no_sopd = jhp.no_order
+      LEFT JOIN rencana_produksi rp ON rp.no_order = jhp.no_order
       ORDER BY jhp.end_date DESC
       LIMIT 350
     `;
@@ -257,6 +286,12 @@ export async function GET(request: NextRequest) {
         has_kendala: ord.has_kendala === 1,
         status,
         stages: stagesByOrder[ord.no_order] || [],
+        plan: (ord as any).plan_id ? {
+          id: (ord as any).plan_id,
+          start_date: (ord as any).plan_start,
+          end_date: (ord as any).plan_end,
+          status: (ord as any).plan_status,
+        } : null,
       };
     });
 
@@ -303,6 +338,220 @@ export async function GET(request: NextRequest) {
         totalTarget: data.target,
         totalRealisasi: data.realisasi,
       })),
+    });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  const gate = await requireApiPermission('produksi_rencana_produksi');
+  if (gate.error) return gate.error;
+
+  try {
+    const session = await getSession();
+    const username = session?.username || session?.name || 'Admin';
+    const body = await request.json();
+
+    const no_order = String(body.no_order || '').trim();
+    const nama_order = String(body.nama_order || '').trim();
+    const qty_oplah = Number(body.qty_oplah) || 0;
+    const satuan = String(body.satuan || 'Eks').trim();
+    const nama_pelanggan = String(body.nama_pelanggan || '').trim();
+    const tgl_order = body.tgl_order ? String(body.tgl_order).trim() : null;
+    const tgl_deadline = body.tgl_deadline ? String(body.tgl_deadline).trim() : null;
+    const tgl_mulai_rencana = String(body.tgl_mulai_rencana || '').trim();
+    const tgl_selesai_rencana = String(body.tgl_selesai_rencana || '').trim();
+    const status = String(body.status || 'DRAFT').trim();
+    const catatan = body.catatan ? String(body.catatan).trim() : null;
+    const tahapan = Array.isArray(body.tahapan) ? body.tahapan : [];
+
+    if (!no_order || !nama_order) {
+      return NextResponse.json({ error: 'Nomor order dan nama order wajib diisi.' }, { status: 400 });
+    }
+    if (!tgl_mulai_rencana || !tgl_selesai_rencana) {
+      return NextResponse.json({ error: 'Tanggal mulai dan selesai rencana wajib diisi.' }, { status: 400 });
+    }
+
+    // Upsert rencana_produksi header
+    await db.execute({
+      sql: `
+        INSERT INTO rencana_produksi (
+          no_order, nama_order, qty_oplah, satuan, nama_pelanggan,
+          tgl_order, tgl_deadline, tgl_mulai_rencana, tgl_selesai_rencana,
+          status, catatan, created_by, updated_by, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(no_order) DO UPDATE SET
+          nama_order = excluded.nama_order,
+          qty_oplah = excluded.qty_oplah,
+          satuan = excluded.satuan,
+          nama_pelanggan = excluded.nama_pelanggan,
+          tgl_order = excluded.tgl_order,
+          tgl_deadline = excluded.tgl_deadline,
+          tgl_mulai_rencana = excluded.tgl_mulai_rencana,
+          tgl_selesai_rencana = excluded.tgl_selesai_rencana,
+          status = excluded.status,
+          catatan = excluded.catatan,
+          updated_by = excluded.updated_by,
+          updated_at = CURRENT_TIMESTAMP
+      `,
+      args: [
+        no_order, nama_order, qty_oplah, satuan, nama_pelanggan,
+        tgl_order, tgl_deadline, tgl_mulai_rencana, tgl_selesai_rencana,
+        status, catatan, username, username
+      ],
+    });
+
+    // Ambil ID header rencana_produksi
+    const planRow = await db.execute({
+      sql: `SELECT id FROM rencana_produksi WHERE no_order = ?`,
+      args: [no_order],
+    });
+    const planId = Number((planRow.rows[0] as any)?.id);
+
+    // Ganti tahapan lama dengan tahapan baru
+    await db.execute({
+      sql: `DELETE FROM rencana_produksi_tahapan WHERE rencana_id = ?`,
+      args: [planId],
+    });
+
+    for (let i = 0; i < tahapan.length; i++) {
+      const st = tahapan[i];
+      await db.execute({
+        sql: `
+          INSERT INTO rencana_produksi_tahapan (
+            rencana_id, no_order, urutan, bagian, mesin, nama_tahap,
+            volume, target_per_hari, durasi_hari, tgl_mulai_plan, tgl_selesai_plan, catatan
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+        args: [
+          planId,
+          no_order,
+          Number(st.urutan) || (i + 1),
+          String(st.bagian || '').trim(),
+          st.mesin ? String(st.mesin).trim() : null,
+          String(st.nama_tahap || '').trim(),
+          Number(st.volume) || 0,
+          Number(st.target_per_hari) || 0,
+          Number(st.durasi_hari) || 1,
+          String(st.tgl_mulai_plan || '').trim(),
+          String(st.tgl_selesai_plan || '').trim(),
+          st.catatan ? String(st.catatan).trim() : null,
+        ],
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      id: planId,
+      no_order,
+      message: 'Rencana produksi berhasil disimpan.',
+    });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  const gate = await requireApiPermission('produksi_rencana_produksi');
+  if (gate.error) return gate.error;
+
+  try {
+    const session = await getSession();
+    const username = session?.username || session?.name || 'Admin';
+    const body = await request.json();
+
+    const id = Number(body.id);
+    const no_order = String(body.no_order || '').trim();
+    if (!id && !no_order) {
+      return NextResponse.json({ error: 'ID atau nomor order wajib diberikan.' }, { status: 400 });
+    }
+
+    const updates: string[] = ['updated_at = CURRENT_TIMESTAMP', 'updated_by = ?'];
+    const args: unknown[] = [username];
+
+    if (body.status !== undefined) {
+      updates.push('status = ?');
+      args.push(String(body.status).trim());
+    }
+    if (body.tgl_mulai_rencana !== undefined) {
+      updates.push('tgl_mulai_rencana = ?');
+      args.push(String(body.tgl_mulai_rencana).trim());
+    }
+    if (body.tgl_selesai_rencana !== undefined) {
+      updates.push('tgl_selesai_rencana = ?');
+      args.push(String(body.tgl_selesai_rencana).trim());
+    }
+    if (body.catatan !== undefined) {
+      updates.push('catatan = ?');
+      args.push(String(body.catatan).trim());
+    }
+
+    let where = 'id = ?';
+    if (id) {
+      args.push(id);
+    } else {
+      where = 'no_order = ?';
+      args.push(no_order);
+    }
+
+    await db.execute({
+      sql: `UPDATE rencana_produksi SET ${updates.join(', ')} WHERE ${where}`,
+      args,
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Status rencana produksi berhasil diperbarui.',
+    });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const gate = await requireApiPermission('produksi_rencana_produksi');
+  if (gate.error) return gate.error;
+
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const order = searchParams.get('order')?.trim();
+    const id = Number(searchParams.get('id'));
+
+    if (!order && !id) {
+      return NextResponse.json({ error: 'Parameter id atau order wajib diberikan.' }, { status: 400 });
+    }
+
+    let where = 'id = ?';
+    let arg: unknown = id;
+    if (order) {
+      where = 'no_order = ?';
+      arg = order;
+    }
+
+    const planRow = await db.execute({
+      sql: `SELECT id FROM rencana_produksi WHERE ${where}`,
+      args: [arg],
+    });
+    if (planRow.rows.length > 0) {
+      const planId = (planRow.rows[0] as any).id;
+      await db.execute({
+        sql: `DELETE FROM rencana_produksi_tahapan WHERE rencana_id = ?`,
+        args: [planId],
+      });
+    }
+
+    await db.execute({
+      sql: `DELETE FROM rencana_produksi WHERE ${where}`,
+      args: [arg],
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Rencana produksi berhasil dihapus.',
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
