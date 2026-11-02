@@ -112,12 +112,11 @@ function getBagianOrder(bagian: string): number {
   const b = bagian.toUpperCase().trim();
   if (b.includes('SETTING')) return 1;
   if (b.includes('QC') || b.includes('QUALITY CONTROL')) return 2;
-  if (b.includes('POTONG')) return 3;
-  if (b.includes('CETAK')) return 4;
-  if (b.includes('FINISHING')) return 5;
-  if (b.includes('GUDANG')) return 6;
-  if (b.includes('TEKNISI')) return 7;
-  return 8;
+  if (b.includes('CETAK')) return 3;
+  if (b.includes('FINISHING') || b.includes('POTONG')) return 4;
+  if (b.includes('GUDANG')) return 5;
+  if (b.includes('TEKNISI')) return 6;
+  return 7;
 }
 
 function getBagianTheme(bagian: string) {
@@ -138,14 +137,7 @@ function getBagianTheme(bagian: string) {
       text: 'text-purple-700',
     };
   }
-  if (b.includes('POTONG')) {
-    return {
-      chip: 'bg-cyan-50 text-cyan-700 border-cyan-200',
-      barTrack: 'bg-cyan-100',
-      barFill: 'bg-cyan-600',
-      text: 'text-cyan-700',
-    };
-  }
+
   if (b.includes('CETAK')) {
     return {
       chip: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -154,7 +146,7 @@ function getBagianTheme(bagian: string) {
       text: 'text-amber-700',
     };
   }
-  if (b.includes('FINISHING')) {
+  if (b.includes('FINISHING') || b.includes('POTONG')) {
     return {
       chip: 'bg-emerald-50 text-emerald-700 border-emerald-200',
       barTrack: 'bg-emerald-100',
@@ -283,7 +275,7 @@ export default function OrderGanttChart({ entries, orderInfo }: OrderGanttChartP
       const end = new Date(latest + 'T00:00:00');
       // Safety guard: max 120 days to avoid UI blowup
       let count = 0;
-      while (cur <= end && count < 120) {
+      while (cur <= end && count < 400) {
         const y = cur.getFullYear();
         const m = String(cur.getMonth() + 1).padStart(2, '0');
         const d = String(cur.getDate()).padStart(2, '0');

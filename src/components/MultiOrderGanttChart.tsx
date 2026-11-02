@@ -94,11 +94,10 @@ function getStageColor(bagian: string): string {
   const b = bagian.toUpperCase();
   if (b.includes('SETTING')) return 'bg-blue-500';
   if (b.includes('QC') || b.includes('QUALITY CONTROL') || b.includes('CTP') || b.includes('PLATE')) return 'bg-purple-500';
-  if (b.includes('POTONG')) return 'bg-cyan-500';
   if (b.includes('CETAK')) return 'bg-amber-500';
-  if (b.includes('FINISHING')) return 'bg-emerald-500';
+  if (b.includes('FINISHING') || b.includes('POTONG')) return 'bg-emerald-500';
   if (b.includes('GUDANG')) return 'bg-slate-500';
-  return 'bg-indigo-500';
+  return 'bg-emerald-500';
 }
 
 function formatStageName(bagian: string): string {
@@ -106,9 +105,8 @@ function formatStageName(bagian: string): string {
   const upper = b.toUpperCase();
   if (upper.includes('SETTING')) return 'Setting';
   if (upper.includes('QUALITY CONTROL') || upper === 'QC') return 'Quality Control';
-  if (upper.includes('POTONG')) return 'Potong';
   if (upper.includes('CETAK')) return 'Cetak';
-  if (upper.includes('FINISHING')) return 'Finishing';
+  if (upper.includes('FINISHING') || upper.includes('POTONG')) return 'Finishing';
   if (upper.includes('GUDANG')) return 'Gudang';
   if (upper.includes('TEKNISI')) return 'Teknisi';
   return b.charAt(0).toUpperCase() + b.slice(1).toLowerCase();
@@ -131,11 +129,10 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
       if (e && (!latest || e > latest)) latest = e;
       if (dl && (!latest || dl > latest)) latest = dl;
     });
-    // Otomatis sertakan minimal sampai hari ini dan minggu berjalan ke depan
+    // Otomatis rentang kalender mencakup sampai 1 tahun ke depan dari hari ini
     const today = new Date();
-    const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     const futureDate = new Date(today);
-    futureDate.setDate(futureDate.getDate() + 7);
+    futureDate.setFullYear(futureDate.getFullYear() + 1);
     const futureISO = `${futureDate.getFullYear()}-${String(futureDate.getMonth() + 1).padStart(2, '0')}-${String(futureDate.getDate()).padStart(2, '0')}`;
 
     if (earliest) {
@@ -149,7 +146,7 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
       const cur = new Date(earliest + 'T00:00:00');
       const end = new Date(latest + 'T00:00:00');
       let count = 0;
-      while (cur <= end && count < 180) {
+      while (cur <= end && count < 600) {
         const y = cur.getFullYear();
         const m = String(cur.getMonth() + 1).padStart(2, '0');
         const d = String(cur.getDate()).padStart(2, '0');
@@ -372,10 +369,7 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
               <span className="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block" />
               <span>Quality Control</span>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 inline-block" />
-              <span>Potong</span>
-            </div>
+
             <div className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" />
               <span>Cetak</span>

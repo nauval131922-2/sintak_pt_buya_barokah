@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     }
 
 
-    // Subquery scanning latest 3000 rows
+    // Kueri agregasi per nomor order dari JHP tanpa batas buatan
     const baseOrdersSql = `
       SELECT 
         jhp.no_order,
@@ -61,26 +61,32 @@ export async function GET(request: NextRequest) {
         COALESCE(o.tgl, s.tgl) as tgl_order,
         sh.deadline_date,
         sh.finished_date,
-        MIN(jhp.tgl) as start_date,
-        MAX(jhp.tgl) as end_date,
-        SUM(jhp.target) as total_target,
-        SUM(jhp.realisasi) as total_realisasi,
-        COUNT(DISTINCT jhp.bagian) as count_bagian,
-        GROUP_CONCAT(DISTINCT jhp.bagian) as daftar_bagian,
-        MAX(CASE WHEN jhp.kendala IS NOT NULL AND jhp.kendala != '' AND jhp.kendala != '-' THEN 1 ELSE 0 END) as has_kendala
+        jhp.start_date,
+        jhp.end_date,
+        jhp.total_target,
+        jhp.total_realisasi,
+        jhp.count_bagian,
+        jhp.daftar_bagian,
+        jhp.has_kendala
       FROM (
-        SELECT no_order, nama_order, tgl, target, realisasi, bagian, kendala
+        SELECT 
+          no_order,
+          MAX(nama_order) as nama_order,
+          MIN(tgl) as start_date,
+          MAX(tgl) as end_date,
+          SUM(target) as total_target,
+          SUM(realisasi) as total_realisasi,
+          COUNT(DISTINCT bagian) as count_bagian,
+          GROUP_CONCAT(DISTINCT bagian) as daftar_bagian,
+          MAX(CASE WHEN kendala IS NOT NULL AND kendala != '' AND kendala != '-' THEN 1 ELSE 0 END) as has_kendala
         FROM jurnal_harian_produksi
         ${whereClause}
-        ORDER BY id DESC
-        LIMIT 3000
+        GROUP BY no_order
       ) jhp
       LEFT JOIN orders o ON o.faktur = jhp.no_order
       LEFT JOIN sopd s ON s.no_sopd = jhp.no_order
-      LEFT JOIN sopd_harga sh ON sh.no_sopd = jhp.no_order
-      GROUP BY jhp.no_order
-      ORDER BY MAX(jhp.tgl) DESC
-      LIMIT 150
+      ORDER BY jhp.end_date DESC
+      LIMIT 350
     `;
     const ordersResult = await db.execute({
       sql: baseOrdersSql,
@@ -124,27 +130,40 @@ export async function GET(request: NextRequest) {
 
     const orderNumbers = rawOrders.map((o) => o.no_order);
 
-    // 2. Fetch stage details for these orders
-    const placeholders = orderNumbers.map(() => '?').join(',');
-    const stagesSql = `
-      SELECT 
-        no_order,
-        bagian,
-        MIN(tgl) as start_date,
-        MAX(tgl) as end_date,
-        SUM(target) as target,
-        SUM(realisasi) as realisasi,
-        MAX(CASE WHEN kendala IS NOT NULL AND kendala != '' AND kendala != '-' THEN 1 ELSE 0 END) as stage_kendala
-      FROM jurnal_harian_produksi
-      WHERE deleted_at IS NULL AND no_order IN (${placeholders})
-      GROUP BY no_order, bagian
-      ORDER BY no_order, MIN(tgl) ASC
-    `;
+    // 2. Fetch stage details for these orders in safe chunks (mencegah batas SQLite variable)
+    const stageRows: Array<{
+      no_order: string;
+      bagian: string;
+      start_date: string;
+      end_date: string;
+      target: number | null;
+      realisasi: number | null;
+      stage_kendala: number;
+    }> = [];
 
-    const stagesResult = await db.execute({
-      sql: stagesSql,
-      args: orderNumbers,
-    });
+    const CHUNK_SIZE = 400;
+    for (let i = 0; i < orderNumbers.length; i += CHUNK_SIZE) {
+      const chunk = orderNumbers.slice(i, i + CHUNK_SIZE);
+      const placeholders = chunk.map(() => '?').join(',');
+      const res = await db.execute({
+        sql: `
+          SELECT 
+            no_order,
+            bagian,
+            MIN(tgl) as start_date,
+            MAX(tgl) as end_date,
+            SUM(target) as target,
+            SUM(realisasi) as realisasi,
+            MAX(CASE WHEN kendala IS NOT NULL AND kendala != '' AND kendala != '-' THEN 1 ELSE 0 END) as stage_kendala
+          FROM jurnal_harian_produksi
+          WHERE deleted_at IS NULL AND no_order IN (${placeholders})
+          GROUP BY no_order, bagian
+          ORDER BY no_order, MIN(tgl) ASC
+        `,
+        args: chunk,
+      });
+      stageRows.push(...(res.rows as any[]));
+    }
 
     const stagesByOrder: Record<string, Array<{
       bagian: string;
@@ -158,15 +177,7 @@ export async function GET(request: NextRequest) {
 
     const stationLoad: Record<string, { count: number; target: number; realisasi: number }> = {};
 
-    for (const r of stagesResult.rows as unknown as Array<{
-      no_order: string;
-      bagian: string;
-      start_date: string;
-      end_date: string;
-      target: number | null;
-      realisasi: number | null;
-      stage_kendala: number;
-    }>) {
+    for (const r of stageRows) {
       const ord = r.no_order;
       if (!stagesByOrder[ord]) stagesByOrder[ord] = [];
 
