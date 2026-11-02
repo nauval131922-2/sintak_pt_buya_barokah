@@ -7,12 +7,29 @@ import {
   ArrowLeft, Clock, Factory, ChevronRight, TableProperties, Calendar,
   RotateCcw, Filter, Plus
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import MultiOrderGanttChart, { type ProductionOrderSummary } from '@/components/MultiOrderGanttChart';
-import OrderGanttChart, { type JhpEntryForGantt, type OrderInfoForGantt } from '@/components/OrderGanttChart';
+import type { JhpEntryForGantt, OrderInfoForGantt } from '@/components/OrderGanttChart';
 import DatePicker from '@/components/DatePicker';
 import SquareDropdown from '@/components/SquareDropdown';
-import BuatRencanaProduksiModal from '@/components/BuatRencanaProduksiModal';
 import BaseModal from '@/components/ui/BaseModal';
+
+const BuatRencanaProduksiModal = dynamic(
+  () => import('@/components/BuatRencanaProduksiModal'),
+  { ssr: false }
+);
+
+const OrderGanttChart = dynamic(
+  () => import('@/components/OrderGanttChart'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center p-12 text-gray-400">
+        <Loader2 className="w-6 h-6 animate-spin mr-2" /> Memuat detail alur produksi...
+      </div>
+    )
+  }
+);
 
 interface SummaryData {
   totalActiveOrders: number;

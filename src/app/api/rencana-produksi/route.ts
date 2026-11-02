@@ -78,7 +78,20 @@ export async function GET(request: NextRequest) {
       queryArgs.push(endDate);
     }
 
-    // Kueri agregasi per nomor order dari JHP tanpa batas buatan
+    // Filter status langsung di level SQL jika diminta agar hasil konsisten dan efisien
+    let havingClause = '';
+    let statusWhereClause = '';
+    if (statusFilter === 'ACTIVE') {
+      havingClause = 'HAVING (SUM(target) = 0 OR SUM(realisasi) < SUM(target))';
+      statusWhereClause = 'WHERE (sh.finished_date IS NULL OR sh.finished_date = "")';
+    } else if (statusFilter === 'COMPLETED') {
+      havingClause = 'HAVING (SUM(target) > 0 AND SUM(realisasi) >= SUM(target))';
+      statusWhereClause = 'WHERE ((sh.finished_date IS NOT NULL AND sh.finished_date != "") OR (jhp.total_target > 0 AND jhp.total_realisasi >= jhp.total_target))';
+    } else if (statusFilter === 'CRITICAL') {
+      statusWhereClause = "WHERE (jhp.has_kendala = 1 OR (sh.deadline_date IS NOT NULL AND sh.deadline_date <= date('now', '+5 days')))";
+    }
+
+    // Kueri agregasi per nomor order dari JHP (ramping & cepat: tanpa alokasi B-tree COUNT/GROUP_CONCAT DISTINCT yang tidak dipakai)
     const baseOrdersSql = `
       SELECT 
         jhp.no_order,
@@ -93,8 +106,6 @@ export async function GET(request: NextRequest) {
         jhp.end_date,
         jhp.total_target,
         jhp.total_realisasi,
-        jhp.count_bagian,
-        jhp.daftar_bagian,
         jhp.has_kendala,
         rp.id as plan_id,
         rp.tgl_mulai_rencana as plan_start,
@@ -108,17 +119,17 @@ export async function GET(request: NextRequest) {
           MAX(tgl) as end_date,
           SUM(target) as total_target,
           SUM(realisasi) as total_realisasi,
-          COUNT(DISTINCT bagian) as count_bagian,
-          GROUP_CONCAT(DISTINCT bagian) as daftar_bagian,
           MAX(CASE WHEN kendala IS NOT NULL AND kendala != '' AND kendala != '-' THEN 1 ELSE 0 END) as has_kendala
         FROM jurnal_harian_produksi
         ${whereClause}
         GROUP BY no_order
+        ${havingClause}
       ) jhp
       LEFT JOIN orders o ON o.faktur = jhp.no_order
       LEFT JOIN sopd s ON s.no_sopd = jhp.no_order
       LEFT JOIN sopd_harga sh ON sh.no_sopd = jhp.no_order
       LEFT JOIN rencana_produksi rp ON rp.no_order = jhp.no_order
+      ${statusWhereClause}
       ORDER BY 
         CASE 
           WHEN COALESCE(o.tgl, s.tgl) LIKE '__-__-____' 
@@ -148,8 +159,6 @@ export async function GET(request: NextRequest) {
       end_date: string;
       total_target: number | null;
       total_realisasi: number | null;
-      count_bagian: number;
-      daftar_bagian: string | null;
       has_kendala: number;
     }>;
 
@@ -170,8 +179,6 @@ export async function GET(request: NextRequest) {
           rp.tgl_selesai_rencana as end_date,
           0 as total_target,
           0 as total_realisasi,
-          0 as count_bagian,
-          '' as daftar_bagian,
           0 as has_kendala,
           rp.id as plan_id,
           rp.tgl_mulai_rencana as plan_start,

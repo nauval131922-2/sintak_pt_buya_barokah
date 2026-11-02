@@ -122,7 +122,7 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
 
 
   // Compute overall date bounds
-  const { allDates, minDate, maxDate } = useMemo(() => {
+  const { allDates, dateMetadata, minDate, maxDate } = useMemo(() => {
     let earliest: string | null = null;
     let latest: string | null = null;
 
@@ -149,6 +149,7 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
       latest = `${y}-${m}-${d}`;
     }
     const dates: string[] = [];
+    const meta: Array<{ dStr: string; name: string; isHoliday: boolean; display: string }> = [];
     if (earliest && latest) {
       const cur = new Date(earliest + 'T00:00:00');
       const end = new Date(latest + 'T00:00:00');
@@ -157,7 +158,15 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
         const y = cur.getFullYear();
         const m = String(cur.getMonth() + 1).padStart(2, '0');
         const d = String(cur.getDate()).padStart(2, '0');
-        dates.push(`${y}-${m}-${d}`);
+        const dStr = `${y}-${m}-${d}`;
+        dates.push(dStr);
+        const dayInfo = getDayOfWeek(dStr);
+        meta.push({
+          dStr,
+          name: dayInfo.name,
+          isHoliday: dayInfo.isHoliday,
+          display: formatDateDisplay(dStr),
+        });
         cur.setDate(cur.getDate() + 1);
         count++;
       }
@@ -165,6 +174,7 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
 
     return {
       allDates: dates,
+      dateMetadata: meta,
       minDate: earliest,
       maxDate: latest,
     };
@@ -210,25 +220,22 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
 
               {/* Right Calendar Day Columns */}
               <div className="flex relative" style={{ width: totalTimelineWidth }}>
-                {allDates.map((dStr) => {
-                  const dayInfo = getDayOfWeek(dStr);
-                  return (
-                    <div
-                      key={dStr}
-                      style={{ width: dayColWidth }}
-                      className={`shrink-0 flex flex-col items-center justify-center py-2 border-r border-gray-100 text-center ${
-                        dayInfo.isHoliday ? 'bg-amber-50/40 text-amber-900' : 'bg-white text-gray-600'
-                      }`}
-                    >
-                      <span className={`text-[11px] font-bold leading-tight ${dayInfo.isHoliday ? 'text-amber-700 font-bold' : 'text-gray-700 font-bold'}`}>
-                        {dayInfo.name}
-                      </span>
-                      <span className="text-[10px] font-medium text-gray-500 whitespace-nowrap tabular-nums mt-0.5">
-                        {formatDateDisplay(dStr)}
-                      </span>
-                    </div>
-                  );
-                })}
+                {dateMetadata.map((d) => (
+                  <div
+                    key={d.dStr}
+                    style={{ width: dayColWidth }}
+                    className={`shrink-0 flex flex-col items-center justify-center py-2 border-r border-gray-100 text-center ${
+                      d.isHoliday ? 'bg-amber-50/40 text-amber-900' : 'bg-white text-gray-600'
+                    }`}
+                  >
+                    <span className={`text-[11px] font-bold leading-tight ${d.isHoliday ? 'text-amber-700 font-bold' : 'text-gray-700 font-bold'}`}>
+                      {d.name}
+                    </span>
+                    <span className="text-[10px] font-medium text-gray-500 whitespace-nowrap tabular-nums mt-0.5">
+                      {d.display}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -239,18 +246,15 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
                 className="absolute top-0 bottom-0 pointer-events-none flex"
                 style={{ left: 336, width: totalTimelineWidth }}
               >
-                {allDates.map((dStr) => {
-                  const dayInfo = getDayOfWeek(dStr);
-                  return (
-                    <div
-                      key={dStr}
-                      style={{ width: dayColWidth }}
-                      className={`shrink-0 h-full border-r border-gray-100 ${
-                        dayInfo.isHoliday ? 'bg-amber-50/20' : ''
-                      }`}
-                    />
-                  );
-                })}
+                {dateMetadata.map((d) => (
+                  <div
+                    key={d.dStr}
+                    style={{ width: dayColWidth }}
+                    className={`shrink-0 h-full border-r border-gray-100 ${
+                      d.isHoliday ? 'bg-amber-50/20' : ''
+                    }`}
+                  />
+                ))}
               </div>
 
               {/* Multi-Order Rows */}
