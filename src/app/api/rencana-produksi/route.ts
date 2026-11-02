@@ -188,6 +188,7 @@ export async function GET(request: NextRequest) {
         summary: {
           totalActiveOrders: 0,
           criticalOrdersCount: 0,
+          onTrackOrdersCount: 0,
           completedCount: 0,
           totalTarget: 0,
           totalRealisasi: 0,
@@ -387,6 +388,7 @@ export async function GET(request: NextRequest) {
       summary: {
         totalActiveOrders: rawOrders.length - completedCount,
         criticalOrdersCount: criticalCount,
+        onTrackOrdersCount: Math.max(0, (rawOrders.length - completedCount) - criticalCount),
         completedCount,
         totalTarget: sumTotalTarget,
         totalRealisasi: sumTotalRealisasi,

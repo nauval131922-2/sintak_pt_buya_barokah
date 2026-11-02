@@ -20,7 +20,8 @@ interface SummaryData {
   totalTarget: number;
   totalRealisasi: number;
   overallProgress: number;
-  busiestStation: string;
+  busiestStation?: string;
+  onTrackOrdersCount?: number;
 }
 const formatDateDisplay = (d: Date | null): string => {
   if (!d) return '';
@@ -243,20 +244,17 @@ export default function RencanaProduksiClient() {
           </div>
         </div>
 
-        {/* Card 3: Busiest Bagian */}
+        {/* Card 3: Order On-Track */}
         <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
-          <div className="min-w-0 flex-1 pr-2">
-            <span className="text-gray-400 font-medium text-xs block">Bagian Terpadat</span>
-            <span 
-              className="text-sm font-bold text-gray-900 mt-1 block truncate max-w-full"
-              title={summary?.busiestStation || '-'}
-            >
-              {summary ? summary.busiestStation : '-'}
+          <div>
+            <span className="text-gray-400 font-medium text-xs block">Order On-Track</span>
+            <span className="text-2xl font-bold text-emerald-600 mt-0.5 block">
+              {summary ? (summary.onTrackOrdersCount ?? Math.max(0, summary.totalActiveOrders - summary.criticalOrdersCount)) : '-'}
             </span>
-            <span className="text-[11px] text-gray-400 mt-1 block">Antrean order terbanyak</span>
+            <span className="text-[11px] text-emerald-700 font-medium mt-1 block">Jadwal aman &amp; lancar</span>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-            <Layers size={20} />
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <CheckCircle2 size={20} />
           </div>
         </div>
 
