@@ -1060,7 +1060,7 @@ export default function JurnalClient({
     document.getElementById('main-content-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  const performSave = async () => {
+  const performSave = async (confirmDuplicate = false) => {
     setIsSaving(true);
     try {
       const isEdit = editingId !== null;
@@ -1115,7 +1115,7 @@ export default function JurnalClient({
         }
       }
       
-      const payload = isEdit ? { id: editingId, updated_at: (formData as any).updated_at || null, ...payloadToSubmit } : { action: 'insert_single', data: payloadToSubmit };
+      const payload = isEdit ? { id: editingId, updated_at: (formData as any).updated_at || null, ...payloadToSubmit } : { action: 'insert_single', confirmDuplicate, data: payloadToSubmit };
       
       const res = await fetch('/api/jurnal-harian-produksi', {
         method,
@@ -1129,6 +1129,41 @@ export default function JurnalClient({
         setRefreshKey(k => k + 1);
         router.refresh();
       } else {
+        if (res.status === 409 && result.code === 'DUPLICATE_JADWAL') {
+          type ExistingJobItem = {
+            shift?: string;
+            pekerjaan?: string;
+            order?: string;
+            target?: string;
+            keterangan?: string;
+          };
+          const jobs: ExistingJobItem[] = Array.isArray(result.existingJobs) ? result.existingJobs : [];
+          const jobLines = jobs.map((j, i) => {
+            const shiftPart = j.shift && j.shift !== '-' ? `[Shift ${j.shift}] ` : '';
+            const jobPart = j.pekerjaan && j.pekerjaan !== '-' ? j.pekerjaan : 'Pekerjaan belum ditentukan';
+            const orderPart = j.order ? ` (${j.order})` : '';
+            const targetPart = j.target ? ` • Target: ${j.target}` : '';
+            return `${i + 1}. ${shiftPart}${jobPart}${orderPart}${targetPart}`;
+          });
+
+          const tglFormatted = formData.tgl ? formatIndoDateStr(formData.tgl) : 'tanggal ini';
+          const detailsText = jobLines.length > 0
+            ? `\n\nJadwal yang sudah ada:\n${jobLines.join('\n')}`
+            : '';
+
+          setDialogConfig({
+            isOpen: true,
+            type: 'confirm',
+            title: 'Jadwal Sudah Ada',
+            message: `${formData.nama_karyawan || 'Karyawan ini'} sudah memiliki ${result.count || jobs.length || 1} data jadwal pada ${tglFormatted}.${detailsText}\n\nTetap simpan data jadwal ini? Baris baru akan ditandai warna kuning di tabel.`,
+            confirmLabel: 'Ya, Tetap Simpan',
+            onConfirm: () => {
+              closeDialog();
+              performSave(true);
+            }
+          });
+          return;
+        }
         if (res.status === 409) {
           showMessage('error', result.error || 'Konflik data. Silakan reload halaman.');
           return;
@@ -2244,7 +2279,7 @@ export default function JurnalClient({
                            toggleExpandCard(row.id, e);
                          }}
                          className={`bg-white rounded-xl border p-3 shadow-sm transition-all relative space-y-2 cursor-pointer ${
-                           isSel ? 'border-emerald-500 bg-emerald-50/20 ring-1 ring-emerald-500' : 'border-gray-100 hover:border-gray-200'
+                           isSel ? 'border-emerald-500 bg-emerald-50/20 ring-1 ring-emerald-500' : row.is_jadwal_ganda ? 'border-yellow-300 !bg-yellow-100 hover:border-yellow-400' : 'border-gray-100 hover:border-gray-200'
                          }`}
                        >
                          {/* Header Info Umum */}
@@ -2386,6 +2421,10 @@ export default function JurnalClient({
                     sorting={sorting}
                     onSortingChange={handleSortingChange}
                     manualSorting={true}
+                    getRowClassName={(row: unknown) => {
+                      const r = row as { is_jadwal_ganda?: number | boolean | null } | null | undefined;
+                      return r?.is_jadwal_ganda ? 'bg-yellow-100' : '';
+                    }}
                   />
                </div>
              </>

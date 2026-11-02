@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
     // Kolom yang dipilih eksplisit untuk menghindari transfer data berlebih
     const SELECT_COLS = `id, posisi, absensi, tgl, shift, nama_karyawan, no_order, nama_order,
       jenis_pekerjaan, keterangan, target, realisasi, no_order_2, nama_order_2,
-      jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input, nama_order_manual, nama_order_manual_2`;
+      jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input, nama_order_manual, nama_order_manual_2, is_jadwal_ganda`;
 
     // Whitelist kolom sortable — ekspresi SQL langsung, bukan nama kolom user
     const SORT_COLUMNS: Record<string, string> = {
@@ -227,6 +227,50 @@ export async function POST(request: NextRequest) {
         ? String(nama_order_2).trim()
         : ((!no_order_2 && nama_order_manual_2 && String(nama_order_manual_2).trim() && hasRealisasiData) ? String(nama_order_manual_2).trim() : '');
 
+      // Input baru untuk karyawan+tanggal yang sudah punya baris jurnal → wajib konfirmasi, lalu baris ditandai (kuning di tabel)
+      // ponytail: range tgl (bukan substr) agar idx_jurnal_tgl_deleted terpakai; '~' > 'T' sehingga 'YYYY-MM-DDTxx' ikut cocok
+      type ExistingJadwalRow = {
+        shift: string | null;
+        jenis_pekerjaan: string | null;
+        no_order: string | null;
+        nama_order: string | null;
+        target: number | string | null;
+        keterangan: string | null;
+      };
+
+      let isJadwalGanda = 0;
+      const namaKar = String(nama_karyawan || '').trim();
+      if (tgl && namaKar) {
+        const tglDay = String(tgl).slice(0, 10);
+        const dup = await db.execute({
+          sql: `SELECT shift, jenis_pekerjaan, no_order, nama_order, target, keterangan
+                FROM jurnal_harian_produksi
+                WHERE deleted_at IS NULL AND nama_karyawan = ? AND tgl >= ? AND tgl < ? || '~'
+                ORDER BY id ASC LIMIT 20`,
+          args: [namaKar, tglDay, tglDay]
+        });
+        const rows = dup.rows as unknown as ExistingJadwalRow[];
+        if (rows.length > 0) {
+          if (!body.confirmDuplicate) {
+            const existingJobs = rows.map((r) => ({
+              shift: r.shift ? String(r.shift) : '-',
+              pekerjaan: r.jenis_pekerjaan ? String(r.jenis_pekerjaan) : '-',
+              order: (r.nama_order ? String(r.nama_order) : '') || (r.no_order ? String(r.no_order) : '') || '',
+              target: r.target !== null && r.target !== undefined && r.target !== '' ? String(r.target) : '',
+              keterangan: r.keterangan ? String(r.keterangan) : '',
+            }));
+            return NextResponse.json({
+              success: false,
+              code: 'DUPLICATE_JADWAL',
+              count: rows.length,
+              existingJobs,
+              error: `${namaKar} sudah memiliki ${rows.length} data jadwal pada tanggal ini.`
+            }, { status: 409 });
+          }
+          isJadwalGanda = 1;
+        }
+      }
+
       try {
         await db.execute("ALTER TABLE jurnal_harian_produksi ADD COLUMN is_manual_input INTEGER DEFAULT 0");
       } catch (e) {} // Kolom sudah ada
@@ -234,14 +278,14 @@ export async function POST(request: NextRequest) {
       await db.execute({
         sql: `INSERT INTO jurnal_harian_produksi (
           posisi, absensi, tgl, shift, nama_karyawan, no_order, nama_order, jenis_pekerjaan, keterangan, target, realisasi,
-          no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input, created_by, nama_order_manual, nama_order_manual_2
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`,
+          no_order_2, nama_order_2, jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian, is_manual_input, created_by, nama_order_manual, nama_order_manual_2, is_jadwal_ganda
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)`,
         args: [
           posisi || '', Number(absensi) || 0, tgl || null, shift || '', nama_karyawan || '',
           no_order || '', finalNamaOrder, jenis_pekerjaan || '', keterangan || '', cleanTarget, cleanRealisasi,
           no_order_2 || '', finalNamaOrder2, jenis_pekerjaan_2 || '', bahan_kertas || '', cleanNumberOrText(jml_plate),
           warna || '', cleanNumberOrText(inscheet), cleanNumberOrText(rijek), jam || '', kendala || '', bagian || '',
-          session.username || null, nama_order_manual || null, nama_order_manual_2 || null
+          session.username || null, nama_order_manual || null, nama_order_manual_2 || null, isJadwalGanda
         ]
       });
 

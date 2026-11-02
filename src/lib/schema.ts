@@ -899,6 +899,7 @@ export async function initSchema(db: any) {
     "ALTER TABLE jurnal_harian_produksi ADD COLUMN deleted_at DATETIME DEFAULT NULL;",
     "ALTER TABLE jurnal_harian_produksi ADD COLUMN created_by TEXT DEFAULT NULL;",
     "ALTER TABLE jurnal_harian_produksi ADD COLUMN updated_by TEXT DEFAULT NULL;",
+    "ALTER TABLE jurnal_harian_produksi ADD COLUMN is_jadwal_ganda INTEGER DEFAULT 0;",
     "ALTER TABLE infractions ADD COLUMN jumlah REAL;",
     "ALTER TABLE infractions ADD COLUMN harga REAL;",
     "ALTER TABLE infractions ADD COLUMN total REAL;",

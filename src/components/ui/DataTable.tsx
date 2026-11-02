@@ -615,6 +615,8 @@ const TableRow = React.memo(({
       ? '#fff1f2'
       : extraClassName?.includes('emerald')
         ? '#f0fdf4'
+        : extraClassName?.includes('yellow')
+          ? '#fef9c3'
         : extraClassName?.includes('amber')
           ? '#fffbeb'
           : extraClassName?.includes('violet')
