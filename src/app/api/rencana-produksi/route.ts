@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     const statusFilter = searchParams.get('status')?.trim() || 'ALL';
     const startDate = searchParams.get('startDate')?.trim() || '';
     const endDate = searchParams.get('endDate')?.trim() || '';
-    const limit = Math.min(100, Math.max(10, Number(searchParams.get('limit')) || 50));
+    const limit = Math.min(200, Math.max(10, Number(searchParams.get('limit')) || 100));
     let whereClause = `WHERE deleted_at IS NULL AND no_order IS NOT NULL AND no_order != '' AND no_order != '-'`;
     const queryArgs: unknown[] = [];
 
@@ -78,20 +78,7 @@ export async function GET(request: NextRequest) {
       queryArgs.push(endDate);
     }
 
-    // Filter status langsung di level SQL jika diminta agar hasil konsisten dan efisien
-    let havingClause = '';
-    let statusWhereClause = '';
-    if (statusFilter === 'ACTIVE') {
-      havingClause = 'HAVING (SUM(target) = 0 OR SUM(realisasi) < SUM(target))';
-      statusWhereClause = 'WHERE (sh.finished_date IS NULL OR sh.finished_date = "")';
-    } else if (statusFilter === 'COMPLETED') {
-      havingClause = 'HAVING (SUM(target) > 0 AND SUM(realisasi) >= SUM(target))';
-      statusWhereClause = 'WHERE ((sh.finished_date IS NOT NULL AND sh.finished_date != "") OR (jhp.total_target > 0 AND jhp.total_realisasi >= jhp.total_target))';
-    } else if (statusFilter === 'CRITICAL') {
-      statusWhereClause = "WHERE (jhp.has_kendala = 1 OR (sh.deadline_date IS NOT NULL AND sh.deadline_date <= date('now', '+5 days')))";
-    }
-
-    // Kueri agregasi per nomor order dari JHP (ramping & cepat: tanpa alokasi B-tree COUNT/GROUP_CONCAT DISTINCT yang tidak dipakai)
+    // Kueri agregasi per nomor order dari JHP (ramping & cepat: tanpa alokasi B-tree COUNT/GROUP_CONCAT DISTINCT)
     const baseOrdersSql = `
       SELECT 
         jhp.no_order,
@@ -123,13 +110,11 @@ export async function GET(request: NextRequest) {
         FROM jurnal_harian_produksi
         ${whereClause}
         GROUP BY no_order
-        ${havingClause}
       ) jhp
       LEFT JOIN orders o ON o.faktur = jhp.no_order
       LEFT JOIN sopd s ON s.no_sopd = jhp.no_order
       LEFT JOIN sopd_harga sh ON sh.no_sopd = jhp.no_order
       LEFT JOIN rencana_produksi rp ON rp.no_order = jhp.no_order
-      ${statusWhereClause}
       ORDER BY 
         CASE 
           WHEN COALESCE(o.tgl, s.tgl) LIKE '__-__-____' 
