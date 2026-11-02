@@ -8,6 +8,9 @@ _Tidak ada task yang sedang berjalan saat ini._
 
 ## 📌 Akan Dikerjakan (Backlog)
 
+- [ ] **Audit performa halaman master pekerjaan jurnal produksi secara menyeluruh** — evaluasi kecepatan kueri, virtualisasi/pagination, responsivitas filter, dan rendering UI.
+- [ ] **Audit performa halaman jurnal harian produksi secara menyeluruh** — evaluasi beban tabel JHP skala besar, virtualizer scroll, query batching, dan reaktivitas input/edit.
+- [ ] **Audit performa halaman rencana produksi secara menyeluruh** — evaluasi kueri agregasi multi-order, performa rendering Gantt Chart 1 tahun, sinkronisasi timeline, dan responsivitas interaksi.
 - [ ] **Auto-Generate Jadwal Produksi Harian (tahap 2)** — evaluasi akurasi hasil generate, iterasi algoritma pola historis, dan simpan feedback koreksi ke tabel `generate_feedback` (lihat `docs/AUTO_GENERATE_JADWAL.md`)
 - [ ] **Analisa Produksi** — finalisasi chart/visualisasi di halaman `/jurnal-harian-produksi/analisa`
 - [ ] Validasi ulang quick start README setelah setup di mesin baru
