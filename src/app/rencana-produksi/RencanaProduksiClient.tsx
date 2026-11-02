@@ -329,7 +329,7 @@ export default function RencanaProduksiClient() {
                 <AlertCircle size={10} />
               </button>
             </div>
-            <span className="text-2xl font-bold text-emerald-600 mt-0.5 block">
+            <span className="text-2xl font-bold text-teal-600 mt-0.5 block">
               {summary ? `${summary.overallProgress}%` : '-'}
             </span>
             <span 
@@ -339,8 +339,8 @@ export default function RencanaProduksiClient() {
               {summary ? `${summary.totalRealisasi.toLocaleString('id-ID')} / ${summary.totalTarget.toLocaleString('id-ID')}` : '-'}
             </span>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-            <CheckCircle2 size={20} />
+          <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+            <BarChart3 size={20} />
           </div>
         </div>
       </div>
