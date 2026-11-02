@@ -32,46 +32,46 @@ const PRESET_TEMPLATES: Record<string, { label: string; tahapan: Array<{ bagian:
   hardcover: {
     label: 'Buku Hard Cover',
     tahapan: [
-      { bagian: 'Setting', mesin: 'Prepress', nama_tahap: 'Setting & Desain Mockup', target_per_hari: 2000 },
-      { bagian: 'Quality Control', mesin: 'Plate CTP', nama_tahap: 'Pemeriksaan & CTP Plat', target_per_hari: 2000 },
-      { bagian: 'Finishing', mesin: 'Potong QZ 104', nama_tahap: 'Potong Bahan Isi & Cover', target_per_hari: 20000 },
-      { bagian: 'Cetak', mesin: 'SM 102', nama_tahap: 'Cetak Isi & Cover', target_per_hari: 15000 },
-      { bagian: 'Finishing', mesin: 'Laminasi', nama_tahap: 'Laminasi Doff/Glossy Cover', target_per_hari: 10000 },
-      { bagian: 'Finishing', mesin: 'Lipat Stall K66', nama_tahap: 'Lipat Lembaran Isi', target_per_hari: 15000 },
-      { bagian: 'Finishing', mesin: 'Jahit Benang', nama_tahap: 'Jahit Blok Buku', target_per_hari: 5000 },
-      { bagian: 'Finishing', mesin: 'Mesin Hard Cover', nama_tahap: 'Pembuatan & Pasang Hard Cover', target_per_hari: 3000 },
-      { bagian: 'Finishing', mesin: 'Potong 3 Sisi', nama_tahap: 'Potong 3 Sisi Buku Jadi', target_per_hari: 5000 },
-      { bagian: 'Gudang', mesin: 'Packing', nama_tahap: 'QC Akhir & Packing Gudang', target_per_hari: 5000 },
+      { bagian: 'SETTING', mesin: 'Prepress', nama_tahap: 'Setting & Desain Mockup', target_per_hari: 2000 },
+      { bagian: 'QUALITY CONTROL', mesin: 'Plate CTP', nama_tahap: 'Pemeriksaan & CTP Plat', target_per_hari: 2000 },
+      { bagian: 'FINISHING', mesin: 'Potong QZ 104', nama_tahap: 'Potong Bahan Isi & Cover', target_per_hari: 20000 },
+      { bagian: 'CETAK', mesin: 'SM 102', nama_tahap: 'Cetak Isi & Cover', target_per_hari: 15000 },
+      { bagian: 'FINISHING', mesin: 'Laminasi', nama_tahap: 'Laminasi Doff/Glossy Cover', target_per_hari: 10000 },
+      { bagian: 'FINISHING', mesin: 'Lipat Stall K66', nama_tahap: 'Lipat Lembaran Isi', target_per_hari: 15000 },
+      { bagian: 'FINISHING', mesin: 'Jahit Benang', nama_tahap: 'Jahit Blok Buku', target_per_hari: 5000 },
+      { bagian: 'FINISHING', mesin: 'Mesin Hard Cover', nama_tahap: 'Pembuatan & Pasang Hard Cover', target_per_hari: 3000 },
+      { bagian: 'FINISHING', mesin: 'Potong 3 Sisi', nama_tahap: 'Potong 3 Sisi Buku Jadi', target_per_hari: 5000 },
+      { bagian: 'GUDANG', mesin: 'Packing', nama_tahap: 'QC Akhir & Packing Gudang', target_per_hari: 5000 },
     ],
   },
   softcover: {
     label: 'Buku Soft Cover',
     tahapan: [
-      { bagian: 'Setting', mesin: 'Prepress', nama_tahap: 'Setting & Layout Isi', target_per_hari: 2000 },
-      { bagian: 'Quality Control', mesin: 'Plate CTP', nama_tahap: 'Pemeriksaan & CTP Plat', target_per_hari: 2000 },
-      { bagian: 'Finishing', mesin: 'Potong QZ 104', nama_tahap: 'Potong Bahan', target_per_hari: 20000 },
-      { bagian: 'Cetak', mesin: 'SM 102', nama_tahap: 'Cetak Isi & Cover', target_per_hari: 15000 },
-      { bagian: 'Finishing', mesin: 'Lipat Stall K66', nama_tahap: 'Lipat Lembaran Isi', target_per_hari: 15000 },
-      { bagian: 'Finishing', mesin: 'Binding Lem Panas', nama_tahap: 'Jilid Soft Cover Binding', target_per_hari: 5000 },
-      { bagian: 'Finishing', mesin: 'Potong 3 Sisi', nama_tahap: 'Potong 3 Sisi Buku Jadi', target_per_hari: 5000 },
-      { bagian: 'Gudang', mesin: 'Packing', nama_tahap: 'Pengepakan & Siap Kirim', target_per_hari: 5000 },
+      { bagian: 'SETTING', mesin: 'Prepress', nama_tahap: 'Setting & Layout Isi', target_per_hari: 2000 },
+      { bagian: 'QUALITY CONTROL', mesin: 'Plate CTP', nama_tahap: 'Pemeriksaan & CTP Plat', target_per_hari: 2000 },
+      { bagian: 'FINISHING', mesin: 'Potong QZ 104', nama_tahap: 'Potong Bahan', target_per_hari: 20000 },
+      { bagian: 'CETAK', mesin: 'SM 102', nama_tahap: 'Cetak Isi & Cover', target_per_hari: 15000 },
+      { bagian: 'FINISHING', mesin: 'Lipat Stall K66', nama_tahap: 'Lipat Lembaran Isi', target_per_hari: 15000 },
+      { bagian: 'FINISHING', mesin: 'Binding Lem Panas', nama_tahap: 'Jilid Soft Cover Binding', target_per_hari: 5000 },
+      { bagian: 'FINISHING', mesin: 'Potong 3 Sisi', nama_tahap: 'Potong 3 Sisi Buku Jadi', target_per_hari: 5000 },
+      { bagian: 'GUDANG', mesin: 'Packing', nama_tahap: 'Pengepakan & Siap Kirim', target_per_hari: 5000 },
     ],
   },
   majalah: {
     label: 'Majalah / Buletin',
     tahapan: [
-      { bagian: 'Setting', mesin: 'Prepress', nama_tahap: 'Setting & Layout', target_per_hari: 2000 },
-      { bagian: 'Quality Control', mesin: 'Plate CTP', nama_tahap: 'Output Plat', target_per_hari: 2000 },
-      { bagian: 'Finishing', mesin: 'Potong QZ 104', nama_tahap: 'Potong Bahan', target_per_hari: 20000 },
-      { bagian: 'Cetak', mesin: 'Oliver 72E', nama_tahap: 'Cetak Majalah', target_per_hari: 15000 },
-      { bagian: 'Finishing', mesin: 'Lipat Stall', nama_tahap: 'Lipat Lembaran', target_per_hari: 15000 },
-      { bagian: 'Finishing', mesin: 'Stitching Kawat', nama_tahap: 'Jilid Jahit Kawat (Stitching)', target_per_hari: 8000 },
-      { bagian: 'Gudang', mesin: 'Packing', nama_tahap: 'Packing & Distribusi', target_per_hari: 5000 },
+      { bagian: 'SETTING', mesin: 'Prepress', nama_tahap: 'Setting & Layout', target_per_hari: 2000 },
+      { bagian: 'QUALITY CONTROL', mesin: 'Plate CTP', nama_tahap: 'Output Plat', target_per_hari: 2000 },
+      { bagian: 'FINISHING', mesin: 'Potong QZ 104', nama_tahap: 'Potong Bahan', target_per_hari: 20000 },
+      { bagian: 'CETAK', mesin: 'Oliver 72E', nama_tahap: 'Cetak Majalah', target_per_hari: 15000 },
+      { bagian: 'FINISHING', mesin: 'Lipat Stall', nama_tahap: 'Lipat Lembaran', target_per_hari: 15000 },
+      { bagian: 'FINISHING', mesin: 'Stitching Kawat', nama_tahap: 'Jilid Jahit Kawat (Stitching)', target_per_hari: 8000 },
+      { bagian: 'GUDANG', mesin: 'Packing', nama_tahap: 'Packing & Distribusi', target_per_hari: 5000 },
     ],
   },
 };
 
-const BAGIAN_OPTIONS = ['Setting', 'Quality Control', 'Cetak', 'Finishing', 'Gudang'];
+const BAGIAN_OPTIONS = ['SETTING', 'QUALITY CONTROL', 'CETAK', 'FINISHING', 'GUDANG'];
 
 export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }: BuatRencanaProduksiModalProps) {
   // 1. Data Identitas Pesanan

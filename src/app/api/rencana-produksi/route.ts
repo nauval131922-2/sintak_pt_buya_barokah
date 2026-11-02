@@ -115,7 +115,15 @@ export async function GET(request: NextRequest) {
       LEFT JOIN sopd s ON s.no_sopd = jhp.no_order
       LEFT JOIN sopd_harga sh ON sh.no_sopd = jhp.no_order
       LEFT JOIN rencana_produksi rp ON rp.no_order = jhp.no_order
-      ORDER BY jhp.end_date DESC
+      ORDER BY 
+        CASE 
+          WHEN COALESCE(o.tgl, s.tgl) LIKE '__-__-____' 
+            THEN substr(COALESCE(o.tgl, s.tgl),7,4) || '-' || substr(COALESCE(o.tgl, s.tgl),4,2) || '-' || substr(COALESCE(o.tgl, s.tgl),1,2)
+          WHEN COALESCE(o.tgl, s.tgl) IS NOT NULL 
+            THEN COALESCE(o.tgl, s.tgl)
+          ELSE jhp.start_date
+        END DESC,
+        jhp.no_order DESC
       LIMIT 350
     `;
     const ordersResult = await db.execute({
@@ -358,13 +366,12 @@ export async function GET(request: NextRequest) {
       return true;
     });
 
-    // Determine busiest station with title casing
+    // Format nama bagian kapital semua (UPPERCASE)
     const formatBagianTitle = (str: string) => {
-      const lower = str.toLowerCase();
-      if (lower.includes('qc') || lower.includes('quality control')) return 'Quality Control';
-      return str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      const upper = (str || '').toUpperCase().trim();
+      if (upper.includes('QC') || upper.includes('QUALITY CONTROL')) return 'QUALITY CONTROL';
+      return upper;
     };
-
     let busiestStation = '-';
     let maxLoadCount = 0;
     for (const [stName, stData] of Object.entries(stationLoad)) {

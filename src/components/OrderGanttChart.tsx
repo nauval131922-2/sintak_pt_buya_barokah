@@ -401,7 +401,7 @@ export default function OrderGanttChart({ entries, orderInfo }: OrderGanttChartP
                     : `${theme.chip} hover:opacity-80`
                 }`}
               >
-                {bg} ({count})
+                {bg.toUpperCase()} ({count})
               </button>
             );
           })}
@@ -504,7 +504,7 @@ export default function OrderGanttChart({ entries, orderInfo }: OrderGanttChartP
                     <div className="sticky left-0 z-20 w-80 shrink-0 bg-white group-hover:bg-gray-50 border-r border-gray-200 px-4 py-3 flex flex-col justify-center shadow-[2px_0_5px_rgba(0,0,0,0.04)]">
                       <div className="flex items-center gap-2 mb-1">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider border ${theme.chip}`}>
-                          {task.bagian}
+                          {task.bagian.toUpperCase()}
                         </span>
                         {task.kendalaList.length > 0 && (
                           <span className="flex items-center gap-0.5 text-rose-600 text-[10px] font-medium bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200" title={task.kendalaList.join(', ')}>

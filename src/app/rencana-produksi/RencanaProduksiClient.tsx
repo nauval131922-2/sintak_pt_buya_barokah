@@ -54,12 +54,12 @@ export default function RencanaProduksiClient() {
   // Detail Drilldown
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const bagianDropdownOptions = useMemo(() => [
-    { value: 'ALL', label: 'Semua Bagian' },
-    { value: 'SETTING', label: 'Setting' },
-    { value: 'QUALITY CONTROL', label: 'Quality Control' },
-    { value: 'CETAK', label: 'Cetak' },
-    { value: 'FINISHING', label: 'Finishing' },
-    { value: 'GUDANG', label: 'Gudang' },
+    { value: 'ALL', label: 'SEMUA BAGIAN' },
+    { value: 'SETTING', label: 'SETTING' },
+    { value: 'QUALITY CONTROL', label: 'QUALITY CONTROL' },
+    { value: 'CETAK', label: 'CETAK' },
+    { value: 'FINISHING', label: 'FINISHING' },
+    { value: 'GUDANG', label: 'GUDANG' },
   ], []);
 
   const [selectedOrderEntries, setSelectedOrderEntries] = useState<JhpEntryForGantt[]>([]);
@@ -401,7 +401,7 @@ export default function RencanaProduksiClient() {
                     {bagianSummary.map((item, i) => (
                       <div key={item.bagian} className="flex items-center gap-1">
                         <span className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${bagianColor(item.bagian)}`}>
-                          {item.bagian}
+                          {item.bagian.toUpperCase()}
                         </span>
                         {i < bagianSummary.length - 1 && (
                           <span className="text-gray-300 text-xs">&rarr;</span>
@@ -412,7 +412,7 @@ export default function RencanaProduksiClient() {
                   <div className="mt-4 space-y-2">
                     {bagianSummary.map((item) => (
                       <div key={item.bagian} className="flex items-center justify-between text-xs text-gray-600">
-                        <span className="font-medium">{item.bagian}</span>
+                        <span className="font-medium uppercase">{item.bagian}</span>
                         <div className="flex items-center gap-2">
                           <span className="flex items-center gap-0.5">
                             <Target size={12} className="text-gray-400" />

@@ -109,13 +109,13 @@ function getStageColor(bagian: string): string {
 function formatStageName(bagian: string): string {
   const b = (bagian || '').trim();
   const upper = b.toUpperCase();
-  if (upper.includes('SETTING')) return 'Setting';
-  if (upper.includes('QUALITY CONTROL') || upper === 'QC') return 'Quality Control';
-  if (upper.includes('CETAK')) return 'Cetak';
-  if (upper.includes('FINISHING') || upper.includes('POTONG')) return 'Finishing';
-  if (upper.includes('GUDANG')) return 'Gudang';
-  if (upper.includes('TEKNISI')) return 'Teknisi';
-  return b.charAt(0).toUpperCase() + b.slice(1).toLowerCase();
+  if (upper.includes('SETTING')) return 'SETTING';
+  if (upper.includes('QUALITY CONTROL') || upper === 'QC') return 'QUALITY CONTROL';
+  if (upper.includes('CETAK')) return 'CETAK';
+  if (upper.includes('FINISHING') || upper.includes('POTONG')) return 'FINISHING';
+  if (upper.includes('GUDANG')) return 'GUDANG';
+  if (upper.includes('TEKNISI')) return 'TEKNISI';
+  return upper;
 }
 
 export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrderGanttChartProps) {
@@ -386,20 +386,20 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
             <span className="text-gray-400 font-medium">Tahapan Alur:</span>
             <div className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />
-              <span>Setting</span>
+              <span>SETTING</span>
             </div>
             <div className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block" />
-              <span>Quality Control</span>
+              <span>QUALITY CONTROL</span>
             </div>
 
             <div className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" />
-              <span>Cetak</span>
+              <span>CETAK</span>
             </div>
             <div className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
-              <span>Finishing</span>
+              <span>FINISHING</span>
             </div>
             <div className="flex items-center gap-1.5 ml-2 border-l border-gray-200 pl-3">
               <span className="w-3 h-0.5 border-t-2 border-dashed border-rose-500 inline-block" />
