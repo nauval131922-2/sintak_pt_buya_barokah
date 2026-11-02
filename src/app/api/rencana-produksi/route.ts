@@ -70,10 +70,8 @@ export async function GET(request: NextRequest) {
       LEFT JOIN sopd_harga sh ON sh.no_sopd = jhp.no_order
       GROUP BY jhp.no_order
       ORDER BY MAX(jhp.tgl) DESC
-      LIMIT ?
+      LIMIT 150
     `;
-    queryArgs.push(limit);
-
     const ordersResult = await db.execute({
       sql: baseOrdersSql,
       args: queryArgs,
@@ -248,16 +246,21 @@ export async function GET(request: NextRequest) {
       return true;
     });
 
-    // Determine busiest station
+    // Determine busiest station with title casing
+    const formatBagianTitle = (str: string) => {
+      const lower = str.toLowerCase();
+      if (lower.includes('qc') || lower.includes('quality control')) return 'Quality Control';
+      return str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    };
+
     let busiestStation = '-';
     let maxLoadCount = 0;
     for (const [stName, stData] of Object.entries(stationLoad)) {
       if (stData.count > maxLoadCount) {
         maxLoadCount = stData.count;
-        busiestStation = `${stName} (${stData.count} order)`;
+        busiestStation = `${formatBagianTitle(stName)} (${stData.count} order)`;
       }
     }
-
     const overallProgress = sumTotalTarget > 0 ? Math.min(100, Math.round((sumTotalRealisasi / sumTotalTarget) * 100)) : 0;
 
     return NextResponse.json({
@@ -271,7 +274,7 @@ export async function GET(request: NextRequest) {
         overallProgress,
         busiestStation,
       },
-      orders: filteredOrders,
+      orders: filteredOrders.slice(0, limit),
       machineStations: Object.entries(stationLoad).map(([bagian, data]) => ({
         bagian,
         orderCount: data.count,

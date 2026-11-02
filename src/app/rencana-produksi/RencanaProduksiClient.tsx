@@ -205,28 +205,34 @@ export default function RencanaProduksiClient() {
           </div>
         </div>
 
-        {/* Card 3: Busiest Station / Bottleneck */}
+        {/* Card 3: Busiest Bagian */}
         <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
-          <div>
-            <span className="text-gray-400 font-medium text-xs block">Stasiun Mesin Terpadat</span>
-            <span className="text-sm font-bold text-gray-900 mt-1 block truncate max-w-[150px]">
+          <div className="min-w-0 flex-1 pr-2">
+            <span className="text-gray-400 font-medium text-xs block">Bagian Terpadat</span>
+            <span 
+              className="text-sm font-bold text-gray-900 mt-1 block truncate max-w-full"
+              title={summary?.busiestStation || '-'}
+            >
               {summary ? summary.busiestStation : '-'}
             </span>
-            <span className="text-[11px] text-gray-400 mt-1 block">Antrean pengerjaan terbanyak</span>
+            <span className="text-[11px] text-gray-400 mt-1 block">Antrean order terbanyak</span>
           </div>
           <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-            <Factory size={20} />
+            <Layers size={20} />
           </div>
         </div>
 
         {/* Card 4: Overall Progress */}
         <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
-          <div>
+          <div className="min-w-0 flex-1 pr-2">
             <span className="text-gray-400 font-medium text-xs block">Akumulasi Realisasi</span>
             <span className="text-2xl font-bold text-emerald-600 mt-0.5 block">
               {summary ? `${summary.overallProgress}%` : '-'}
             </span>
-            <span className="text-[11px] text-gray-400 mt-1 block truncate max-w-[160px]">
+            <span 
+              className="text-[11px] text-gray-400 mt-1 block truncate max-w-full"
+              title={summary ? `Total Realisasi: ${summary.totalRealisasi.toLocaleString('id-ID')} / Total Target: ${summary.totalTarget.toLocaleString('id-ID')}` : undefined}
+            >
               {summary ? `${summary.totalRealisasi.toLocaleString('id-ID')} / ${summary.totalTarget.toLocaleString('id-ID')}` : '-'}
             </span>
           </div>
@@ -493,15 +499,15 @@ export default function RencanaProduksiClient() {
                 </button>
               </div>
 
-              {/* Station Filter Dropdown */}
+              {/* Bagian Filter Dropdown */}
               <select
                 value={bagianFilter}
                 onChange={(e) => setBagianFilter(e.target.value)}
                 className="px-3 py-1.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
-                <option value="ALL">Semua Stasiun Mesin</option>
+                <option value="ALL">Semua Bagian</option>
                 <option value="SETTING">Prepress / Setting</option>
-                <option value="QUALITY CONTROL">QC &amp; CTP Plate</option>
+                <option value="QUALITY CONTROL">Quality Control (QC)</option>
                 <option value="POTONG">Potong Bahan</option>
                 <option value="CETAK">Cetak Offset</option>
                 <option value="FINISHING">Finishing &amp; Jilid</option>
