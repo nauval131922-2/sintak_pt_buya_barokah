@@ -82,8 +82,8 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
   // 1. Data Identitas Pesanan
   const [noOrder, setNoOrder] = useState('');
   const [namaOrder, setNamaOrder] = useState('');
-  const [qtyOplah, setQtyOplah] = useState<number>(1000);
-  const [satuan, setSatuan] = useState('Eks');
+  const [qtyOplah, setQtyOplah] = useState<number>(0);
+  const [satuan, setSatuan] = useState('');
   const [namaPelanggan, setNamaPelanggan] = useState('');
   const [tglOrder, setTglOrder] = useState('');
   const [tglDeadline, setTglDeadline] = useState<Date | null>(null);
@@ -115,6 +115,31 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
+  };
+
+  // Helper Format Tanggal Indonesia (dd mmm yyyy: 28 Okt 2026)
+  const formatTanggalIndo = (tglStr?: string | null): string => {
+    if (!tglStr) return '';
+    const clean = tglStr.trim();
+    const parts = clean.split('-');
+    if (parts.length === 3) {
+      let day = '', monthNum = 0, year = '';
+      if (parts[0].length === 4) {
+        year = parts[0];
+        monthNum = parseInt(parts[1], 10);
+        day = parts[2];
+      } else {
+        day = parts[0];
+        monthNum = parseInt(parts[1], 10);
+        year = parts[2];
+      }
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      if (monthNum >= 1 && monthNum <= 12) {
+        const paddedDay = day.padStart(2, '0');
+        return `${paddedDay} ${months[monthNum - 1]} ${year}`;
+      }
+    }
+    return tglStr;
   };
 
   // Muat preset awal saat template dipilih
@@ -161,8 +186,8 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
     if (isOpen && !prevOpenRef.current) {
       setNoOrder('');
       setNamaOrder('');
-      setQtyOplah(1000);
-      setSatuan('Eks');
+      setQtyOplah(0);
+      setSatuan('');
       setNamaPelanggan('');
       setTglOrder('');
       setTglDeadline(null);
@@ -492,7 +517,11 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
                         e.stopPropagation();
                         setNoOrder('');
                         setNamaOrder('');
+                        setQtyOplah(0);
+                        setSatuan('');
                         setNamaPelanggan('');
+                        setTglOrder('');
+                        setTglDeadline(null);
                         setIsDropdownOpen(true);
                       }}
                       className="p-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
@@ -560,7 +589,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
                             <div className="flex items-center gap-1.5 shrink-0">
                               {item.tgl && (
                                 <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium">
-                                  {item.tgl}
+                                  {formatTanggalIndo(item.tgl)}
                                 </span>
                               )}
                               {(item.qty || item.qty_sopd) ? (
@@ -575,12 +604,21 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
                             {item.nama_order}
                           </div>
 
-                          {(item.nama_pelanggan || item.pelanggan) && (
-                            <div className="text-[10px] text-slate-500 flex items-center gap-1">
-                              <span className="text-slate-400">Pemesan:</span>
-                              <span className="font-medium text-slate-700">{item.nama_pelanggan || item.pelanggan}</span>
-                            </div>
-                          )}
+                          <div className="flex items-center justify-between text-[10px] text-slate-500 pt-0.5">
+                            {(item.nama_pelanggan || item.pelanggan) ? (
+                              <div className="flex items-center gap-1 truncate max-w-[320px]">
+                                <span className="text-slate-400">Pemesan:</span>
+                                <span className="font-medium text-slate-700 truncate">{item.nama_pelanggan || item.pelanggan}</span>
+                              </div>
+                            ) : (
+                              <span className="text-slate-400 italic">Tanpa Nama Pemesan</span>
+                            )}
+                            {item.deadline_date && (
+                              <span className="text-rose-600 font-semibold shrink-0">
+                                D/L: {formatTanggalIndo(item.deadline_date)}
+                              </span>
+                            )}
+                          </div>
                         </button>
                       ))
                     )}
@@ -611,11 +649,11 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
               </label>
               <div className="flex gap-1.5">
                 <input
-                  type="number"
+                  type="text"
                   disabled
                   readOnly
-                  value={qtyOplah}
-                  className="w-full h-9 px-2.5 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 cursor-not-allowed select-none"
+                  value={qtyOplah > 0 ? qtyOplah.toLocaleString('id-ID') : ''}
+                  className="w-full h-9 px-2.5 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 cursor-not-allowed select-none text-right"
                   placeholder="Jumlah"
                 />
                 <input
