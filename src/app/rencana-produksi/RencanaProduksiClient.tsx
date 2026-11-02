@@ -5,13 +5,12 @@ import {
   Search, X, Loader2, Package, Hash, Users, Target, CheckCircle2, 
   Layers, RefreshCw, BarChart3, AlertTriangle, Flag, CalendarRange, 
   ArrowLeft, Clock, Factory, ChevronRight, TableProperties, Calendar,
-  RotateCcw, Filter, ChevronUp, ChevronDown
+  RotateCcw, Filter
 } from 'lucide-react';
 import MultiOrderGanttChart, { type ProductionOrderSummary } from '@/components/MultiOrderGanttChart';
 import OrderGanttChart, { type JhpEntryForGantt, type OrderInfoForGantt } from '@/components/OrderGanttChart';
 import DatePicker from '@/components/DatePicker';
 import SquareDropdown from '@/components/SquareDropdown';
-import Portal from '@/components/Portal';
 interface SummaryData {
   totalActiveOrders: number;
   criticalOrdersCount: number;
@@ -80,55 +79,7 @@ export default function RencanaProduksiClient() {
   const [searchingOrders, setSearchingOrders] = useState(false);
   const searchDropdownRef = useRef<HTMLDivElement>(null);
 
-  // Floating Navigation Controls (Persis Halaman Hasil Produksi)
-  const [showTopBtn, setShowTopBtn] = useState(false);
-  const [showBottomBtn, setShowBottomBtn] = useState(false);
-  const [isNavActive, setIsNavActive] = useState(false);
-  const [isNavHovered, setIsNavHovered] = useState(false);
-  const navIdleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    const mainWrapper = document.getElementById('main-content-scroll');
-
-    const checkScrollPosition = () => {
-      const el = mainWrapper || document.documentElement;
-      const scrollPos = el.scrollTop || window.scrollY || 0;
-      const scrollHeight = el.scrollHeight || document.body.scrollHeight;
-      const clientHeight = el.clientHeight || window.innerHeight;
-
-      setShowTopBtn(scrollPos > 150);
-      const distanceToBottom = scrollHeight - (scrollPos + clientHeight);
-      setShowBottomBtn(distanceToBottom > 150);
-    };
-
-    const handleUserScroll = () => {
-      checkScrollPosition();
-      setIsNavActive(true);
-      if (navIdleTimerRef.current) {
-        clearTimeout(navIdleTimerRef.current);
-        navIdleTimerRef.current = null;
-      }
-      navIdleTimerRef.current = setTimeout(() => {
-        setIsNavActive(false);
-      }, 1500);
-    };
-
-    if (mainWrapper) {
-      mainWrapper.addEventListener('scroll', handleUserScroll, { passive: true });
-    }
-    window.addEventListener('scroll', handleUserScroll, { passive: true });
-    window.addEventListener('resize', checkScrollPosition, { passive: true });
-    checkScrollPosition();
-
-    return () => {
-      if (mainWrapper) {
-        mainWrapper.removeEventListener('scroll', handleUserScroll);
-      }
-      window.removeEventListener('scroll', handleUserScroll);
-      window.removeEventListener('resize', checkScrollPosition);
-      clearTimeout(navIdleTimerRef.current!);
-    };
-  }, []);
 
   // 1. Fetch Multi-Order Schedule
   const fetchSchedule = useCallback(async (
@@ -704,66 +655,6 @@ export default function RencanaProduksiClient() {
         </div>
       )}
 
-      {/* Floating Navigation Controls (Persis Halaman Hasil Produksi) */}
-      {(showTopBtn || showBottomBtn) && (
-        <Portal>
-          <div 
-            onMouseEnter={() => setIsNavHovered(true)}
-            onMouseLeave={() => setIsNavHovered(false)}
-            onTouchEnd={() => {
-              if (navIdleTimerRef.current) {
-                clearTimeout(navIdleTimerRef.current);
-                navIdleTimerRef.current = null;
-              }
-              navIdleTimerRef.current = setTimeout(() => {
-                setIsNavHovered(false);
-                setIsNavActive(false);
-              }, 1200);
-            }}
-            className={`fixed bottom-6 right-6 z-[80] transition-all duration-300 ease-out ${
-              isNavActive || isNavHovered
-                ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' 
-                : 'opacity-0 translate-y-4 scale-90 pointer-events-none'
-            }`}
-          >
-            <div className={`bg-white/80 backdrop-blur-xl border border-white/60 shadow-2xl shadow-emerald-950/20 rounded-full p-1.5 flex flex-col transition-all duration-300 ring-1 ring-black/5 ${showTopBtn && showBottomBtn ? 'gap-1.5' : 'gap-0'}`}>
-              {/* Tombol Ke Atas */}
-              {showTopBtn && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const el = document.getElementById('main-content-scroll');
-                    if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
-                    setTimeout(() => setIsNavHovered(false), 300);
-                  }}
-                  className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:scale-110 active:scale-95 transition-all duration-300 ease-out cursor-pointer"
-                  title="Ke Paling Atas"
-                  aria-label="Ke Paling Atas"
-                >
-                  <ChevronUp size={20} strokeWidth={2.5} />
-                </button>
-              )}
-
-              {/* Tombol Ke Paling Bawah */}
-              {showBottomBtn && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const el = document.getElementById('main-content-scroll');
-                    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
-                    setTimeout(() => setIsNavHovered(false), 300);
-                  }}
-                  className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md shadow-slate-900/30 hover:bg-emerald-600 hover:shadow-emerald-600/40 hover:scale-110 active:scale-95 transition-all duration-300 ease-out cursor-pointer"
-                  title="Ke Paling Bawah"
-                  aria-label="Ke Paling Bawah"
-                >
-                  <ChevronDown size={20} strokeWidth={2.5} />
-                </button>
-              )}
-            </div>
-          </div>
-        </Portal>
-      )}
     </div>
   );
 }
