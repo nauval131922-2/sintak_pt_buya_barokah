@@ -19,9 +19,13 @@ let ensuredJadwalGandaColumn = false;
 async function ensureJadwalGandaColumn() {
   if (ensuredJadwalGandaColumn) return;
   try {
-    await db.execute("ALTER TABLE jurnal_harian_produksi ADD COLUMN is_jadwal_ganda INTEGER DEFAULT 0");
+    const check = await db.execute("PRAGMA table_info(jurnal_harian_produksi)");
+    const cols = (check.rows as unknown as Array<{ name: string }>).map(r => r.name);
+    if (!cols.includes('is_jadwal_ganda')) {
+      await db.execute("ALTER TABLE jurnal_harian_produksi ADD COLUMN is_jadwal_ganda INTEGER DEFAULT 0");
+    }
+    ensuredJadwalGandaColumn = true;
   } catch {}
-  ensuredJadwalGandaColumn = true;
 }
 
 export async function GET(request: NextRequest) {

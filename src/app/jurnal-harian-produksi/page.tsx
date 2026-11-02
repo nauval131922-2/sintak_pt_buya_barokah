@@ -17,6 +17,19 @@ const todayStr = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
+let ensuredPageJadwalGanda = false;
+async function ensureJadwalGandaColumn() {
+  if (ensuredPageJadwalGanda) return;
+  try {
+    const check = await db.execute("PRAGMA table_info(jurnal_harian_produksi)");
+    const cols = (check.rows as unknown as Array<{ name: string }>).map(r => r.name);
+    if (!cols.includes('is_jadwal_ganda')) {
+      await db.execute("ALTER TABLE jurnal_harian_produksi ADD COLUMN is_jadwal_ganda INTEGER DEFAULT 0");
+    }
+    ensuredPageJadwalGanda = true;
+  } catch {}
+}
+
 export default async function JurnalHarianPage() {
   await requirePermission("produksi_jhp");
 
@@ -49,9 +62,7 @@ export default async function JurnalHarianPage() {
     CASE WHEN jenis_pekerjaan LIKE '%Koordinasi%' THEN 0 ELSE 1 END ASC,
     absensi ASC, id ASC`;
 
-  try {
-    await db.execute("ALTER TABLE jurnal_harian_produksi ADD COLUMN is_jadwal_ganda INTEGER DEFAULT 0");
-  } catch {}
+  await ensureJadwalGandaColumn();
 
   const today = todayStr();
   const batch = await db.batch([

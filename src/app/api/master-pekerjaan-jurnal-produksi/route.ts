@@ -20,9 +20,13 @@ let ensuredTargetHarianColumn = false;
 async function ensureTargetHarianColumn() {
   if (ensuredTargetHarianColumn) return;
   try {
-    await db.execute("ALTER TABLE master_pekerjaan_jurnal_produksi ADD COLUMN target_harian REAL");
+    const check = await db.execute("PRAGMA table_info(master_pekerjaan_jurnal_produksi)");
+    const cols = (check.rows as unknown as Array<{ name: string }>).map(r => r.name);
+    if (!cols.includes('target_harian')) {
+      await db.execute("ALTER TABLE master_pekerjaan_jurnal_produksi ADD COLUMN target_harian REAL");
+    }
+    ensuredTargetHarianColumn = true;
   } catch {}
-  ensuredTargetHarianColumn = true;
 }
 
 
