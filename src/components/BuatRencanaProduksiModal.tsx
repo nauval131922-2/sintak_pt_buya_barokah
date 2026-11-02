@@ -61,8 +61,8 @@ function deriveTahapanFromOrder(spekText: string, namaOrderText: string): TahapT
     });
     list.push({
       bagian: 'CETAK',
-      mesin: 'Digital Print',
-      nama_tahap: 'Cetak / Print Label Digital',
+      mesin: 'Print Inter',
+      nama_tahap: 'Print Inter Label',
       target_per_hari: 10000,
     });
     if (text.includes('LAMINASI') || text.includes('GLOSSY') || text.includes('DOFF')) {
@@ -116,8 +116,8 @@ function deriveTahapanFromOrder(spekText: string, namaOrderText: string): TahapT
     });
     list.push({
       bagian: 'CETAK',
-      mesin: 'GTO 52',
-      nama_tahap: 'Cetak GTO 52',
+      mesin: 'Ryobi 500N',
+      nama_tahap: 'Cetak Mesin Ryobi',
       target_per_hari: 15000,
     });
     if (text.includes('PORPORASI') || text.includes('PORFORASI')) {
@@ -186,7 +186,7 @@ function deriveTahapanFromOrder(spekText: string, namaOrderText: string): TahapT
       target_per_hari: 20000,
     });
     let mesinCetak = 'SM 102';
-    let namaCetak = 'Cetak Speedmaster 102';
+    let namaCetak = 'Cetak Mesin SM 102';
     if (text.includes('2 WARNA') || text.includes('2/0') || text.includes('OLIVER')) {
       mesinCetak = 'Oliver 72E';
       namaCetak = 'Cetak Oliver 72E';
@@ -256,7 +256,7 @@ function deriveTahapanFromOrder(spekText: string, namaOrderText: string): TahapT
   list.push({
     bagian: 'CETAK',
     mesin: 'SM 102',
-    nama_tahap: 'Cetak Speedmaster 102',
+    nama_tahap: 'Cetak Mesin SM 102',
     target_per_hari: 15000,
   });
   if (text.includes('LAMINASI') || text.includes('DOFF') || text.includes('GLOSSY')) {
@@ -269,7 +269,7 @@ function deriveTahapanFromOrder(spekText: string, namaOrderText: string): TahapT
   }
   list.push({
     bagian: 'FINISHING',
-    mesin: 'Lipat Stall K66',
+    mesin: 'Mesin Lipat',
     nama_tahap: 'Lipat Lembaran Isi',
     target_per_hari: 15000,
   });

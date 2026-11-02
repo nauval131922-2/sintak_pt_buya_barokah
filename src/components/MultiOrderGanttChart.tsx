@@ -99,7 +99,7 @@ function getStatusBadge(status: string) {
 function getStageColor(bagian: string): string {
   const b = bagian.toUpperCase();
   if (b.includes('SETTING')) return 'bg-blue-500';
-  if (b.includes('QC') || b.includes('QUALITY CONTROL') || b.includes('CTP') || b.includes('PLATE')) return 'bg-purple-500';
+  if (b.includes('QC') || b.includes('QUALITY CONTROL') || b.includes('PLATE')) return 'bg-purple-500';
   if (b.includes('CETAK')) return 'bg-amber-500';
   if (b.includes('FINISHING') || b.includes('POTONG')) return 'bg-emerald-500';
   if (b.includes('GUDANG')) return 'bg-slate-500';
