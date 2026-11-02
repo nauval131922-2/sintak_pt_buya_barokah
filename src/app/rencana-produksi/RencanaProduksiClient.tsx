@@ -620,7 +620,7 @@ export default function RencanaProduksiClient() {
                 />
               </div>
 
-              {/* Tombol Clear Filter */}
+              {/* Tombol Reset Filter (Tepat setelah Filter Bagian, tanpa align right) */}
               {(search || statusFilter !== 'ACTIVE' || bagianFilter !== 'ALL' || startDate || endDate) && (
                 <button
                   type="button"
@@ -632,11 +632,11 @@ export default function RencanaProduksiClient() {
                     setEndDate(null);
                     fetchSchedule('', 'ACTIVE', 'ALL', null, null);
                   }}
-                  className="h-7 px-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 shrink-0 sm:ml-auto cursor-pointer"
-                  title="Hapus / Reset Semua Filter"
+                  className="h-7 px-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+                  title="Reset Semua Filter"
                 >
                   <RotateCcw size={12} />
-                  <span>Clear Filter</span>
+                  <span>Reset Filter</span>
                 </button>
               )}
             </div>

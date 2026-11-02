@@ -85,6 +85,7 @@ export async function GET(request: NextRequest) {
       ) jhp
       LEFT JOIN orders o ON o.faktur = jhp.no_order
       LEFT JOIN sopd s ON s.no_sopd = jhp.no_order
+      LEFT JOIN sopd_harga sh ON sh.no_sopd = jhp.no_order
       ORDER BY jhp.end_date DESC
       LIMIT 350
     `;

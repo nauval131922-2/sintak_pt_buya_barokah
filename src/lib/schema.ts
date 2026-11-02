@@ -867,7 +867,47 @@ export async function initSchema(db: any) {
       username_edited TEXT,
       recid TEXT,
       fetched_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );`
+    );`,
+    `CREATE TABLE IF NOT EXISTS rencana_produksi (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      no_order TEXT UNIQUE NOT NULL,
+      nama_order TEXT NOT NULL,
+      qty_oplah INTEGER DEFAULT 0,
+      satuan TEXT DEFAULT 'Eks',
+      nama_pelanggan TEXT,
+      tgl_order TEXT,
+      tgl_deadline TEXT,
+      tgl_mulai_rencana TEXT,
+      tgl_selesai_rencana TEXT,
+      status TEXT DEFAULT 'DRAFT',
+      catatan TEXT,
+      created_by TEXT,
+      updated_by TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );`,
+    `CREATE INDEX IF NOT EXISTS idx_rencana_produksi_no_order ON rencana_produksi(no_order);`,
+    `CREATE INDEX IF NOT EXISTS idx_rencana_produksi_status ON rencana_produksi(status);`,
+    `CREATE TABLE IF NOT EXISTS rencana_produksi_tahapan (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      rencana_id INTEGER,
+      no_order TEXT NOT NULL,
+      urutan INTEGER DEFAULT 1,
+      bagian TEXT NOT NULL,
+      mesin TEXT,
+      nama_tahap TEXT NOT NULL,
+      volume REAL DEFAULT 0,
+      target_per_hari REAL DEFAULT 0,
+      durasi_hari INTEGER DEFAULT 1,
+      tgl_mulai_plan TEXT,
+      tgl_selesai_plan TEXT,
+      catatan TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (rencana_id) REFERENCES rencana_produksi(id) ON DELETE CASCADE
+    );`,
+    `CREATE INDEX IF NOT EXISTS idx_rencana_tahapan_no_order ON rencana_produksi_tahapan(no_order);`,
+    `CREATE INDEX IF NOT EXISTS idx_rencana_tahapan_rencana_id ON rencana_produksi_tahapan(rencana_id);`
   ], "write");
 
   // 2. Incremental Migrations (Silent execution to prevent red log noise)
@@ -1037,6 +1077,46 @@ export async function initSchema(db: any) {
     "CREATE INDEX IF NOT EXISTS idx_barang_jadi_kd_barang ON barang_jadi(kd_barang);",
      "CREATE INDEX IF NOT EXISTS idx_bom_kd_barang ON bill_of_materials(kd_barang);",
      "CREATE INDEX IF NOT EXISTS idx_usr_log_channel_tgl ON usr_log(channel, tgl);",
+    `CREATE TABLE IF NOT EXISTS rencana_produksi (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      no_order TEXT UNIQUE NOT NULL,
+      nama_order TEXT NOT NULL,
+      qty_oplah INTEGER DEFAULT 0,
+      satuan TEXT DEFAULT 'Eks',
+      nama_pelanggan TEXT,
+      tgl_order TEXT,
+      tgl_deadline TEXT,
+      tgl_mulai_rencana TEXT,
+      tgl_selesai_rencana TEXT,
+      status TEXT DEFAULT 'DRAFT',
+      catatan TEXT,
+      created_by TEXT,
+      updated_by TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );`,
+    "CREATE INDEX IF NOT EXISTS idx_rencana_produksi_no_order ON rencana_produksi(no_order);",
+    "CREATE INDEX IF NOT EXISTS idx_rencana_produksi_status ON rencana_produksi(status);",
+    `CREATE TABLE IF NOT EXISTS rencana_produksi_tahapan (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      rencana_id INTEGER,
+      no_order TEXT NOT NULL,
+      urutan INTEGER DEFAULT 1,
+      bagian TEXT NOT NULL,
+      mesin TEXT,
+      nama_tahap TEXT NOT NULL,
+      volume REAL DEFAULT 0,
+      target_per_hari REAL DEFAULT 0,
+      durasi_hari INTEGER DEFAULT 1,
+      tgl_mulai_plan TEXT,
+      tgl_selesai_plan TEXT,
+      catatan TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (rencana_id) REFERENCES rencana_produksi(id) ON DELETE CASCADE
+    );`,
+    "CREATE INDEX IF NOT EXISTS idx_rencana_tahapan_no_order ON rencana_produksi_tahapan(no_order);",
+    "CREATE INDEX IF NOT EXISTS idx_rencana_tahapan_rencana_id ON rencana_produksi_tahapan(rencana_id);"
   ];
 
   const executor = db.client || db;
@@ -1821,6 +1901,7 @@ async function initDynamicTriggers(db: any) {
       let label = hasId ? "NEW.id" : "'NO_ID'";
       if (table === 'infractions') label = "NEW.description || ' (' || NEW.severity || ')'";
       else if (table === 'users') label = "NEW.name";
+      else if (cols.includes('no_order')) label = "NEW.no_order";
       else if (cols.includes('faktur')) label = "IFNULL(NEW.faktur, 'ID:' || " + newRecordId + ")";
       else if (cols.includes('no_sopd')) label = "NEW.no_sopd";
       else if (cols.includes('nama_barang')) label = "NEW.nama_barang";
