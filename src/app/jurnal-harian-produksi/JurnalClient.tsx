@@ -1136,15 +1136,22 @@ export default function JurnalClient({
             pekerjaan?: string;
             order?: string;
             target?: string;
-            keterangan?: string;
+            targetHarian?: number | null;
+            isTargetTerpenuhi?: boolean;
           };
           const jobs: ExistingJobItem[] = Array.isArray(result.existingJobs) ? result.existingJobs : [];
           const jobLines = jobs.map((j, i) => {
             const shiftPart = j.shift && j.shift !== '-' ? `[Shift ${j.shift}] ` : '';
             const jobPart = j.pekerjaan && j.pekerjaan !== '-' ? j.pekerjaan : 'Pekerjaan belum ditentukan';
-            const orderPart = j.order ? ` (${j.order})` : '';
-            const targetPart = j.target ? ` • Target: ${j.target}` : '';
-            return `${i + 1}. ${shiftPart}${jobPart}${orderPart}${targetPart}`;
+            const orderPart = j.order && j.order !== '-' ? ` • ${j.order}` : '';
+            const targetNum = Number(j.target);
+            const targetPart = j.target !== undefined && j.target !== '' && !Number.isNaN(targetNum)
+              ? ` • Target: ${targetNum.toLocaleString('id-ID')}`
+              : (j.target ? ` • Target: ${j.target}` : '');
+            const targetHarianPart = j.isTargetTerpenuhi && j.targetHarian
+              ? ` (⚠️ Target harian terpenuhi: ${j.targetHarian.toLocaleString('id-ID')})`
+              : '';
+            return `${i + 1}. ${shiftPart}${jobPart}${orderPart}${targetPart}${targetHarianPart}`;
           });
 
           const tglFormatted = formData.tgl ? formatIndoDateStr(formData.tgl) : 'tanggal ini';
@@ -1156,7 +1163,7 @@ export default function JurnalClient({
             isOpen: true,
             type: 'confirm',
             title: 'Jadwal Sudah Ada',
-            maxWidth: 'max-w-lg',
+            maxWidth: 'max-w-xl',
             textAlign: 'left',
             message: `${formData.nama_karyawan || 'Karyawan ini'} sudah memiliki ${result.count || jobs.length || 1} data jadwal pada ${tglFormatted}.${detailsText}\n\nTetap simpan data jadwal ini? Baris baru akan ditandai warna kuning di tabel.`,
             confirmLabel: 'Ya, Tetap Simpan',

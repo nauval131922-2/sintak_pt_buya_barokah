@@ -250,6 +250,7 @@ export async function POST(request: NextRequest) {
         nama_order: string | null;
         target: number | string | null;
         keterangan: string | null;
+        target_harian: number | null;
       };
 
       let isJadwalGanda = 0;
@@ -257,22 +258,34 @@ export async function POST(request: NextRequest) {
       if (tgl && namaKar) {
         const tglDay = String(tgl).slice(0, 10);
         const dup = await db.execute({
-          sql: `SELECT shift, jenis_pekerjaan, no_order, nama_order, target, keterangan
-                FROM jurnal_harian_produksi
-                WHERE deleted_at IS NULL AND nama_karyawan = ? AND tgl >= ? AND tgl < ? || '~'
-                ORDER BY id ASC LIMIT 20`,
+          sql: `SELECT j.shift, j.jenis_pekerjaan, j.no_order, j.nama_order, j.target, j.keterangan, m.target_harian
+                FROM jurnal_harian_produksi j
+                LEFT JOIN master_pekerjaan_jurnal_produksi m
+                  ON LOWER(TRIM(m.name)) = LOWER(TRIM(j.jenis_pekerjaan))
+                WHERE j.deleted_at IS NULL AND j.nama_karyawan = ? AND j.tgl >= ? AND j.tgl < ? || '~'
+                ORDER BY j.id ASC LIMIT 20`,
           args: [namaKar, tglDay, tglDay]
         });
         const rows = dup.rows as unknown as ExistingJadwalRow[];
         if (rows.length > 0) {
           if (!body.confirmDuplicate) {
-            const existingJobs = rows.map((r) => ({
-              shift: r.shift ? String(r.shift) : '-',
-              pekerjaan: r.jenis_pekerjaan ? String(r.jenis_pekerjaan) : '-',
-              order: (r.nama_order ? String(r.nama_order) : '') || (r.no_order ? String(r.no_order) : '') || '',
-              target: r.target !== null && r.target !== undefined && r.target !== '' ? String(r.target) : '',
-              keterangan: r.keterangan ? String(r.keterangan) : '',
-            }));
+            const existingJobs = rows.map((r) => {
+              const rawOrder = (r.nama_order ? String(r.nama_order).trim() : '') || (r.no_order ? String(r.no_order).trim() : '');
+              const orderClean = rawOrder && rawOrder !== '-' ? rawOrder : '';
+              const targetVal = Number(r.target);
+              const targetHarianVal = r.target_harian !== null && r.target_harian !== undefined ? Number(r.target_harian) : null;
+              const hasTargetHarian = targetHarianVal !== null && !Number.isNaN(targetHarianVal) && targetHarianVal > 0;
+              const isTargetTerpenuhi = hasTargetHarian && !Number.isNaN(targetVal) && targetVal >= targetHarianVal;
+
+              return {
+                shift: r.shift ? String(r.shift) : '',
+                pekerjaan: r.jenis_pekerjaan ? String(r.jenis_pekerjaan).trim() : '-',
+                order: orderClean,
+                target: r.target !== null && r.target !== undefined && r.target !== '' ? String(r.target) : '',
+                targetHarian: hasTargetHarian ? targetHarianVal : null,
+                isTargetTerpenuhi,
+              };
+            });
             return NextResponse.json({
               success: false,
               code: 'DUPLICATE_JADWAL',

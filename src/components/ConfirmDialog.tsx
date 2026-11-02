@@ -33,17 +33,7 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      setShow(true);
-    } else {
-      setTimeout(() => setShow(false), 200); // Wait for transition
-    }
-  }, [isOpen]);
-
-  if (!isOpen && !show) return null;
+  if (!isOpen) return null;
 
   const bgStyles: Record<DialogType, string> = {
     alert: 'bg-amber-50 text-amber-600',
@@ -81,15 +71,15 @@ export default function ConfirmDialog({
 
   return (
     <Portal>
-      <div className={`fixed inset-0 z-[999999] flex items-center justify-center p-4 transition-all duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4">
         {/* Backdrop */}
         <div 
-          className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+          className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-150"
           onClick={isConfirmType ? onCancel : () => { onConfirm(); onCancel?.(); }}
         />
         
         {/* Modal Box */}
-        <div className={`relative w-full ${maxWidth} bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}>
+        <div className={`relative w-full ${maxWidth} bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-150`}>
           
           {/* Header Icon & Title */}
           <div className="p-8 pb-2 flex flex-col items-center text-center">
