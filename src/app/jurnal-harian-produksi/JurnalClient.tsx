@@ -143,9 +143,10 @@ export default function JurnalClient({
   const [dialogConfig, setDialogConfig] = useState<{
     isOpen: boolean; type: 'alert' | 'confirm' | 'success' | 'error' | 'danger';
     title: string; message: string; confirmLabel?: string; onConfirm?: () => void;
+    maxWidth?: string; textAlign?: 'left' | 'center';
   }>({ isOpen: false, type: 'confirm', title: '', message: '' });
   const pendingSaveRef = useRef<(() => Promise<void>) | null>(null);
-  const closeDialog = () => setDialogConfig(prev => ({ ...prev, isOpen: false }));
+  const closeDialog = () => setDialogConfig(prev => ({ ...prev, isOpen: false, maxWidth: undefined, textAlign: undefined }));
 
   // Trash / Restore state (Super Admin only)
   const [showTrashModal, setShowTrashModal] = useState(false);
@@ -1155,6 +1156,8 @@ export default function JurnalClient({
             isOpen: true,
             type: 'confirm',
             title: 'Jadwal Sudah Ada',
+            maxWidth: 'max-w-lg',
+            textAlign: 'left',
             message: `${formData.nama_karyawan || 'Karyawan ini'} sudah memiliki ${result.count || jobs.length || 1} data jadwal pada ${tglFormatted}.${detailsText}\n\nTetap simpan data jadwal ini? Baris baru akan ditandai warna kuning di tabel.`,
             confirmLabel: 'Ya, Tetap Simpan',
             onConfirm: () => {
@@ -1206,6 +1209,7 @@ export default function JurnalClient({
           isOpen: true,
           type: 'confirm',
           title: 'Realisasi Kosong',
+          maxWidth: 'max-w-md',
           message: `${detailMsg}\n\nTetap simpan data?`,
           confirmLabel: 'Ya, Simpan',
           onConfirm: () => {
@@ -3736,12 +3740,13 @@ export default function JurnalClient({
         title={dialogConfig.title}
         message={dialogConfig.message}
         confirmLabel={dialogConfig.confirmLabel}
+        maxWidth={dialogConfig.maxWidth}
+        textAlign={dialogConfig.textAlign}
         onConfirm={() => {
           dialogConfig.onConfirm?.();
         }}
         onCancel={closeDialog}
       />
-
     </div>
   );
 }

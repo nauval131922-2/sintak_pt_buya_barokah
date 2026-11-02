@@ -14,6 +14,8 @@ interface ConfirmDialogProps {
   confirmLabel?: string;
   cancelLabel?: string;
   isLoading?: boolean;
+  maxWidth?: string;
+  textAlign?: 'left' | 'center';
   onConfirm: () => void;
   onCancel?: () => void;
 }
@@ -26,6 +28,8 @@ export default function ConfirmDialog({
   confirmLabel = 'Ya',
   cancelLabel = 'Batal',
   isLoading = false,
+  maxWidth = 'max-w-sm',
+  textAlign = 'center',
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -85,7 +89,7 @@ export default function ConfirmDialog({
         />
         
         {/* Modal Box */}
-        <div className={`relative w-full max-w-sm bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}>
+        <div className={`relative w-full ${maxWidth} bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}>
           
           {/* Header Icon & Title */}
           <div className="p-8 pb-2 flex flex-col items-center text-center">
@@ -96,7 +100,7 @@ export default function ConfirmDialog({
           </div>
 
           {/* Content */}
-          <div className="px-8 pb-8 text-[14px] font-medium text-gray-500 leading-relaxed text-center whitespace-pre-line">
+          <div className={`px-8 pb-8 text-[14px] font-medium text-gray-500 leading-relaxed ${textAlign === 'left' ? 'text-left' : 'text-center'} whitespace-pre-line`}>
             {message}
           </div>
 
