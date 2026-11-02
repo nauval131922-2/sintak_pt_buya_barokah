@@ -722,7 +722,6 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                       }] : []),
                       ...(canAccess('produksi_jhp') ? [{ label: 'Jurnal Harian Produksi', href: '/jurnal-harian-produksi', icon: <ClipboardList size={14} />, exact: true }] : []),
                       ...(canAccess('produksi_jhp_target') ? [{ label: 'Target Harian', href: '/jurnal-harian-produksi/target', icon: <TrendingUp size={14} /> }] : []),
-                      ...(canAccess('produksi_jhp_analisa') ? [{ label: 'Analisa Produksi', href: '/jurnal-harian-produksi/analisa', icon: <BarChart2 size={14} /> }] : []),
                     ]
                   }] : []),
                   ...(canAccess('produksi_hasil') ? [{ label: 'Hasil Produksi', href: '/hasil-produksi', icon: <BarChart3 size={16} /> }] : []),
