@@ -141,7 +141,40 @@ export async function GET(request: NextRequest) {
       has_kendala: number;
     }>;
 
-    if (rawOrders.length === 0) {
+    // Sertakan juga pesanan yang sudah direncanakan (rencana_produksi) meski belum ada entri di JHP
+    const existingOrderNos = new Set(rawOrders.map(r => r.no_order));
+    const pendingPlansResult = await db.execute({
+      sql: `
+        SELECT 
+          rp.no_order,
+          rp.nama_order,
+          rp.qty_oplah as qty,
+          rp.satuan,
+          rp.nama_pelanggan,
+          rp.tgl_order,
+          rp.tgl_deadline as deadline_date,
+          NULL as finished_date,
+          rp.tgl_mulai_rencana as start_date,
+          rp.tgl_selesai_rencana as end_date,
+          0 as total_target,
+          0 as total_realisasi,
+          0 as count_bagian,
+          '' as daftar_bagian,
+          0 as has_kendala,
+          rp.id as plan_id,
+          rp.tgl_mulai_rencana as plan_start,
+          rp.tgl_selesai_rencana as plan_end,
+          rp.status as plan_status
+        FROM rencana_produksi rp
+        WHERE rp.status != 'SELESAI'
+      `,
+      args: [],
+    });
+
+    const unstartedPlans = (pendingPlansResult.rows as any[]).filter(p => !existingOrderNos.has(p.no_order));
+    const combinedOrders = [...unstartedPlans, ...rawOrders];
+
+    if (combinedOrders.length === 0) {
       return NextResponse.json({
         success: true,
         summary: {
@@ -158,7 +191,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const orderNumbers = rawOrders.map((o) => o.no_order);
+    const orderNumbers = combinedOrders.map((o) => o.no_order);
 
     // 2. Fetch stage details for these orders in safe chunks (mencegah batas SQLite variable)
     const stageRows: Array<{
@@ -193,6 +226,28 @@ export async function GET(request: NextRequest) {
         args: chunk,
       });
       stageRows.push(...(res.rows as any[]));
+    }
+    // Ambil tahapan untuk pesanan yang baru direncanakan (belum ada transaksi JHP)
+    if (unstartedPlans.length > 0) {
+      const unstartedNos = unstartedPlans.map(p => p.no_order);
+      const ph = unstartedNos.map(() => '?').join(',');
+      const planStagesRes = await db.execute({
+        sql: `
+          SELECT 
+            no_order,
+            bagian,
+            tgl_mulai_plan as start_date,
+            tgl_selesai_plan as end_date,
+            volume as target,
+            0 as realisasi,
+            0 as stage_kendala
+          FROM rencana_produksi_tahapan
+          WHERE no_order IN (${ph})
+          ORDER BY no_order, urutan ASC
+        `,
+        args: unstartedNos,
+      });
+      stageRows.push(...(planStagesRes.rows as any[]));
     }
 
     const stagesByOrder: Record<string, Array<{
@@ -239,7 +294,7 @@ export async function GET(request: NextRequest) {
     let sumTotalTarget = 0;
     let sumTotalRealisasi = 0;
 
-    const processedOrders = rawOrders.map((ord) => {
+    const processedOrders = combinedOrders.map((ord) => {
       const tVal = Number(ord.total_target) || 0;
       const rVal = Number(ord.total_realisasi) || 0;
       sumTotalTarget += tVal;
