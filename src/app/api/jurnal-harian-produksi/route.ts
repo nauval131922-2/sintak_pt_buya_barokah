@@ -263,34 +263,108 @@ export async function POST(request: NextRequest) {
                 LEFT JOIN master_pekerjaan_jurnal_produksi m
                   ON LOWER(TRIM(m.name)) = LOWER(TRIM(j.jenis_pekerjaan))
                 WHERE j.deleted_at IS NULL AND j.nama_karyawan = ? AND j.tgl >= ? AND j.tgl < ? || '~'
-                ORDER BY j.id ASC LIMIT 20`,
+                ORDER BY j.id ASC LIMIT 50`,
           args: [namaKar, tglDay, tglDay]
         });
         const rows = dup.rows as unknown as ExistingJadwalRow[];
         if (rows.length > 0) {
           if (!body.confirmDuplicate) {
+            const incomingJob = String(jenis_pekerjaan || '').trim();
+            const incomingTarget = Number(cleanTarget) || 0;
+
+            type JobSummary = {
+              jobName: string;
+              existingTarget: number;
+              inputTarget: number;
+              totalTarget: number;
+              targetHarian: number | null;
+            };
+            const jobTotals = new Map<string, JobSummary>();
+
+            for (const r of rows) {
+              const jobName = String(r.jenis_pekerjaan || '').trim();
+              const jobKey = jobName.toLowerCase();
+              if (!jobKey) continue;
+              const rTarget = Number(r.target) || 0;
+              const rTargetHarian = r.target_harian !== null && r.target_harian !== undefined ? Number(r.target_harian) : null;
+              const entry = jobTotals.get(jobKey) || {
+                jobName,
+                existingTarget: 0,
+                inputTarget: 0,
+                totalTarget: 0,
+                targetHarian: (rTargetHarian !== null && !Number.isNaN(rTargetHarian) && rTargetHarian > 0) ? rTargetHarian : null,
+              };
+              entry.existingTarget += rTarget;
+              jobTotals.set(jobKey, entry);
+            }
+
+            const incomingKey = incomingJob.toLowerCase();
+            if (incomingKey) {
+              let entry = jobTotals.get(incomingKey);
+              if (!entry) {
+                const mRes = await db.execute({
+                  sql: `SELECT target_harian FROM master_pekerjaan_jurnal_produksi WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) LIMIT 1`,
+                  args: [incomingJob]
+                });
+                const mRow = mRes.rows[0] as unknown as { target_harian?: number | null } | undefined;
+                const mTH = mRow?.target_harian !== null && mRow?.target_harian !== undefined ? Number(mRow.target_harian) : null;
+                entry = {
+                  jobName: incomingJob,
+                  existingTarget: 0,
+                  inputTarget: incomingTarget,
+                  totalTarget: incomingTarget,
+                  targetHarian: (mTH !== null && !Number.isNaN(mTH) && mTH > 0) ? mTH : null,
+                };
+                jobTotals.set(incomingKey, entry);
+              } else {
+                entry.inputTarget = incomingTarget;
+              }
+            }
+
+            const targetWarnings: Array<{
+              pekerjaan: string;
+              targetHarian: number;
+              existingTarget: number;
+              inputTarget: number;
+              totalTarget: number;
+            }> = [];
+
+            for (const entry of jobTotals.values()) {
+              entry.totalTarget = entry.existingTarget + entry.inputTarget;
+              if (entry.targetHarian && entry.totalTarget >= entry.targetHarian) {
+                targetWarnings.push({
+                  pekerjaan: entry.jobName,
+                  targetHarian: entry.targetHarian,
+                  existingTarget: entry.existingTarget,
+                  inputTarget: entry.inputTarget,
+                  totalTarget: entry.totalTarget,
+                });
+              }
+            }
+
             const existingJobs = rows.map((r) => {
               const rawOrder = (r.nama_order ? String(r.nama_order).trim() : '') || (r.no_order ? String(r.no_order).trim() : '');
               const orderClean = rawOrder && rawOrder !== '-' ? rawOrder : '';
-              const targetVal = Number(r.target);
-              const targetHarianVal = r.target_harian !== null && r.target_harian !== undefined ? Number(r.target_harian) : null;
-              const hasTargetHarian = targetHarianVal !== null && !Number.isNaN(targetHarianVal) && targetHarianVal > 0;
-              const isTargetTerpenuhi = hasTargetHarian && !Number.isNaN(targetVal) && targetVal >= targetHarianVal;
+              const rJobKey = String(r.jenis_pekerjaan || '').trim().toLowerCase();
+              const summary = jobTotals.get(rJobKey);
 
               return {
                 shift: r.shift ? String(r.shift) : '',
                 pekerjaan: r.jenis_pekerjaan ? String(r.jenis_pekerjaan).trim() : '-',
                 order: orderClean,
                 target: r.target !== null && r.target !== undefined && r.target !== '' ? String(r.target) : '',
-                targetHarian: hasTargetHarian ? targetHarianVal : null,
-                isTargetTerpenuhi,
+                targetHarian: summary?.targetHarian || null,
+                totalTargetKumulatif: summary?.totalTarget || 0,
+                isTargetTerpenuhi: !!(summary && summary.targetHarian && summary.totalTarget >= summary.targetHarian),
               };
             });
+
             return NextResponse.json({
               success: false,
               code: 'DUPLICATE_JADWAL',
               count: rows.length,
               existingJobs,
+              targetWarnings,
               error: `${namaKar} sudah memiliki ${rows.length} data jadwal pada tanggal ini.`
             }, { status: 409 });
           }

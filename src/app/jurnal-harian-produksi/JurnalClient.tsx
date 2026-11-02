@@ -1137,9 +1137,20 @@ export default function JurnalClient({
             order?: string;
             target?: string;
             targetHarian?: number | null;
+            totalTargetKumulatif?: number;
             isTargetTerpenuhi?: boolean;
           };
+          type TargetWarningItem = {
+            pekerjaan: string;
+            targetHarian: number;
+            existingTarget: number;
+            inputTarget: number;
+            totalTarget: number;
+          };
+
           const jobs: ExistingJobItem[] = Array.isArray(result.existingJobs) ? result.existingJobs : [];
+          const warnings: TargetWarningItem[] = Array.isArray(result.targetWarnings) ? result.targetWarnings : [];
+
           const jobLines = jobs.map((j, i) => {
             const shiftPart = j.shift && j.shift !== '-' ? `[Shift ${j.shift}] ` : '';
             const jobPart = j.pekerjaan && j.pekerjaan !== '-' ? j.pekerjaan : 'Pekerjaan belum ditentukan';
@@ -1148,16 +1159,33 @@ export default function JurnalClient({
             const targetPart = j.target !== undefined && j.target !== '' && !Number.isNaN(targetNum)
               ? ` • Target: ${targetNum.toLocaleString('id-ID')}`
               : (j.target ? ` • Target: ${j.target}` : '');
-            const targetHarianPart = j.isTargetTerpenuhi && j.targetHarian
-              ? ` (⚠️ Target harian terpenuhi: ${j.targetHarian.toLocaleString('id-ID')})`
-              : '';
-            return `${i + 1}. ${shiftPart}${jobPart}${orderPart}${targetPart}${targetHarianPart}`;
+            return `${i + 1}. ${shiftPart}${jobPart}${orderPart}${targetPart}`;
+          });
+
+          const warningLines = warnings.map(w => {
+            if (w.inputTarget > 0 && w.existingTarget > 0) {
+              return `⚠️ Target harian "${w.pekerjaan}" tercapai/terlampaui: total ${w.totalTarget.toLocaleString('id-ID')} dari target harian ${w.targetHarian.toLocaleString('id-ID')} (tersimpan: ${w.existingTarget.toLocaleString('id-ID')} + input baru: ${w.inputTarget.toLocaleString('id-ID')}).`;
+            }
+            if (w.inputTarget > 0) {
+              return `⚠️ Target harian "${w.pekerjaan}" tercapai/terlampaui: input ${w.inputTarget.toLocaleString('id-ID')} dari target harian ${w.targetHarian.toLocaleString('id-ID')}.`;
+            }
+            return `⚠️ Target harian "${w.pekerjaan}" sudah terpenuhi: tersimpan ${w.existingTarget.toLocaleString('id-ID')} dari target harian ${w.targetHarian.toLocaleString('id-ID')}.`;
           });
 
           const tglFormatted = formData.tgl ? formatIndoDateStr(formData.tgl) : 'tanggal ini';
-          const detailsText = jobLines.length > 0
-            ? `\n\nJadwal yang sudah ada:\n${jobLines.join('\n')}`
+          const listText = jobLines.length > 0
+            ? `Jadwal yang sudah ada:\n${jobLines.join('\n')}`
             : '';
+          const warningText = warningLines.length > 0
+            ? warningLines.join('\n')
+            : '';
+
+          const message = [
+            `${formData.nama_karyawan || 'Karyawan ini'} sudah memiliki ${result.count || jobs.length || 1} data jadwal pada ${tglFormatted}.`,
+            listText,
+            warningText,
+            'Tetap simpan data jadwal ini? Baris baru akan ditandai warna kuning di tabel.',
+          ].filter(Boolean).join('\n\n');
 
           setDialogConfig({
             isOpen: true,
@@ -1165,7 +1193,7 @@ export default function JurnalClient({
             title: 'Jadwal Sudah Ada',
             maxWidth: 'max-w-xl',
             textAlign: 'left',
-            message: `${formData.nama_karyawan || 'Karyawan ini'} sudah memiliki ${result.count || jobs.length || 1} data jadwal pada ${tglFormatted}.${detailsText}\n\nTetap simpan data jadwal ini? Baris baru akan ditandai warna kuning di tabel.`,
+            message,
             confirmLabel: 'Ya, Tetap Simpan',
             onConfirm: () => {
               closeDialog();
