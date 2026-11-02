@@ -54,25 +54,22 @@ function parseToISO(str?: string | null): string | null {
 function formatDateDisplay(iso: string): string {
   const parts = iso.split('-');
   if (parts.length === 3) {
-    return `${parts[2]}/${parts[1]}`;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const mIdx = parseInt(parts[1], 10) - 1;
+    const day = parts[2].padStart(2, '0');
+    return `${day} ${months[mIdx] || parts[1]} ${parts[0]}`;
   }
   return iso;
 }
 
 function formatFullDate(iso: string): string {
-  const parts = iso.split('-');
-  if (parts.length === 3) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-    const mIdx = parseInt(parts[1], 10) - 1;
-    return `${parseInt(parts[2], 10)} ${months[mIdx] || parts[1]} ${parts[0]}`;
-  }
-  return iso;
+  return formatDateDisplay(iso);
 }
 
 function getDayOfWeek(iso: string): { name: string; isHoliday: boolean } {
   const d = new Date(iso + 'T00:00:00');
   const day = d.getDay();
-  const names = ['Ahd', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+  const names = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
   return {
     name: names[day] || '',
     isHoliday: day === 0 || day === 5,
@@ -153,7 +150,7 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
     return map;
   }, [allDates]);
 
-  const dayColWidth = 38;
+  const dayColWidth = 78;
   const totalTimelineWidth = allDates.length * dayColWidth;
 
   if (orders.length === 0 || allDates.length === 0) {
@@ -172,7 +169,7 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
     <div className="w-full flex flex-col gap-4">
       {/* 1. Main Timeline Container */}
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
-        <div className="overflow-x-auto relative max-h-[640px] overflow-y-auto">
+        <div className="overflow-x-auto relative max-h-[640px] overflow-y-auto scroll-pb-10">
           <div className="min-w-fit flex flex-col">
             
             {/* Header Timeline Row */}
@@ -195,10 +192,10 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
                         dayInfo.isHoliday ? 'bg-amber-50/40 text-amber-900' : 'bg-white text-gray-600'
                       }`}
                     >
-                      <span className={`text-[10px] leading-tight ${dayInfo.isHoliday ? 'text-amber-600 font-medium' : 'text-gray-400'}`}>
+                      <span className={`text-[11px] font-bold leading-tight ${dayInfo.isHoliday ? 'text-amber-700 font-bold' : 'text-gray-700 font-bold'}`}>
                         {dayInfo.name}
                       </span>
-                      <span className="text-xs font-semibold">
+                      <span className="text-[10px] font-medium text-gray-500 whitespace-nowrap tabular-nums mt-0.5">
                         {formatDateDisplay(dStr)}
                       </span>
                     </div>
@@ -208,7 +205,7 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
             </div>
 
             {/* Order Rows with Single Global Background Grid */}
-            <div className="relative divide-y divide-gray-100">
+            <div className="relative divide-y divide-gray-100 pb-10">
               {/* Global Background Grid (Single layer behind all rows) */}
               <div 
                 className="absolute top-0 bottom-0 pointer-events-none flex"
@@ -340,6 +337,8 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
                   </div>
                 );
               })}
+              {/* Bottom breathing spacer to prevent cut-off over horizontal scrollbar */}
+              <div className="h-6 shrink-0" aria-hidden="true" />
             </div>
 
           </div>

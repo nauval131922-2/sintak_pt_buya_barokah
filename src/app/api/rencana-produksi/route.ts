@@ -24,8 +24,9 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')?.trim() || '';
     const filterBagian = searchParams.get('bagian')?.trim() || 'ALL';
     const statusFilter = searchParams.get('status')?.trim() || 'ALL';
+    const startDate = searchParams.get('startDate')?.trim() || '';
+    const endDate = searchParams.get('endDate')?.trim() || '';
     const limit = Math.min(100, Math.max(10, Number(searchParams.get('limit')) || 40));
-
     // 1. Fetch recent distinct orders from JHP with aggregated stats
     let whereClause = `WHERE deleted_at IS NULL AND no_order IS NOT NULL AND no_order != '' AND no_order != '-'`;
     const queryArgs: unknown[] = [];
@@ -39,6 +40,15 @@ export async function GET(request: NextRequest) {
       whereClause += ` AND UPPER(bagian) LIKE ?`;
       queryArgs.push(`%${filterBagian.toUpperCase()}%`);
     }
+    if (startDate) {
+      whereClause += ` AND tgl >= ?`;
+      queryArgs.push(startDate);
+    }
+    if (endDate) {
+      whereClause += ` AND tgl <= ?`;
+      queryArgs.push(endDate);
+    }
+
 
     // Subquery scanning latest 3000 rows
     const baseOrdersSql = `

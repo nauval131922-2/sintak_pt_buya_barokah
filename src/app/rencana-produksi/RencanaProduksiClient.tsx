@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import MultiOrderGanttChart, { type ProductionOrderSummary } from '@/components/MultiOrderGanttChart';
 import OrderGanttChart, { type JhpEntryForGantt, type OrderInfoForGantt } from '@/components/OrderGanttChart';
+import DatePicker from '@/components/DatePicker';
 
 interface SummaryData {
   totalActiveOrders: number;
@@ -38,6 +39,9 @@ export default function RencanaProduksiClient() {
   const [search, setSearch] = useState('');
   const debounceRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
+  // Date Range Filter
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
   // Detail Drilldown
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const [selectedOrderEntries, setSelectedOrderEntries] = useState<JhpEntryForGantt[]>([]);
@@ -60,13 +64,27 @@ export default function RencanaProduksiClient() {
   const searchDropdownRef = useRef<HTMLDivElement>(null);
 
   // 1. Fetch Multi-Order Schedule
-  const fetchSchedule = useCallback(async (qSearch: string, sFilter: string, bFilter: string) => {
+  const fetchSchedule = useCallback(async (
+    qSearch: string, 
+    sFilter: string, 
+    bFilter: string,
+    sDate: Date | null,
+    eDate: Date | null
+  ) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (qSearch) params.set('search', qSearch);
       if (sFilter !== 'ALL') params.set('status', sFilter);
       if (bFilter !== 'ALL') params.set('bagian', bFilter);
+      if (sDate) {
+        const sStr = `${sDate.getFullYear()}-${String(sDate.getMonth() + 1).padStart(2, '0')}-${String(sDate.getDate()).padStart(2, '0')}`;
+        params.set('startDate', sStr);
+      }
+      if (eDate) {
+        const eStr = `${eDate.getFullYear()}-${String(eDate.getMonth() + 1).padStart(2, '0')}-${String(eDate.getDate()).padStart(2, '0')}`;
+        params.set('endDate', eStr);
+      }
       params.set('limit', '50');
 
       const res = await fetch(`/api/rencana-produksi?${params.toString()}`);
@@ -84,14 +102,14 @@ export default function RencanaProduksiClient() {
   }, []);
 
   useEffect(() => {
-    fetchSchedule(search, statusFilter, bagianFilter);
-  }, [fetchSchedule, statusFilter, bagianFilter]);
+    fetchSchedule(search, statusFilter, bagianFilter, startDate, endDate);
+  }, [fetchSchedule, statusFilter, bagianFilter, startDate, endDate]);
 
   const handleSearchChange = (val: string) => {
     setSearch(val);
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      fetchSchedule(val, statusFilter, bagianFilter);
+      fetchSchedule(val, statusFilter, bagianFilter, startDate, endDate);
       searchOrdersApi(val);
     }, 350);
   };
@@ -499,6 +517,28 @@ export default function RencanaProduksiClient() {
                 </button>
               </div>
 
+              {/* Date Range Filter */}
+              <div className="flex items-center gap-1.5 bg-gray-100 p-0.5 px-2 rounded-xl border border-gray-200 text-xs">
+                <CalendarRange size={13} className="text-gray-400 shrink-0" />
+                <div className="w-28 sm:w-32">
+                  <DatePicker name="startDate" value={startDate} onChange={(d) => setStartDate(d)} />
+                </div>
+                <span className="text-gray-400 font-bold text-xs">—</span>
+                <div className="w-28 sm:w-32">
+                  <DatePicker name="endDate" value={endDate} onChange={(d) => setEndDate(d)} />
+                </div>
+                {(startDate || endDate) && (
+                  <button
+                    type="button"
+                    onClick={() => { setStartDate(null); setEndDate(null); }}
+                    className="p-1 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                    title="Reset Rentang Tanggal"
+                  >
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
+
               {/* Bagian Filter Dropdown */}
               <select
                 value={bagianFilter}
@@ -515,7 +555,7 @@ export default function RencanaProduksiClient() {
               </select>
 
               <button
-                onClick={() => fetchSchedule(search, statusFilter, bagianFilter)}
+                onClick={() => fetchSchedule(search, statusFilter, bagianFilter, startDate, endDate)}
                 className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors border border-gray-200"
                 title="Muat Ulang Jadwal"
               >
