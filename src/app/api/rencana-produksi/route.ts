@@ -284,7 +284,7 @@ export async function GET(request: NextRequest) {
         overallProgress,
         busiestStation,
       },
-      orders: filteredOrders.slice(0, limit),
+      orders: filteredOrders,
       machineStations: Object.entries(stationLoad).map(([bagian, data]) => ({
         bagian,
         orderCount: data.count,

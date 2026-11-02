@@ -4,7 +4,8 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { 
   Search, X, Loader2, Package, Hash, Users, Target, CheckCircle2, 
   Layers, RefreshCw, BarChart3, AlertTriangle, Flag, CalendarRange, 
-  ArrowLeft, Clock, Factory, ChevronRight, TableProperties, Calendar
+  ArrowLeft, Clock, Factory, ChevronRight, TableProperties, Calendar,
+  RotateCcw, Filter
 } from 'lucide-react';
 import MultiOrderGanttChart, { type ProductionOrderSummary } from '@/components/MultiOrderGanttChart';
 import OrderGanttChart, { type JhpEntryForGantt, type OrderInfoForGantt } from '@/components/OrderGanttChart';
@@ -53,12 +54,12 @@ export default function RencanaProduksiClient() {
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const bagianDropdownOptions = useMemo(() => [
     { value: 'ALL', label: 'Semua Bagian' },
-    { value: 'SETTING', label: 'Prepress / Setting' },
-    { value: 'QUALITY CONTROL', label: 'Quality Control (QC)' },
-    { value: 'POTONG', label: 'Potong Bahan' },
-    { value: 'CETAK', label: 'Cetak Offset' },
-    { value: 'FINISHING', label: 'Finishing & Jilid' },
-    { value: 'GUDANG', label: 'Gudang / Ekspedisi' },
+    { value: 'SETTING', label: 'Setting' },
+    { value: 'QUALITY CONTROL', label: 'Quality Control' },
+    { value: 'POTONG', label: 'Potong' },
+    { value: 'CETAK', label: 'Cetak' },
+    { value: 'FINISHING', label: 'Finishing' },
+    { value: 'GUDANG', label: 'Gudang' },
   ], []);
 
   const [selectedOrderEntries, setSelectedOrderEntries] = useState<JhpEntryForGantt[]>([]);
@@ -102,7 +103,7 @@ export default function RencanaProduksiClient() {
         const eStr = `${eDate.getFullYear()}-${String(eDate.getMonth() + 1).padStart(2, '0')}-${String(eDate.getDate()).padStart(2, '0')}`;
         params.set('endDate', eStr);
       }
-      params.set('limit', '50');
+
 
       const res = await fetch(`/api/rencana-produksi?${params.toString()}`);
       const data = await res.json();
@@ -294,7 +295,7 @@ export default function RencanaProduksiClient() {
               <div className="h-6 w-px bg-gray-200 hidden sm:block" />
 
               <div>
-                <span className="text-xs text-gray-400 block">Detail WBS Pesanan</span>
+                <span className="text-xs text-gray-400 block">Detail Alur Pesanan</span>
                 <span className="text-sm font-bold text-gray-900">{selectedOrder}</span>
               </div>
             </div>
@@ -432,67 +433,85 @@ export default function RencanaProduksiClient() {
         /* Master Multi-Order View */
         <div className="flex-1 min-h-0 flex flex-col gap-3">
           
-          {/* Filter & Search Toolbar */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 shrink-0">
-            
-            {/* Search Input */}
-            <div className="relative max-w-sm w-full" ref={searchDropdownRef}>
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
-              <input
-                type="text"
-                placeholder="Cari no SPK / nama buku / lacak order..."
-                value={search}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                onFocus={() => {
-                  if (orderSearchResults.length > 0) setIsSearchDropdownOpen(true);
-                }}
-                className="w-full pl-9 pr-8 py-2 border border-gray-300 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-inset focus:ring-emerald-500 focus:border-emerald-500"
-              />
-              {search && (
-                <button
-                  onClick={() => {
-                    handleSearchChange('');
-                    setIsSearchDropdownOpen(false);
-                  }}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <X size={15} />
-                </button>
-              )}
+          {/* Toolbar Search & Filters (Format Laporan Pekerjaan) */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm flex flex-col gap-2.5 shrink-0">
+            {/* Baris 1: Search & Reload */}
+            <div className="flex items-center gap-2 w-full">
+              <button
+                type="button"
+                onClick={() => fetchSchedule(search, statusFilter, bagianFilter, startDate, endDate)}
+                disabled={loading}
+                className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-xs"
+                title="Reload Jadwal Produksi"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-emerald-600" : ""}`} />
+                <span className="hidden sm:inline">Reload</span>
+              </button>
 
-              {/* Autocomplete Dropdown to Jump Directly to an Order's Lifecycle */}
-              {isSearchDropdownOpen && orderSearchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-2xl shadow-xl z-50 max-h-72 overflow-y-auto divide-y divide-gray-100">
-                  <div className="px-3 py-1.5 bg-gray-50/80 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                    Lacak Alur Order Spesifik ({orderSearchResults.length} hasil)
+              <div className="relative flex-1 min-w-0" ref={searchDropdownRef}>
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Cari no SPK / nama buku / nomor order..."
+                  value={search}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onFocus={() => {
+                    if (orderSearchResults.length > 0) setIsSearchDropdownOpen(true);
+                  }}
+                  className="w-full pl-9 pr-8 h-9 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
+                />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleSearchChange('');
+                      setIsSearchDropdownOpen(false);
+                    }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+
+                {/* Autocomplete Dropdown */}
+                {isSearchDropdownOpen && orderSearchResults.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-2xl shadow-xl z-50 max-h-72 overflow-y-auto divide-y divide-gray-100">
+                    <div className="px-3 py-1.5 bg-gray-50/80 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                      Lacak Alur Order ({orderSearchResults.length} hasil)
+                    </div>
+                    {orderSearchResults.map((item) => (
+                      <button
+                        key={item.no_order}
+                        type="button"
+                        onClick={() => handleSelectOrder(item.no_order)}
+                        className="w-full text-left px-3.5 py-2.5 hover:bg-emerald-50/60 transition-colors flex items-center justify-between gap-2 group"
+                      >
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-bold text-gray-900 group-hover:text-emerald-700 truncate">
+                            {item.nama_order || item.no_order}
+                          </span>
+                          <span className="text-[10px] text-gray-400 font-mono truncate">
+                            {item.no_order}
+                          </span>
+                        </div>
+                        <ChevronRight size={14} className="text-gray-400 group-hover:text-emerald-600 shrink-0" />
+                      </button>
+                    ))}
                   </div>
-                  {orderSearchResults.map((item) => (
-                    <button
-                      key={item.no_order}
-                      type="button"
-                      onClick={() => handleSelectOrder(item.no_order)}
-                      className="w-full text-left px-3.5 py-2.5 hover:bg-emerald-50/60 transition-colors flex items-center justify-between gap-2 group"
-                    >
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-bold text-gray-900 group-hover:text-emerald-700 truncate">
-                          {item.nama_order || item.no_order}
-                        </span>
-                        <span className="text-[10px] text-gray-400 font-mono truncate">
-                          {item.no_order}
-                        </span>
-                      </div>
-                      <ChevronRight size={14} className="text-gray-400 group-hover:text-emerald-600 shrink-0" />
-                    </button>
-                  ))}
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
-            {/* Filter Pills */}
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Status Filter */}
+            {/* Baris 2: Controls Filter (Status, Tanggal, Bagian, Clear Filter) */}
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 text-xs">
+              <div className="hidden sm:flex items-center text-xs text-slate-500 font-medium shrink-0">
+                <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
+              </div>
+
+              {/* Status Filter Pills */}
               <div className="flex items-center bg-gray-100 p-0.5 rounded-xl border border-gray-200 text-xs">
                 <button
+                  type="button"
                   onClick={() => setStatusFilter('ACTIVE')}
                   className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
                     statusFilter === 'ACTIVE'
@@ -503,6 +522,7 @@ export default function RencanaProduksiClient() {
                   Aktif Berjalan
                 </button>
                 <button
+                  type="button"
                   onClick={() => setStatusFilter('CRITICAL')}
                   className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
                     statusFilter === 'CRITICAL'
@@ -513,6 +533,7 @@ export default function RencanaProduksiClient() {
                   Kritis / Deadline
                 </button>
                 <button
+                  type="button"
                   onClick={() => setStatusFilter('COMPLETED')}
                   className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
                     statusFilter === 'COMPLETED'
@@ -523,6 +544,7 @@ export default function RencanaProduksiClient() {
                   Selesai
                 </button>
                 <button
+                  type="button"
                   onClick={() => setStatusFilter('ALL')}
                   className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
                     statusFilter === 'ALL'
@@ -597,13 +619,26 @@ export default function RencanaProduksiClient() {
                   widthClass="w-full sm:w-36 md:w-40 lg:w-44"
                 />
               </div>
-              <button
-                onClick={() => fetchSchedule(search, statusFilter, bagianFilter, startDate, endDate)}
-                className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors border border-gray-200"
-                title="Muat Ulang Jadwal"
-              >
-                <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
-              </button>
+
+              {/* Tombol Clear Filter */}
+              {(search || statusFilter !== 'ACTIVE' || bagianFilter !== 'ALL' || startDate || endDate) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch('');
+                    setStatusFilter('ACTIVE');
+                    setBagianFilter('ALL');
+                    setStartDate(null);
+                    setEndDate(null);
+                    fetchSchedule('', 'ACTIVE', 'ALL', null, null);
+                  }}
+                  className="h-7 px-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 shrink-0 sm:ml-auto cursor-pointer"
+                  title="Hapus / Reset Semua Filter"
+                >
+                  <RotateCcw size={12} />
+                  <span>Clear Filter</span>
+                </button>
+              )}
             </div>
           </div>
 

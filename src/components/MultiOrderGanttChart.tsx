@@ -131,13 +131,25 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
       if (e && (!latest || e > latest)) latest = e;
       if (dl && (!latest || dl > latest)) latest = dl;
     });
+    // Otomatis sertakan minimal sampai hari ini dan minggu berjalan ke depan
+    const today = new Date();
+    const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const futureDate = new Date(today);
+    futureDate.setDate(futureDate.getDate() + 7);
+    const futureISO = `${futureDate.getFullYear()}-${String(futureDate.getMonth() + 1).padStart(2, '0')}-${String(futureDate.getDate()).padStart(2, '0')}`;
+
+    if (earliest) {
+      if (!latest || futureISO > (latest as string)) {
+        latest = futureISO;
+      }
+    }
 
     const dates: string[] = [];
     if (earliest && latest) {
       const cur = new Date(earliest + 'T00:00:00');
       const end = new Date(latest + 'T00:00:00');
       let count = 0;
-      while (cur <= end && count < 90) {
+      while (cur <= end && count < 180) {
         const y = cur.getFullYear();
         const m = String(cur.getMonth() + 1).padStart(2, '0');
         const d = String(cur.getDate()).padStart(2, '0');
@@ -181,8 +193,8 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
     <div className="w-full flex-1 min-h-0 flex flex-col gap-3">
       {/* 1. Main Timeline Container */}
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col">
-        <div className="overflow-auto relative flex-1 min-h-0 scroll-pb-8">
-          <div className="min-w-fit flex flex-col pb-6">
+        <div className="overflow-auto relative flex-1 min-h-0">
+          <div className="min-w-fit flex flex-col">
             {/* Header Timeline Row */}
             {/* Header Timeline Row - z-40 to stay above all data rows */}
             <div className="sticky top-0 z-40 flex bg-white border-b border-gray-200 shadow-xs">
@@ -217,7 +229,7 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
             </div>
 
             {/* Order Rows with Single Global Background Grid */}
-            <div className="relative divide-y divide-gray-100 pb-10">
+            <div className="relative divide-y divide-gray-100">
               {/* Global Background Grid (Single layer behind all rows) */}
               <div 
                 className="absolute top-0 bottom-0 pointer-events-none flex"
@@ -342,8 +354,7 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
                   </div>
                 );
               })}
-              {/* Bottom breathing spacer to prevent cut-off over horizontal scrollbar */}
-              <div className="h-6 shrink-0" aria-hidden="true" />
+
             </div>
 
           </div>
@@ -359,7 +370,7 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
             </div>
             <div className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded-full bg-purple-500 inline-block" />
-              <span>QC / CTP</span>
+              <span>Quality Control</span>
             </div>
             <div className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 inline-block" />
