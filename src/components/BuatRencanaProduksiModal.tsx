@@ -106,6 +106,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
   const [submitting, setSubmitting] = useState(false);
   const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const prevOpenRef = useRef(false);
 
   // Format Helper
   const formatISO = (d: Date | null): string => {
@@ -117,18 +118,19 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
   };
 
   // Muat preset awal saat template dipilih
-  const applyTemplate = useCallback((templateKey: string, currentVolume: number, startDateStr: string) => {
+  const applyTemplate = useCallback((templateKey: string, currentVolume: number, startDateStr: string, currentNoOrder?: string) => {
     setSelectedTemplate(templateKey);
     const preset = PRESET_TEMPLATES[templateKey];
     if (!preset) return;
 
+    const ord = currentNoOrder ?? '-';
     let currentStart = startDateStr || formatISO(new Date());
     const generated = preset.tahapan.map((t, idx) => {
       const vol = currentVolume > 0 ? currentVolume : 1000;
       const dur = calculateDurationDays(vol, t.target_per_hari);
       const end = addWorkdays(currentStart, dur);
       const row = {
-        no_order: noOrder || '-',
+        no_order: ord,
         urutan: idx + 1,
         bagian: t.bagian,
         mesin: t.mesin,
@@ -152,11 +154,11 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
         setTglSelesaiRencana(new Date(lastEnd + 'T00:00:00'));
       }
     }
-  }, [noOrder]);
+  }, []);
 
-  // Muat opsi awal SOPD saat modal dibuka
+  // Muat opsi awal SOPD saat modal HANYA ketika modal baru pertama kali dibuka (prevent reset on state change)
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !prevOpenRef.current) {
       setNoOrder('');
       setNamaOrder('');
       setQtyOplah(1000);
@@ -170,7 +172,36 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
       setCatatan('');
       setSearchQuery('');
       setIsDropdownOpen(false);
-      applyTemplate('hardcover', 1000, formatISO(now));
+
+      // Terapkan template awal
+      const preset = PRESET_TEMPLATES['hardcover'];
+      if (preset) {
+        setSelectedTemplate('hardcover');
+        let currentStart = formatISO(now);
+        const generated = preset.tahapan.map((t, idx) => {
+          const dur = calculateDurationDays(1000, t.target_per_hari);
+          const end = addWorkdays(currentStart, dur);
+          const row = {
+            no_order: '-',
+            urutan: idx + 1,
+            bagian: t.bagian,
+            mesin: t.mesin,
+            nama_tahap: t.nama_tahap,
+            volume: 1000,
+            target_per_hari: t.target_per_hari,
+            durasi_hari: dur,
+            tgl_mulai_plan: currentStart,
+            tgl_selesai_plan: end,
+            catatan: '',
+          };
+          currentStart = addWorkdays(end, 2);
+          return row;
+        });
+        setTahapan(generated);
+        if (generated.length > 0) {
+          setTglSelesaiRencana(new Date(generated[generated.length - 1].tgl_selesai_plan + 'T00:00:00'));
+        }
+      }
 
       // Fetch daftar SOPD awal
       async function loadInitialSopd() {
@@ -189,7 +220,8 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
       }
       loadInitialSopd();
     }
-  }, [isOpen, applyTemplate]);
+    prevOpenRef.current = isOpen;
+  }, [isOpen]);
 
   // Klik di luar dropdown SOPD untuk menutup dropdown (tanpa menutup modal)
   useEffect(() => {
@@ -228,7 +260,8 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
 
   // Pilih SOPD dari dropdown
   const handleSelectSpk = (item: OrderOption) => {
-    setNoOrder(item.no_sopd);
+    const selectedNoOrder = item.no_sopd;
+    setNoOrder(selectedNoOrder);
     setNamaOrder(item.nama_order || '');
     
     // Otomatis isi Oplah & Satuan dari SOPD
@@ -258,10 +291,8 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
     setIsDropdownOpen(false);
 
     // Otomatis hitung ulang volume dan durasi seluruh tahapan mesin
-    if (qVal > 0) {
-      const startDateStr = formatISO(tglMulaiRencana || new Date());
-      applyTemplate(selectedTemplate, qVal, startDateStr);
-    }
+    const startDateStr = formatISO(tglMulaiRencana || new Date());
+    applyTemplate(selectedTemplate, qVal > 0 ? qVal : qtyOplah, startDateStr, selectedNoOrder);
   };
 
   // Recalculate secara berantai seluruh tahapan (Skip Jumat)
@@ -334,11 +365,11 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
   // Submit Simpan Rencana ke API
   const handleSubmitPlan = async () => {
     if (!noOrder.trim()) {
-      toast.error('Silakan pilih No SOPD / SPK terlebih dahulu.');
+      toast.error('Silakan pilih No SOPD terlebih dahulu.');
       return;
     }
     if (!namaOrder.trim()) {
-      toast.error('Nama Order / Judul buku wajib diisi.');
+      toast.error('Nama Order wajib diisi.');
       return;
     }
     if (!tglMulaiRencana) {
@@ -391,7 +422,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
     }
   };
 
-  // Cek apakah tanggal selesai melebihi deadline SPK
+  // Cek apakah tanggal selesai melebihi deadline
   const isOverdueDeadline = useMemo(() => {
     if (!tglDeadline || !tglSelesaiRencana) return false;
     return formatISO(tglSelesaiRencana) > formatISO(tglDeadline);
@@ -402,9 +433,9 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
       isOpen={isOpen}
       onClose={onClose}
       title="Buat Rencana Produksi Baru"
-      subtitle="Rancang jadwal alur tahapan mesin, target waktu kerja, dan kapasitas PPIC per nomor SPK."
+      subtitle="Rancang jadwal alur tahapan mesin, target waktu kerja, dan kapasitas PPIC per nomor order."
       icon={CalendarRange}
-      maxWidth="max-w-7xl"
+      maxWidth="w-[97vw] max-w-[1550px]"
       closeOnBackdrop={false}
     >
       <div className="space-y-5 text-xs text-gray-700">
@@ -423,7 +454,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
                   <button
                     key={key}
                     type="button"
-                    onClick={() => applyTemplate(key, qtyOplah, formatISO(tglMulaiRencana || new Date()))}
+                    onClick={() => applyTemplate(key, qtyOplah, formatISO(tglMulaiRencana || new Date()), noOrder)}
                     className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
                       selectedTemplate === key
                         ? 'bg-emerald-600 text-white shadow-xs'
@@ -441,7 +472,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
             {/* DROPDOWN NO SOPD */}
             <div className="relative" ref={dropdownRef}>
               <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                Pilih No SOPD / SPK <span className="text-rose-500">*</span>
+                Pilih No SOPD <span className="text-rose-500">*</span>
               </label>
 
               {/* Trigger Button */}
@@ -487,7 +518,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
 
               {/* Dropdown Popover */}
               {isDropdownOpen && (
-                <div className="absolute top-full left-0 right-0 sm:w-[480px] mt-1.5 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-80 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute top-full left-0 right-0 sm:w-[520px] mt-1.5 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-80 animate-in fade-in zoom-in-95 duration-150">
                   {/* Search Input inside Dropdown */}
                   <div className="p-2 border-b border-slate-100 bg-slate-50/90 sticky top-0 z-10">
                     <div className="relative">
@@ -495,7 +526,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
                       <input
                         type="text"
                         autoFocus
-                        placeholder="Ketik cari no SOPD, judul buku, atau pemesan..."
+                        placeholder="Ketik cari no SOPD, nama order, atau pemesan..."
                         value={searchQuery}
                         onChange={(e) => handleSearchChange(e.target.value)}
                         className="w-full pl-8 pr-7 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -558,47 +589,41 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
               )}
             </div>
 
-            {/* Nama Order / Judul Buku */}
+            {/* Nama Order (Disabled / ReadOnly) */}
             <div className="sm:col-span-2">
               <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                Nama Order / Judul Buku <span className="text-rose-500">*</span>
+                Nama Order
               </label>
               <input
                 type="text"
-                placeholder="Pilih SOPD di sebelah kiri untuk mengisi otomatis..."
+                disabled
+                readOnly
+                placeholder="Pilih nomor SOPD untuk memuat data..."
                 value={namaOrder}
-                onChange={(e) => setNamaOrder(e.target.value)}
-                className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full h-9 px-3 bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 cursor-not-allowed select-none"
               />
             </div>
 
-            {/* Oplah & Satuan (Otomatis dari SOPD) */}
+            {/* Jumlah Cetak & Satuan (Disabled / ReadOnly) */}
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-[11px] font-bold text-slate-600">
-                  Jumlah Cetak &amp; Satuan
-                </label>
-                <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
-                  Auto SOPD
-                </span>
-              </div>
+              <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                Jumlah Cetak &amp; Satuan
+              </label>
               <div className="flex gap-1.5">
                 <input
                   type="number"
-                  min="1"
+                  disabled
+                  readOnly
                   value={qtyOplah}
-                  onChange={(e) => {
-                    const v = Number(e.target.value) || 0;
-                    setQtyOplah(v);
-                  }}
-                  className="w-full h-9 px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  placeholder="Oplah"
+                  className="w-full h-9 px-2.5 bg-slate-100 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 cursor-not-allowed select-none"
+                  placeholder="Jumlah"
                 />
                 <input
                   type="text"
+                  disabled
+                  readOnly
                   value={satuan}
-                  onChange={(e) => setSatuan(e.target.value)}
-                  className="w-20 h-9 px-2 bg-white border border-slate-200 rounded-lg text-xs text-center font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-20 h-9 px-2 bg-slate-100 border border-slate-200 rounded-lg text-xs text-center font-bold text-slate-700 cursor-not-allowed select-none"
                   placeholder="Satuan"
                 />
               </div>
@@ -606,25 +631,18 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
-            {/* Nama Pemesan (Otomatis dari Digit) */}
+            {/* Nama Pemesan (Disabled / ReadOnly) */}
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-[11px] font-bold text-slate-600 flex items-center gap-1">
-                  <User size={12} className="text-slate-400" />
-                  Nama Pemesan
-                </label>
-                {namaPelanggan && (
-                  <span className="text-[10px] text-blue-600 font-semibold bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200">
-                    Dari Digit
-                  </span>
-                )}
-              </div>
+              <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                Nama Pemesan
+              </label>
               <input
                 type="text"
+                disabled
+                readOnly
                 placeholder="Terisi otomatis saat memilih SOPD..."
                 value={namaPelanggan}
-                onChange={(e) => setNamaPelanggan(e.target.value)}
-                className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full h-9 px-3 bg-slate-100 border border-slate-200 rounded-lg text-xs font-medium text-slate-800 cursor-not-allowed select-none"
               />
             </div>
 
@@ -639,13 +657,13 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
               />
             </div>
 
-            {/* Batas Deadline SPK */}
+            {/* Batas Deadline */}
             <div>
               <label className="block text-[11px] font-bold text-slate-600 mb-1 flex items-center justify-between">
-                <span>Batas Deadline SPK</span>
+                <span>Batas Deadline</span>
                 {isOverdueDeadline && (
                   <span className="text-[10px] text-rose-600 font-bold flex items-center gap-0.5">
-                    <AlertTriangle size={11} /> Overdue SPK!
+                    <AlertTriangle size={11} /> Melewati Deadline!
                   </span>
                 )}
               </label>
@@ -693,7 +711,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
           </div>
 
           <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
-            <div className="max-h-[380px] overflow-y-auto custom-scrollbar">
+            <div className="max-h-[460px] overflow-y-auto custom-scrollbar">
               <table className="w-full text-left text-xs">
                 <thead className="sticky top-0 bg-slate-100 text-[11px] font-bold text-slate-700 border-b border-slate-200 z-10 shadow-2xs">
                   <tr>

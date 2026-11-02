@@ -584,7 +584,7 @@ export default function OrderGanttChart({ entries, orderInfo }: OrderGanttChartP
             {deadlineISO && (
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-0.5 border-t-2 border-dashed border-rose-500 inline-block" />
-                <span className="text-rose-600 font-medium">Batas Deadline SPK</span>
+                <span className="text-rose-600 font-medium">Batas Deadline</span>
               </div>
             )}
             <div className="flex items-center gap-1.5">

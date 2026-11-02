@@ -455,7 +455,7 @@ export default function RencanaProduksiClient() {
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Cari no SPK / nama buku / nomor order..."
+                  placeholder="Cari nomor order atau nama order..."
                   value={search}
                   onChange={(e) => handleSearchChange(e.target.value)}
                   onFocus={() => {

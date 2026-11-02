@@ -58,7 +58,7 @@ export default function BaseModal({
         onClick={closeOnBackdrop ? onClose : undefined}
       >
         <div
-          className={`w-full ${maxWidth} bg-white rounded-2xl shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] [transform:translateZ(0)]`}
+          className={`w-full ${maxWidth} bg-white rounded-2xl shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-200 flex flex-col max-h-[94vh] [transform:translateZ(0)]`}
           onClick={e => e.stopPropagation()}
         >
           {/* Modal Header */}

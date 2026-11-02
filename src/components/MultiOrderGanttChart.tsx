@@ -203,7 +203,7 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
             <div className="sticky top-0 z-40 flex bg-white border-b border-gray-200 shadow-xs">
               {/* Top-Left Corner Box - z-50 to stay above day headers and data rows */}
               <div className="sticky left-0 top-0 z-50 w-84 shrink-0 bg-gray-50 border-r border-gray-200 px-4 py-2.5 flex items-center justify-between">
-                <span className="text-xs font-semibold text-gray-700">Daftar Order Produksi &amp; SPK</span>
+                <span className="text-xs font-semibold text-gray-700">Daftar Order Produksi</span>
                 <span className="text-[11px] text-gray-400 font-medium">Status / Oplah</span>
               </div>
 
@@ -403,7 +403,7 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
             </div>
             <div className="flex items-center gap-1.5 ml-2 border-l border-gray-200 pl-3">
               <span className="w-3 h-0.5 border-t-2 border-dashed border-rose-500 inline-block" />
-              <span className="text-rose-600 font-medium">Batas Deadline SPK</span>
+              <span className="text-rose-600 font-medium">Batas Deadline</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-1.5 rounded-full bg-blue-500 inline-block" />
