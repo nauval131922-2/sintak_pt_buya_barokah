@@ -30,7 +30,7 @@ export default async function RencanaProduksiPage() {
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-6 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-700">
+    <div className="flex-1 min-h-0 flex flex-col gap-3.5 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-700">
       <PageHeader
         title="Rencana Produksi"
         description="Jadwal Gantt Chart dan visualisasi alur tahapan produksi per nomor order."

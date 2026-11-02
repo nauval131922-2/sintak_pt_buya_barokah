@@ -191,7 +191,7 @@ export default function RencanaProduksiClient() {
   };
 
   return (
-    <div className="w-full flex-1 min-h-0 flex flex-col gap-6">
+    <div className="w-full flex-1 min-h-0 flex flex-col gap-3.5">
       
       {/* 1. Header Metrics Cards (PPIC Command Bar) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
@@ -413,7 +413,7 @@ export default function RencanaProduksiClient() {
         </div>
       ) : (
         /* Master Multi-Order View */
-        <div className="flex-1 min-h-0 flex flex-col gap-4">
+        <div className="flex-1 min-h-0 flex flex-col gap-3">
           
           {/* Filter & Search Toolbar */}
           <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 shrink-0">
@@ -566,7 +566,7 @@ export default function RencanaProduksiClient() {
 
           {/* Gantt Timeline Multi-Order */}
           {loading ? (
-            <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center text-gray-500 shadow-sm">
+            <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center text-gray-500 shadow-sm flex-1 min-h-0 flex flex-col items-center justify-center">
               <Loader2 size={28} className="animate-spin text-emerald-600 mx-auto mb-2" />
               <span className="text-xs font-medium">Memuat master schedule dan timeline produksi...</span>
             </div>

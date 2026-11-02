@@ -166,15 +166,13 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
   }
 
   return (
-    <div className="w-full flex flex-col gap-4">
+    <div className="w-full flex-1 min-h-0 flex flex-col gap-3">
       {/* 1. Main Timeline Container */}
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
-        <div className="overflow-x-auto relative max-h-[640px] overflow-y-auto scroll-pb-10">
-          <div className="min-w-fit flex flex-col">
-            
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col">
+        <div className="overflow-auto relative flex-1 min-h-0 scroll-pb-8">
+          <div className="min-w-fit flex flex-col pb-6">
             {/* Header Timeline Row */}
             <div className="sticky top-0 z-20 flex bg-white border-b border-gray-200 shadow-xs">
-              {/* Left Column Header */}
               <div className="sticky left-0 z-30 w-84 shrink-0 bg-gray-50 border-r border-gray-200 px-4 py-2.5 flex items-center justify-between">
                 <span className="text-xs font-semibold text-gray-700">Daftar Order Produksi &amp; SPK</span>
                 <span className="text-[11px] text-gray-400 font-medium">Status / Oplah</span>
@@ -246,7 +244,7 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
                     onMouseLeave={() => setHoveredOrder(null)}
                   >
                     {/* Sticky Left Order Info Column */}
-                    <div className="sticky left-0 z-10 w-84 shrink-0 bg-white group-hover:bg-gray-50/95 border-r border-gray-200 px-4 py-2.5 flex flex-col justify-center transition-colors">
+                    <div className="sticky left-0 z-20 w-84 shrink-0 bg-white group-hover:bg-gray-50 border-r border-gray-200 px-4 py-2.5 flex flex-col justify-center transition-colors shadow-[2px_0_5px_rgba(0,0,0,0.04)]">
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="text-xs font-bold text-gray-900 group-hover:text-emerald-700 transition-colors">
                           {ord.no_order}
@@ -296,7 +294,7 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
                           left: `${leftPx + 3}px`,
                           width: `${widthPx}px`,
                         }}
-                        className="relative z-10 h-7 rounded-lg shadow-2xs overflow-hidden flex items-center border border-gray-300 bg-gray-100 transition-transform group-hover:scale-[1.01]"
+                        className="relative z-10 h-7 rounded-lg shadow-2xs overflow-hidden flex items-center border border-gray-300 bg-gray-100 hover:brightness-95 transition-all"
                         title={`${ord.nama_order} (${ord.start_date} s/d ${ord.end_date}) - Progres: ${ord.progress}%`}
                       >
                         {/* Multi-stage Color Segments */}
