@@ -91,6 +91,13 @@ function isUniqueError(error: unknown): boolean {
   return /UNIQUE constraint failed/i.test(msg);
 }
 
+// Kosong/null → null (tanpa target); bukan angka atau negatif → NaN (ditolak pemanggil)
+function parseTargetHarian(v: unknown): number | null {
+  if (v === null || v === undefined || String(v).trim() === '') return null;
+  const n = Number(v);
+  return Number.isFinite(n) && n >= 0 ? n : NaN;
+}
+
 export async function POST(request: NextRequest) {
   const contentType = request.headers.get('content-type') || '';
 
@@ -140,9 +147,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Bagian dan nama pekerjaan wajib diisi.' }, { status: 400 });
       }
 
+      const targetHarian = parseTargetHarian(body2?.target_harian);
+      if (Number.isNaN(targetHarian)) {
+        return NextResponse.json({ error: 'Target harian harus berupa angka ≥ 0.' }, { status: 400 });
+      }
+
       const result = await db.execute({
-        sql: `INSERT INTO master_pekerjaan_jurnal_produksi (category, name) VALUES (?, ?)`,
-        args: [category, name],
+        sql: `INSERT INTO master_pekerjaan_jurnal_produksi (category, name, target_harian) VALUES (?, ?, ?)`,
+        args: [category, name, targetHarian],
       });
 
       const newId = Number(result.lastInsertRowid);
@@ -153,6 +165,7 @@ export async function POST(request: NextRequest) {
         id: newId,
         category,
         name,
+        target_harian: targetHarian,
       });
     } catch (error: unknown) {
       if (isUniqueError(error)) {
@@ -370,12 +383,16 @@ export async function PUT(request: NextRequest) {
     const id = Number(body?.id);
     const category = String(body?.category ?? '').trim();
     const name = String(body?.name ?? '').trim();
+    const targetHarian = parseTargetHarian(body?.target_harian);
 
     if (!id || Number.isNaN(id)) {
       return NextResponse.json({ error: 'ID tidak valid.' }, { status: 400 });
     }
     if (!category || !name) {
       return NextResponse.json({ error: 'Bagian dan nama pekerjaan wajib diisi.' }, { status: 400 });
+    }
+    if (Number.isNaN(targetHarian)) {
+      return NextResponse.json({ error: 'Target harian harus berupa angka ≥ 0.' }, { status: 400 });
     }
 
     const existing = await db.execute({
@@ -387,13 +404,13 @@ export async function PUT(request: NextRequest) {
     }
 
     await db.execute({
-      sql: `UPDATE master_pekerjaan_jurnal_produksi SET category = ?, name = ? WHERE id = ?`,
-      args: [category, name, id],
+      sql: `UPDATE master_pekerjaan_jurnal_produksi SET category = ?, name = ?, target_harian = ? WHERE id = ?`,
+      args: [category, name, targetHarian, id],
     });
 
     // ponytail: tanpa logActivity manual — trigger trg_master_pekerjaan_jurnal_produksi_update sudah mencatat UPDATE otomatis
 
-    return NextResponse.json({ success: true, id, category, name });
+    return NextResponse.json({ success: true, id, category, name, target_harian: targetHarian });
   } catch (error: unknown) {
     if (isUniqueError(error)) {
       return NextResponse.json(

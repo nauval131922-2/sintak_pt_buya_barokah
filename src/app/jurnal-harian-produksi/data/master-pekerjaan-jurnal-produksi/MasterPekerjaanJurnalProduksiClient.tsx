@@ -17,6 +17,7 @@ interface PekerjaanJurnalProduksiRecord {
   id: number;
   category: string;
   name: string;
+  target_harian: number | null;
   created_at: string;
 }
 
@@ -64,6 +65,7 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
       action: 140,
       category: 200,
       name: 480,
+      target_harian: 140,
     };
   });
 
@@ -73,6 +75,7 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
   const [editing, setEditing] = useState<PekerjaanJurnalProduksiRecord | null>(null);
   const [formCategory, setFormCategory] = useState('');
   const [formName, setFormName] = useState('');
+  const [formTarget, setFormTarget] = useState('');
   const [formSaving, setFormSaving] = useState(false);
   const [formError, setFormError] = useState('');
 
@@ -176,6 +179,7 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
     setEditing(null);
     setFormCategory(categoryFilter || CANONICAL_CATEGORIES[0]);
     setFormName('');
+    setFormTarget('');
     setFormError('');
     setFormOpen(true);
   };
@@ -184,6 +188,7 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
     setEditing(row);
     setFormCategory(row.category);
     setFormName(row.name);
+    setFormTarget(row.target_harian === null || row.target_harian === undefined ? '' : String(row.target_harian));
     setFormError('');
     setFormOpen(true);
   };
@@ -202,6 +207,12 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
       setFormError('Bagian dan nama pekerjaan wajib diisi.');
       return;
     }
+    const targetRaw = formTarget.trim();
+    const targetHarian = targetRaw === '' ? null : Number(targetRaw);
+    if (targetHarian !== null && (!Number.isFinite(targetHarian) || targetHarian < 0)) {
+      setFormError('Target harian harus berupa angka ≥ 0.');
+      return;
+    }
 
     setFormSaving(true);
     setFormError('');
@@ -209,7 +220,9 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
       const res = await fetch('/api/master-pekerjaan-jurnal-produksi', {
         method: editing ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editing ? { id: editing.id, category, name } : { category, name }),
+        body: JSON.stringify(
+          editing ? { id: editing.id, category, name, target_harian: targetHarian } : { category, name, target_harian: targetHarian }
+        ),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -320,6 +333,19 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
             {String(getValue())}
           </span>
         )
+      },
+      {
+        accessorKey: 'target_harian',
+        header: 'Target Harian',
+        size: 140,
+        cell: ({ getValue, row }: { getValue: () => unknown; row: { getIsSelected: () => boolean } }) => {
+          const v = getValue();
+          return (
+            <span className={`text-[12px] font-semibold tabular-nums ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>
+              {v === null || v === undefined || v === '' ? '-' : Number(v).toLocaleString('id-ID')}
+            </span>
+          );
+        }
       },
     ];
   }, [page]);
@@ -569,6 +595,25 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
               placeholder="Contoh: Setting Mesin"
               className="h-10 w-full px-3 rounded-xl border border-gray-200 bg-white text-[13px] font-medium text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 transition-all"
               autoFocus
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-bold text-gray-600 ml-0.5">Target Harian</label>
+            <input
+              type="number"
+              min={0}
+              step="any"
+              inputMode="decimal"
+              value={formTarget}
+              onChange={(e) => setFormTarget(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSave();
+                }
+              }}
+              placeholder="Kosongkan jika belum ada target"
+              className="h-10 w-full px-3 rounded-xl border border-gray-200 bg-white text-[13px] font-medium text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 transition-all"
             />
           </div>
           {formError && (
