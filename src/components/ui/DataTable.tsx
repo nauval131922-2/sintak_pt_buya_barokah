@@ -609,20 +609,53 @@ const TableRow = React.memo(({
   stickyOffsets,
 }: any) => {
   // stickyBg must be SOLID (no transparency) so it covers scrolled cells beneath
+  const isYellow = extraClassName?.includes('yellow');
+  const isRose = extraClassName?.includes('rose');
+  const isEmerald = extraClassName?.includes('emerald');
+  const isAmber = extraClassName?.includes('amber');
+  const isViolet = extraClassName?.includes('violet');
+
   const stickyBg = isSelected
     ? '#dbeafe'  // blue-100 solid
-    : extraClassName?.includes('rose')
+    : isRose
       ? '#fff1f2'
-      : extraClassName?.includes('emerald')
+      : isEmerald
         ? '#f0fdf4'
-        : extraClassName?.includes('yellow')
+        : isYellow
           ? '#fef9c3'
-        : extraClassName?.includes('amber')
-          ? '#fffbeb'
-          : extraClassName?.includes('violet')
-            ? '#f5f3ff'
-            : isOdd ? '#f9fafb' : '#ffffff';  // solid white/gray-50 for odd rows
+          : isAmber
+            ? '#fffbeb'
+            : isViolet
+              ? '#f5f3ff'
+              : isOdd ? '#f9fafb' : '#ffffff';  // solid white/gray-50 for odd rows
 
+  const stickyHoverBg = isSelected
+    ? '#dbeafe'
+    : isRose
+      ? '#ffe4e6'
+      : isEmerald
+        ? '#dcfce7'
+        : isYellow
+          ? '#fef08a'
+          : isAmber
+            ? '#fef3c7'
+            : isViolet
+              ? '#ede9fe'
+              : '#eff6ff';
+
+  const hoverClass = disableHover || isSelected
+    ? ''
+    : isYellow
+      ? 'hover:bg-yellow-200/70'
+      : isRose
+        ? 'hover:bg-rose-100/70'
+        : isEmerald
+          ? 'hover:bg-emerald-100/70'
+          : isAmber
+            ? 'hover:bg-amber-100/70'
+            : isViolet
+              ? 'hover:bg-violet-100/70'
+              : 'hover:bg-blue-50/30';
   return (
     <tr
       onMouseDown={(e) => {
@@ -632,13 +665,16 @@ const TableRow = React.memo(({
       }}
       onClick={(e) => onRowClick && onRowClick(row.original.id, e)}
       onDoubleClick={(e) => onRowDoubleClick && onRowDoubleClick(row.original.id, e)}
+      style={{
+        '--row-sticky-bg': stickyBg,
+        '--row-sticky-hover': stickyHoverBg,
+      } as React.CSSProperties}
       className={`${rowHeight} ${rowCursor} group border-b border-slate-200/80 transition-colors ${
         isSelected ? 'bg-blue-50 is-selected' : extraClassName ? extraClassName : isOdd ? 'bg-gray-50/30' : 'bg-white'
-      } ${!disableHover && !isSelected ? 'hover:bg-blue-50/30' : ''} text-[13px]`}
+      } ${hoverClass} text-[13px]`}
     >
       <td 
-        className={`sticky left-0 w-[6px] p-0 z-[20] border-none transition-colors ${isSelected ? 'shadow-[2px_0_5px_rgba(0,0,0,0.05)]' : ''}`}
-        style={{ backgroundColor: isSelected ? '#3b82f6' : stickyBg }} 
+        className={`sticky left-0 w-[6px] p-0 z-[20] border-none transition-colors [background-color:var(--row-sticky-bg)] group-hover:[background-color:var(--row-sticky-hover)] ${isSelected ? 'shadow-[2px_0_5px_rgba(0,0,0,0.05)] !bg-[#3b82f6]' : ''}`}
       />
       {row.getVisibleCells().map((cell: any) => {
         const meta = cell.column.columnDef.meta as any;
@@ -651,13 +687,12 @@ const TableRow = React.memo(({
           <td 
             key={cell.id} 
             className={`p-0 border-r border-slate-200/80 last:border-r-0 ${
-              isSticky ? 'sticky z-[25]' : ''
+              isSticky ? 'sticky z-[25] transition-colors [background-color:var(--row-sticky-bg)] group-hover:[background-color:var(--row-sticky-hover)]' : ''
             }`}
             style={{
               ...(meta?.valign === 'top' ? { verticalAlign: 'top' } : {}),
               ...(isSticky ? {
                 left: stickyOffsets?.[cell.column.id] ?? 6,
-                backgroundColor: stickyBg,
                 boxShadow: 'inset -1px 0 0 #cbd5e1'  // solid right border for sticky col
               } : {})
             }}
