@@ -15,10 +15,20 @@ const cleanNumberOrText = (val: any) => {
   return str;
 };
 
+let ensuredJadwalGandaColumn = false;
+async function ensureJadwalGandaColumn() {
+  if (ensuredJadwalGandaColumn) return;
+  try {
+    await db.execute("ALTER TABLE jurnal_harian_produksi ADD COLUMN is_jadwal_ganda INTEGER DEFAULT 0");
+  } catch {}
+  ensuredJadwalGandaColumn = true;
+}
+
 export async function GET(request: NextRequest) {
   const gate = await requireApiPermission('produksi_jhp');
   if (gate.error) return gate.error;
   try {
+    await ensureJadwalGandaColumn();
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get("search");
     const page = parseInt(searchParams.get("page") || "1");
@@ -270,6 +280,7 @@ export async function POST(request: NextRequest) {
           isJadwalGanda = 1;
         }
       }
+      await ensureJadwalGandaColumn();
 
       try {
         await db.execute("ALTER TABLE jurnal_harian_produksi ADD COLUMN is_manual_input INTEGER DEFAULT 0");

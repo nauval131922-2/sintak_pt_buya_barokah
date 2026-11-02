@@ -49,13 +49,17 @@ export default async function JurnalHarianPage() {
     CASE WHEN jenis_pekerjaan LIKE '%Koordinasi%' THEN 0 ELSE 1 END ASC,
     absensi ASC, id ASC`;
 
+  try {
+    await db.execute("ALTER TABLE jurnal_harian_produksi ADD COLUMN is_jadwal_ganda INTEGER DEFAULT 0");
+  } catch {}
+
   const today = todayStr();
   const batch = await db.batch([
     { sql: 'SELECT COUNT(*) as total FROM jurnal_harian_produksi WHERE tgl = ? AND deleted_at IS NULL', args: [today] },
     { sql: `SELECT id, posisi, absensi, tgl, shift, nama_karyawan, no_order, nama_order,
       jenis_pekerjaan, keterangan, target, realisasi, no_order_2, nama_order_2,
       jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian,
-      is_manual_input, nama_order_manual, nama_order_manual_2
+      is_manual_input, nama_order_manual, nama_order_manual_2, is_jadwal_ganda
       FROM jurnal_harian_produksi WHERE tgl = ? AND deleted_at IS NULL ${defaultSort} LIMIT 50`, args: [today] },
     { sql: 'SELECT COALESCE(SUM(COALESCE(CAST(realisasi AS REAL), 0)), 0) as v FROM jurnal_harian_produksi WHERE tgl = ? AND deleted_at IS NULL', args: [today] },
     { sql: 'SELECT COALESCE(SUM(COALESCE(CAST(rijek AS REAL), 0)), 0) as v FROM jurnal_harian_produksi WHERE tgl = ? AND deleted_at IS NULL', args: [today] },

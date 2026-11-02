@@ -16,6 +16,15 @@ const DECRYPT_EXEC_OPTS = { timeout: 30_000, maxBuffer: 10 * 1024 * 1024 };
 const MAX_UPLOAD_BYTES = 150 * 1024 * 1024;
 // ponytail: guard per-chunk JSON (konsisten import-raw) — satu chunk jangan jebol bodySizeLimit
 const MAX_CHUNK_BYTES = 15 * 1024 * 1024;
+let ensuredTargetHarianColumn = false;
+async function ensureTargetHarianColumn() {
+  if (ensuredTargetHarianColumn) return;
+  try {
+    await db.execute("ALTER TABLE master_pekerjaan_jurnal_produksi ADD COLUMN target_harian REAL");
+  } catch {}
+  ensuredTargetHarianColumn = true;
+}
+
 
 export async function GET(request: NextRequest) {
   const session = await getSession();
@@ -31,6 +40,7 @@ export async function GET(request: NextRequest) {
   const all = request.nextUrl.searchParams.get('all') === 'true' || request.nextUrl.searchParams.get('all') === '1';
 
   try {
+    await ensureTargetHarianColumn();
     let where = '1=1';
     const args: (string | number)[] = [];
 
@@ -146,6 +156,7 @@ export async function POST(request: NextRequest) {
       if (!category || !name) {
         return NextResponse.json({ error: 'Bagian dan nama pekerjaan wajib diisi.' }, { status: 400 });
       }
+      await ensureTargetHarianColumn();
 
       const targetHarian = parseTargetHarian(body2?.target_harian);
       if (Number.isNaN(targetHarian)) {
@@ -378,6 +389,7 @@ export async function PUT(request: NextRequest) {
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    await ensureTargetHarianColumn();
 
     const body = await request.json();
     const id = Number(body?.id);
