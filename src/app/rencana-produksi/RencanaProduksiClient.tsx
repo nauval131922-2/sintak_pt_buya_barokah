@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { 
   Search, X, Loader2, Package, Hash, Users, Target, CheckCircle2, 
-  Layers, RefreshCw, BarChart3, AlertTriangle, Flag, CalendarRange, 
+  Layers, RefreshCw, BarChart3, AlertTriangle, AlertCircle, Flag, CalendarRange, 
   ArrowLeft, Clock, Factory, ChevronRight, TableProperties, Calendar,
   RotateCcw, Filter, Plus
 } from 'lucide-react';
@@ -12,6 +12,7 @@ import OrderGanttChart, { type JhpEntryForGantt, type OrderInfoForGantt } from '
 import DatePicker from '@/components/DatePicker';
 import SquareDropdown from '@/components/SquareDropdown';
 import BuatRencanaProduksiModal from '@/components/BuatRencanaProduksiModal';
+import BaseModal from '@/components/ui/BaseModal';
 
 interface SummaryData {
   totalActiveOrders: number;
@@ -82,6 +83,12 @@ export default function RencanaProduksiClient() {
   const [searchingOrders, setSearchingOrders] = useState(false);
   const searchDropdownRef = useRef<HTMLDivElement>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [activeCardInfo, setActiveCardInfo] = useState<{
+    title: string;
+    source: string;
+    explanation: string;
+    calculation: string;
+  } | null>(null);
 
 
   // 1. Fetch Multi-Order Schedule
@@ -219,7 +226,22 @@ export default function RencanaProduksiClient() {
         {/* Card 1: Active Orders */}
         <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-gray-400 font-medium text-xs block">Order Berjalan</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-gray-400 font-medium text-xs block">Order Berjalan</span>
+              <button
+                type="button"
+                onClick={() => setActiveCardInfo({
+                  title: 'Order Berjalan',
+                  source: 'Database tabel rencana_produksi dan log aktivitas produksi jurnal_harian_produksi',
+                  explanation: 'Menampilkan akumulasi jumlah nomor order produksi (SOPD) yang sedang aktif dijadwalkan atau dikerjakan di lini lantai pabrik.',
+                  calculation: 'Menghitung seluruh pesanan dengan status rencana belum selesai (status != SELESAI) pada rentang tanggal jadwal terpilih.'
+                })}
+                className="w-4 h-4 rounded-full bg-slate-100 hover:bg-blue-100 text-slate-400 hover:text-blue-600 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+                title="Keterangan & Sumber Data"
+              >
+                <AlertCircle size={10} />
+              </button>
+            </div>
             <span className="text-2xl font-bold text-gray-900 mt-0.5 block">
               {summary ? summary.totalActiveOrders : '-'}
             </span>
@@ -233,7 +255,22 @@ export default function RencanaProduksiClient() {
         {/* Card 2: Critical / Approaching Deadline */}
         <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-gray-400 font-medium text-xs block">Order Kritis / Deadline</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-gray-400 font-medium text-xs block">Order Kritis / Deadline</span>
+              <button
+                type="button"
+                onClick={() => setActiveCardInfo({
+                  title: 'Order Kritis / Deadline',
+                  source: 'Tanggal selesai rencana (rencana_produksi) dibandingkan deadline pesanan (sopd_harga) & laporan kendala mesin',
+                  explanation: 'Menampilkan jumlah order yang membutuhkan perhatian khusus karena berisiko terlambat atau mengalami hambatan operasional mesin.',
+                  calculation: 'Dihitung apabila sisa hari sebelum batas deadline ≤ 5 hari kerja, sudah melewati tanggal deadline (overdue), atau terdapat laporan kendala mesin yang aktif.'
+                })}
+                className="w-4 h-4 rounded-full bg-amber-50 hover:bg-amber-100 text-amber-500 hover:text-amber-700 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+                title="Keterangan & Sumber Data"
+              >
+                <AlertCircle size={10} />
+              </button>
+            </div>
             <span className="text-2xl font-bold text-amber-600 mt-0.5 block">
               {summary ? summary.criticalOrdersCount : '-'}
             </span>
@@ -247,7 +284,22 @@ export default function RencanaProduksiClient() {
         {/* Card 3: Order On-Track */}
         <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-gray-400 font-medium text-xs block">Order On-Track</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-gray-400 font-medium text-xs block">Order On-Track</span>
+              <button
+                type="button"
+                onClick={() => setActiveCardInfo({
+                  title: 'Order On-Track (Aman & Lancar)',
+                  source: 'Kalkulasi selisih Order Berjalan dikurangi Order Kritis',
+                  explanation: 'Menampilkan jumlah pesanan aktif yang jadwal tahapan mesinnya berjalan lancar, aman, dan tanpa kendala.',
+                  calculation: 'Formula: (Total Order Berjalan - Order Kritis). Order berada pada rentang waktu aman (> 5 hari sebelum deadline) dan proses mesin lancar.'
+                })}
+                className="w-4 h-4 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-500 hover:text-emerald-700 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+                title="Keterangan & Sumber Data"
+              >
+                <AlertCircle size={10} />
+              </button>
+            </div>
             <span className="text-2xl font-bold text-emerald-600 mt-0.5 block">
               {summary ? (summary.onTrackOrdersCount ?? Math.max(0, summary.totalActiveOrders - summary.criticalOrdersCount)) : '-'}
             </span>
@@ -261,7 +313,22 @@ export default function RencanaProduksiClient() {
         {/* Card 4: Overall Progress */}
         <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
           <div className="min-w-0 flex-1 pr-2">
-            <span className="text-gray-400 font-medium text-xs block">Akumulasi Realisasi</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-gray-400 font-medium text-xs block">Akumulasi Realisasi</span>
+              <button
+                type="button"
+                onClick={() => setActiveCardInfo({
+                  title: 'Akumulasi Realisasi Produksi',
+                  source: 'Agregasi kolom realisasi dan target pada tabel jurnal_harian_produksi',
+                  explanation: 'Menampilkan persentase pencapaian kuantitas fisik (eks/lembar) yang sudah terealisasi dibandingkan total target rencana kerja.',
+                  calculation: 'Formula: (Total Realisasi ÷ Total Target) × 100% untuk seluruh baris tahapan mesin dari pesanan yang sedang difilter.'
+                })}
+                className="w-4 h-4 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-500 hover:text-emerald-700 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+                title="Keterangan & Sumber Data"
+              >
+                <AlertCircle size={10} />
+              </button>
+            </div>
             <span className="text-2xl font-bold text-emerald-600 mt-0.5 block">
               {summary ? `${summary.overallProgress}%` : '-'}
             </span>
@@ -671,6 +738,57 @@ export default function RencanaProduksiClient() {
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={() => fetchSchedule(search, statusFilter, bagianFilter, startDate, endDate)}
       />
+
+      {/* Modal Keterangan Sumber Data Kartu */}
+      {activeCardInfo && (
+        <BaseModal
+          isOpen={true}
+          onClose={() => setActiveCardInfo(null)}
+          title={`Keterangan Metrik: ${activeCardInfo.title}`}
+          subtitle="Informasi asal-usul sumber data dan logika perhitungan"
+          icon={AlertCircle}
+          maxWidth="max-w-md"
+        >
+          <div className="space-y-3.5 text-xs text-gray-700">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                Sumber Data
+              </span>
+              <p className="font-semibold text-slate-800 leading-relaxed">
+                {activeCardInfo.source}
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                Fungsi &amp; Keterangan
+              </span>
+              <p className="text-slate-600 leading-relaxed">
+                {activeCardInfo.explanation}
+              </p>
+            </div>
+
+            <div className="bg-emerald-50/70 border border-emerald-100 rounded-xl p-3 space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">
+                Logika Perhitungan
+              </span>
+              <p className="text-emerald-900 font-medium leading-relaxed">
+                {activeCardInfo.calculation}
+              </p>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setActiveCardInfo(null)}
+                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold cursor-pointer transition-colors"
+              >
+                Mengerti &amp; Tutup
+              </button>
+            </div>
+          </div>
+        </BaseModal>
+      )}
     </div>
   );
 }

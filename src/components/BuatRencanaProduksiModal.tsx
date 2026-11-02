@@ -30,51 +30,161 @@ interface OrderOption {
   nama_pelanggan?: string;
   pelanggan?: string;
   deadline_date?: string;
+  spesifikasi?: string;
 }
 
-// Preset template alur tahapan mesin percetakan PT Buya Barokah
-const PRESET_TEMPLATES: Record<string, { label: string; tahapan: Array<{ bagian: string; mesin: string; nama_tahap: string; target_per_hari: number }> }> = {
-  hardcover: {
-    label: 'Buku Hard Cover',
-    tahapan: [
-      { bagian: 'SETTING', mesin: 'Prepress', nama_tahap: 'Setting & Desain Mockup', target_per_hari: 2000 },
-      { bagian: 'QUALITY CONTROL', mesin: 'Plate CTP', nama_tahap: 'Pemeriksaan & CTP Plat', target_per_hari: 2000 },
-      { bagian: 'FINISHING', mesin: 'Potong QZ 104', nama_tahap: 'Potong Bahan Isi & Cover', target_per_hari: 20000 },
-      { bagian: 'CETAK', mesin: 'SM 102', nama_tahap: 'Cetak Isi & Cover', target_per_hari: 15000 },
-      { bagian: 'FINISHING', mesin: 'Laminasi', nama_tahap: 'Laminasi Doff/Glossy Cover', target_per_hari: 10000 },
-      { bagian: 'FINISHING', mesin: 'Lipat Stall K66', nama_tahap: 'Lipat Lembaran Isi', target_per_hari: 15000 },
-      { bagian: 'FINISHING', mesin: 'Jahit Benang', nama_tahap: 'Jahit Blok Buku', target_per_hari: 5000 },
-      { bagian: 'FINISHING', mesin: 'Mesin Hard Cover', nama_tahap: 'Pembuatan & Pasang Hard Cover', target_per_hari: 3000 },
-      { bagian: 'FINISHING', mesin: 'Potong 3 Sisi', nama_tahap: 'Potong 3 Sisi Buku Jadi', target_per_hari: 5000 },
-      { bagian: 'GUDANG', mesin: 'Packing', nama_tahap: 'QC Akhir & Packing Gudang', target_per_hari: 5000 },
-    ],
-  },
-  softcover: {
-    label: 'Buku Soft Cover',
-    tahapan: [
-      { bagian: 'SETTING', mesin: 'Prepress', nama_tahap: 'Setting & Layout Isi', target_per_hari: 2000 },
-      { bagian: 'QUALITY CONTROL', mesin: 'Plate CTP', nama_tahap: 'Pemeriksaan & CTP Plat', target_per_hari: 2000 },
-      { bagian: 'FINISHING', mesin: 'Potong QZ 104', nama_tahap: 'Potong Bahan', target_per_hari: 20000 },
-      { bagian: 'CETAK', mesin: 'SM 102', nama_tahap: 'Cetak Isi & Cover', target_per_hari: 15000 },
-      { bagian: 'FINISHING', mesin: 'Lipat Stall K66', nama_tahap: 'Lipat Lembaran Isi', target_per_hari: 15000 },
-      { bagian: 'FINISHING', mesin: 'Binding Lem Panas', nama_tahap: 'Jilid Soft Cover Binding', target_per_hari: 5000 },
-      { bagian: 'FINISHING', mesin: 'Potong 3 Sisi', nama_tahap: 'Potong 3 Sisi Buku Jadi', target_per_hari: 5000 },
-      { bagian: 'GUDANG', mesin: 'Packing', nama_tahap: 'Pengepakan & Siap Kirim', target_per_hari: 5000 },
-    ],
-  },
-  majalah: {
-    label: 'Majalah / Buletin',
-    tahapan: [
-      { bagian: 'SETTING', mesin: 'Prepress', nama_tahap: 'Setting & Layout', target_per_hari: 2000 },
-      { bagian: 'QUALITY CONTROL', mesin: 'Plate CTP', nama_tahap: 'Output Plat', target_per_hari: 2000 },
-      { bagian: 'FINISHING', mesin: 'Potong QZ 104', nama_tahap: 'Potong Bahan', target_per_hari: 20000 },
-      { bagian: 'CETAK', mesin: 'Oliver 72E', nama_tahap: 'Cetak Majalah', target_per_hari: 15000 },
-      { bagian: 'FINISHING', mesin: 'Lipat Stall', nama_tahap: 'Lipat Lembaran', target_per_hari: 15000 },
-      { bagian: 'FINISHING', mesin: 'Stitching Kawat', nama_tahap: 'Jilid Jahit Kawat (Stitching)', target_per_hari: 8000 },
-      { bagian: 'GUDANG', mesin: 'Packing', nama_tahap: 'Packing & Distribusi', target_per_hari: 5000 },
-    ],
-  },
-};
+interface TahapTemplateItem {
+  bagian: string;
+  mesin: string;
+  nama_tahap: string;
+  target_per_hari: number;
+}
+
+// Otomatisasi alur tahapan mesin berdasarkan spesifikasi Order Produksi dari Digit ERP
+function deriveTahapanFromOrder(spekText: string, namaOrderText: string): TahapTemplateItem[] {
+  const text = `${spekText} ${namaOrderText}`.toUpperCase();
+  const list: TahapTemplateItem[] = [];
+
+  // 1. Setting & Desain Layout (Wajib untuk semua pesanan)
+  list.push({
+    bagian: 'SETTING',
+    mesin: 'Prepress',
+    nama_tahap: 'Setting & Layout Desain',
+    target_per_hari: 2000,
+  });
+
+  // 2. QC Plat / CTP (Wajib untuk semua pesanan cetak)
+  list.push({
+    bagian: 'QUALITY CONTROL',
+    mesin: 'Plate CTP',
+    nama_tahap: 'Pemeriksaan & CTP Plat',
+    target_per_hari: 5000,
+  });
+
+  // 3. Potong Bahan Baku Awal
+  list.push({
+    bagian: 'FINISHING',
+    mesin: 'Potong QZ 104',
+    nama_tahap: 'Potong Bahan Baku Kertas',
+    target_per_hari: 20000,
+  });
+
+  // 4. Mesin Cetak (Deteksi jenis mesin & warna)
+  let mesinCetak = 'SM 102';
+  let namaTahapCetak = 'Cetak Speedmaster 102';
+  if (text.includes('GTO') || text.includes('1 WARNA') || text.includes('1/0') || text.includes('1/1') || text.includes('KOP')) {
+    mesinCetak = 'GTO 52';
+    namaTahapCetak = 'Cetak GTO 52';
+  } else if (text.includes('OLIVER') || text.includes('2/0') || text.includes('2/2')) {
+    mesinCetak = 'Oliver 72E';
+    namaTahapCetak = 'Cetak Oliver 72E';
+  }
+  list.push({
+    bagian: 'CETAK',
+    mesin: mesinCetak,
+    nama_tahap: namaTahapCetak,
+    target_per_hari: 15000,
+  });
+
+  // 5. Laminasi (Jika ada finishing laminasi / UV / doff / glossy)
+  if (text.includes('LAMINASI') || text.includes('DOFF') || text.includes('GLOSSY') || text.includes('UV') || text.includes('VARNISH')) {
+    list.push({
+      bagian: 'FINISHING',
+      mesin: 'Laminasi',
+      nama_tahap: 'Laminasi Doff/Glossy Cover',
+      target_per_hari: 10000,
+    });
+  }
+
+  // 6. Porporasi (Jika nota / kwitansi / formulir perforasi)
+  if (text.includes('PORPORASI') || text.includes('PORFORASI')) {
+    list.push({
+      bagian: 'FINISHING',
+      mesin: 'Porporasi',
+      nama_tahap: 'Porporasi Lembaran',
+      target_per_hari: 8000,
+    });
+  }
+
+  // 7. Lipat (Jika buku, majalah, atau brosur lipat)
+  const isBuku = text.includes('BUKU') || text.includes("QUR'AN") || text.includes('KITAB') || text.includes('HALAMAN') || text.includes('HAL ') || text.includes('JILID');
+  const hasLipat = text.includes('LIPAT') || text.includes('SUSUN') || text.includes('MAJALAH') || (isBuku && !text.includes('LEMBAR'));
+  if (hasLipat) {
+    list.push({
+      bagian: 'FINISHING',
+      mesin: 'Lipat Stall K66',
+      nama_tahap: 'Lipat Lembaran Isi',
+      target_per_hari: 15000,
+    });
+  }
+
+  // 8. Jilid / Binding / HardCover / Stitching
+  const isHardCover = text.includes('HARDCOVER') || text.includes('HARD COVER') || text.includes('CASING IN') || text.includes('SKIBLAT') || text.includes('ROUNDING');
+  const isStitching = text.includes('STAPLES') || text.includes('STICHING') || text.includes('STITCHING') || text.includes('JAHIT KAWAT') || text.includes('MAJALAH');
+  const isSoftCoverOrBinding = text.includes('SOFTCOVER') || text.includes('SOFT COVER') || text.includes('BINDING') || text.includes('LEM') || isBuku;
+
+  if (isHardCover) {
+    list.push({
+      bagian: 'FINISHING',
+      mesin: 'Jahit Benang',
+      nama_tahap: 'Jahit Blok Buku',
+      target_per_hari: 3000,
+    });
+    list.push({
+      bagian: 'FINISHING',
+      mesin: 'Mesin Hard Cover',
+      nama_tahap: 'Pembuatan & Casing In Hardcover',
+      target_per_hari: 2000,
+    });
+  } else if (isStitching) {
+    list.push({
+      bagian: 'FINISHING',
+      mesin: 'Stitching Kawat',
+      nama_tahap: 'Jilid Jahit Kawat (Stitching)',
+      target_per_hari: 8000,
+    });
+  } else if (isSoftCoverOrBinding) {
+    list.push({
+      bagian: 'FINISHING',
+      mesin: 'Binding Lem Panas',
+      nama_tahap: 'Jilid Soft Cover Binding',
+      target_per_hari: 5000,
+    });
+  }
+
+  // 9. Potong Akhir (Sisir / Rajang / Potong 3 Sisi)
+  if (isHardCover || isSoftCoverOrBinding || isStitching) {
+    list.push({
+      bagian: 'FINISHING',
+      mesin: 'Potong 3 Sisi',
+      nama_tahap: 'Potong 3 Sisi Buku Jadi',
+      target_per_hari: 4000,
+    });
+  } else {
+    list.push({
+      bagian: 'FINISHING',
+      mesin: 'Potong QZ 104',
+      nama_tahap: 'Potong Sisir / Rajang Bersih',
+      target_per_hari: 20000,
+    });
+  }
+
+  // 10. QC Akhir & Packing Gudang (Wajib untuk semua pesanan)
+  list.push({
+    bagian: 'QUALITY CONTROL',
+    mesin: 'Plate CTP',
+    nama_tahap: 'Pemeriksaan QC Akhir & Sortir',
+    target_per_hari: 5000,
+  });
+  list.push({
+    bagian: 'GUDANG',
+    mesin: 'Packing',
+    nama_tahap: 'Packing Kardus & Distribusi',
+    target_per_hari: 5000,
+  });
+
+  return list;
+}
 
 const BAGIAN_OPTIONS = ['SETTING', 'QUALITY CONTROL', 'CETAK', 'FINISHING', 'GUDANG'];
 
@@ -96,7 +206,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
 
   // 3. Tahapan Alur Mesin
   const [tahapan, setTahapan] = useState<Array<Omit<RencanaProduksiTahapanItem, 'id' | 'rencana_id'>>>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('hardcover');
+
 
   // Searchable Dropdown SOPD Options
   const [sopdOptions, setSopdOptions] = useState<OrderOption[]>([]);
@@ -143,15 +253,13 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
   };
 
   // Muat preset awal saat template dipilih
-  const applyTemplate = useCallback((templateKey: string, currentVolume: number, startDateStr: string, currentNoOrder?: string) => {
-    setSelectedTemplate(templateKey);
-    const preset = PRESET_TEMPLATES[templateKey];
-    if (!preset) return;
-
+  // Terapkan alur tahapan mesin yang didapat dari spesifikasi Order Produksi
+  const applyDerivedTahapan = useCallback((templateItems: TahapTemplateItem[], currentVolume: number, startDateStr: string, currentNoOrder?: string) => {
     const ord = currentNoOrder ?? '-';
     let currentStart = startDateStr || formatISO(new Date());
-    const generated = preset.tahapan.map((t, idx) => {
-      const vol = currentVolume > 0 ? currentVolume : 1000;
+    const vol = currentVolume > 0 ? currentVolume : 1000;
+
+    const generated = templateItems.map((t, idx) => {
       const dur = calculateDurationDays(vol, t.target_per_hari);
       const end = addWorkdays(currentStart, dur);
       const row = {
@@ -198,35 +306,9 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
       setSearchQuery('');
       setIsDropdownOpen(false);
 
-      // Terapkan template awal
-      const preset = PRESET_TEMPLATES['hardcover'];
-      if (preset) {
-        setSelectedTemplate('hardcover');
-        let currentStart = formatISO(now);
-        const generated = preset.tahapan.map((t, idx) => {
-          const dur = calculateDurationDays(1000, t.target_per_hari);
-          const end = addWorkdays(currentStart, dur);
-          const row = {
-            no_order: '-',
-            urutan: idx + 1,
-            bagian: t.bagian,
-            mesin: t.mesin,
-            nama_tahap: t.nama_tahap,
-            volume: 1000,
-            target_per_hari: t.target_per_hari,
-            durasi_hari: dur,
-            tgl_mulai_plan: currentStart,
-            tgl_selesai_plan: end,
-            catatan: '',
-          };
-          currentStart = addWorkdays(end, 2);
-          return row;
-        });
-        setTahapan(generated);
-        if (generated.length > 0) {
-          setTglSelesaiRencana(new Date(generated[generated.length - 1].tgl_selesai_plan + 'T00:00:00'));
-        }
-      }
+      // Terapkan alur tahapan awal standar
+      const defaultItems = deriveTahapanFromOrder('', '');
+      applyDerivedTahapan(defaultItems, 0, formatISO(now), '-');
 
       // Fetch daftar SOPD awal
       async function loadInitialSopd() {
@@ -315,9 +397,10 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
 
     setIsDropdownOpen(false);
 
-    // Otomatis hitung ulang volume dan durasi seluruh tahapan mesin
+    // Otomatis turunkan alur mesin dari spesifikasi Order Produksi dan hitung tanggal
     const startDateStr = formatISO(tglMulaiRencana || new Date());
-    applyTemplate(selectedTemplate, qVal > 0 ? qVal : qtyOplah, startDateStr, selectedNoOrder);
+    const derived = deriveTahapanFromOrder(item.spesifikasi || '', item.nama_order || '');
+    applyDerivedTahapan(derived, qVal > 0 ? qVal : 1000, startDateStr, selectedNoOrder);
   };
 
   // Recalculate secara berantai seluruh tahapan (Skip Jumat)
@@ -472,25 +555,16 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
               <Sparkles size={14} className="text-emerald-600" />
               1. Identitas Pesanan (Pilih SOPD dari Digit ERP)
             </h4>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-slate-500 font-medium">Template Alur:</span>
-              <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs">
-                {Object.entries(PRESET_TEMPLATES).map(([key, item]) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => applyTemplate(key, qtyOplah, formatISO(tglMulaiRencana || new Date()), noOrder)}
-                    className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
-                      selectedTemplate === key
-                        ? 'bg-emerald-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
+            {noOrder ? (
+              <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-1 rounded-lg text-[11px] font-semibold">
+                <Sparkles size={13} className="text-emerald-600" />
+                <span>Alur Mesin Otomatis dari Order Produksi</span>
               </div>
-            </div>
+            ) : (
+              <span className="text-[11px] text-slate-400 font-medium">
+                Pilih SOPD untuk memuat alur mesin otomatis
+              </span>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">

@@ -14,12 +14,12 @@ export async function GET(request: NextRequest) {
     // Dates are stored as DD-MM-YYYY, so we use substr to sort them as YYYY-MM-DD
     const sortExpr = `substr(tgl,7,4)||'-'||substr(tgl,4,2)||'-'||substr(tgl,1,2)`;
     
-    let sopdSql = `SELECT DISTINCT s.no_sopd, s.nama_order, s.tgl, s.qty_sopd, s.unit, o.nama_pelanggan, sh.deadline_date 
+    let sopdSql = `SELECT DISTINCT s.no_sopd, s.nama_order, s.tgl, s.qty_sopd, s.unit, o.nama_pelanggan, sh.deadline_date, json_extract(o.raw_data, '$.spesifikasi') as spesifikasi
       FROM sopd s 
-      LEFT JOIN orders o ON o.faktur = s.no_sopd 
+      LEFT JOIN orders o ON (o.faktur = s.no_sopd OR o.nama_prd LIKE '%' || s.no_sopd || '%')
       LEFT JOIN sopd_harga sh ON sh.no_sopd = s.no_sopd 
       WHERE s.no_sopd IS NOT NULL AND s.no_sopd != ''`;
-    let ordersSql = `SELECT DISTINCT o.faktur as no_sopd, o.nama_prd as nama_order, o.tgl, o.qty as qty_sopd, o.satuan as unit, o.nama_pelanggan, sh.deadline_date 
+    let ordersSql = `SELECT DISTINCT o.faktur as no_sopd, o.nama_prd as nama_order, o.tgl, o.qty as qty_sopd, o.satuan as unit, o.nama_pelanggan, sh.deadline_date, json_extract(o.raw_data, '$.spesifikasi') as spesifikasi
       FROM orders o 
       LEFT JOIN sopd_harga sh ON sh.no_sopd = o.faktur 
       WHERE o.faktur IS NOT NULL AND o.faktur != ''`;
@@ -61,7 +61,8 @@ export async function GET(request: NextRequest) {
           unit: String(row.unit || ''),
           pelanggan: cust,
           nama_pelanggan: cust,
-          deadline_date: String(row.deadline_date || '')
+          deadline_date: String(row.deadline_date || ''),
+          spesifikasi: String(row.spesifikasi || '')
         };
       }),
       ...sopdResult.rows.map((r) => {
@@ -75,7 +76,8 @@ export async function GET(request: NextRequest) {
           unit: String(row.unit || ''),
           pelanggan: cust,
           nama_pelanggan: cust,
-          deadline_date: String(row.deadline_date || '')
+          deadline_date: String(row.deadline_date || ''),
+          spesifikasi: String(row.spesifikasi || '')
         };
       })
     ];
