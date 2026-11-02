@@ -90,6 +90,8 @@ export async function initIndexing(database: { execute: (sql: string) => Promise
 
     // Composite index untuk filter bagian + deleted_at + tgl — hindari full scan saat filter bagian tanpa tgl
     "CREATE INDEX IF NOT EXISTS idx_jurnal_bagian_deleted_tgl ON jurnal_harian_produksi(bagian, deleted_at, tgl);",
+    "CREATE INDEX IF NOT EXISTS idx_jurnal_del_tgl_order ON jurnal_harian_produksi(deleted_at, tgl DESC, no_order);",
+    "CREATE INDEX IF NOT EXISTS idx_jurnal_order_del_bag ON jurnal_harian_produksi(no_order, deleted_at, bagian);",
 
     // 5. Rekap Pembelian Barang Optimization
     "CREATE INDEX IF NOT EXISTS idx_rekap_pembelian_barang_tgl ON rekap_pembelian_barang(tgl DESC);",
