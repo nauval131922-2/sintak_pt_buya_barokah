@@ -306,10 +306,9 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
       setSearchQuery('');
       setIsDropdownOpen(false);
 
-      // Terapkan alur tahapan awal standar
-      const defaultItems = deriveTahapanFromOrder('', '');
-      applyDerivedTahapan(defaultItems, 0, formatISO(now), '-');
-
+      // Kosongkan tahapan di awal sampai pengguna memilih SOPD
+      setTahapan([]);
+      setTglSelesaiRencana(null);
       // Fetch daftar SOPD awal
       async function loadInitialSopd() {
         setLoadingOptions(true);
@@ -596,6 +595,8 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
                         setNamaPelanggan('');
                         setTglOrder('');
                         setTglDeadline(null);
+                        setTahapan([]);
+                        setTglSelesaiRencana(null);
                         setIsDropdownOpen(true);
                       }}
                       className="p-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
@@ -839,7 +840,22 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
-                  {tahapan.map((item, idx) => (
+                  {tahapan.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="py-14 text-center">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center">
+                            <Layers size={20} />
+                          </div>
+                          <p className="font-bold text-slate-700 text-xs">Belum Ada Nomor SOPD yang Dipilih</p>
+                          <p className="text-[11px] text-slate-400 max-w-md leading-relaxed">
+                            Silakan pilih nomor SOPD pada formulir Bagian 1 di atas untuk memuat dan merakit rincian alur mesin secara otomatis.
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    tahapan.map((item, idx) => (
                     <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-2 px-3 text-center font-bold text-slate-400">
                         {idx + 1}
@@ -915,9 +931,10 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
                         </button>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  ))
+                )}
+              </tbody>
+            </table>
             </div>
           </div>
         </div>
