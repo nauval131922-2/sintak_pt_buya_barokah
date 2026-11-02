@@ -32,6 +32,12 @@ export interface ProductionOrderSummary {
   has_kendala: boolean;
   status: 'Selesai' | 'Overdue' | 'Kritis' | 'On-track' | 'Baru Mulai';
   stages: ProductionOrderStage[];
+  plan?: {
+    id: number;
+    start_date: string;
+    end_date: string;
+    status: string;
+  } | null;
 }
 
 interface MultiOrderGanttChartProps {
@@ -274,6 +280,11 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
                         <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${getStatusBadge(ord.status)}`}>
                           {ord.status}
                         </span>
+                        {ord.plan && (
+                          <span className="text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded text-[10px] font-semibold border border-blue-200" title={`Jadwal Rencana: ${ord.plan.start_date} s/d ${ord.plan.end_date} (${ord.plan.status})`}>
+                            Plan: {ord.plan.status}
+                          </span>
+                        )}
                         {ord.has_kendala && (
                           <span className="text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded text-[10px] font-medium border border-rose-200 flex items-center gap-0.5" title="Terdapat kendala mesin/bahan">
                             <AlertTriangle size={10} /> Kendala
@@ -307,6 +318,18 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
                           className="absolute top-0 bottom-0 z-10 border-l-2 border-dashed border-rose-500 pointer-events-none"
                           style={{ left: (dateIndexMap[dlISO] + 1) * dayColWidth - 1 }}
                           title={`Deadline: ${dlISO}`}
+                        />
+                      )}
+
+                      {/* Plan Timeline Line (Jika ada jadwal rencana PPIC) */}
+                      {ord.plan && ord.plan.start_date in dateIndexMap && ord.plan.end_date in dateIndexMap && (
+                        <div
+                          style={{
+                            left: `${dateIndexMap[ord.plan.start_date] * dayColWidth + 3}px`,
+                            width: `${Math.max(dayColWidth - 6, (dateIndexMap[ord.plan.end_date] - dateIndexMap[ord.plan.start_date] + 1) * dayColWidth - 6)}px`,
+                          }}
+                          className="absolute -top-0.5 z-20 h-1.5 rounded-full bg-blue-500 border border-blue-600 shadow-2xs pointer-events-none"
+                          title={`Rencana PPIC: ${ord.plan.start_date} s/d ${ord.plan.end_date}`}
                         />
                       )}
 
@@ -381,6 +404,10 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
             <div className="flex items-center gap-1.5 ml-2 border-l border-gray-200 pl-3">
               <span className="w-3 h-0.5 border-t-2 border-dashed border-rose-500 inline-block" />
               <span className="text-rose-600 font-medium">Batas Deadline SPK</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3 h-1.5 rounded-full bg-blue-500 inline-block" />
+              <span className="text-blue-700 font-medium">Jadwal Rencana (PPIC)</span>
             </div>
           </div>
 
