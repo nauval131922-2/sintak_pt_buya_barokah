@@ -280,7 +280,7 @@ export async function GET(request: NextRequest) {
         has_kendala: r.stage_kendala === 1,
       });
 
-      const bg = r.bagian.toUpperCase();
+      const bg = String(r.bagian || 'LAINNYA').toUpperCase();
       if (!stationLoad[bg]) stationLoad[bg] = { count: 0, target: 0, realisasi: 0 };
       stationLoad[bg].count += 1;
       stationLoad[bg].target += tVal;

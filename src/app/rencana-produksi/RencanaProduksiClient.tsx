@@ -5,12 +5,14 @@ import {
   Search, X, Loader2, Package, Hash, Users, Target, CheckCircle2, 
   Layers, RefreshCw, BarChart3, AlertTriangle, Flag, CalendarRange, 
   ArrowLeft, Clock, Factory, ChevronRight, TableProperties, Calendar,
-  RotateCcw, Filter
+  RotateCcw, Filter, Plus
 } from 'lucide-react';
 import MultiOrderGanttChart, { type ProductionOrderSummary } from '@/components/MultiOrderGanttChart';
 import OrderGanttChart, { type JhpEntryForGantt, type OrderInfoForGantt } from '@/components/OrderGanttChart';
 import DatePicker from '@/components/DatePicker';
 import SquareDropdown from '@/components/SquareDropdown';
+import BuatRencanaProduksiModal from '@/components/BuatRencanaProduksiModal';
+
 interface SummaryData {
   totalActiveOrders: number;
   criticalOrdersCount: number;
@@ -78,7 +80,7 @@ export default function RencanaProduksiClient() {
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const [searchingOrders, setSearchingOrders] = useState(false);
   const searchDropdownRef = useRef<HTMLDivElement>(null);
-
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
 
   // 1. Fetch Multi-Order Schedule
@@ -448,6 +450,15 @@ export default function RencanaProduksiClient() {
                 <span className="hidden sm:inline">Reload</span>
               </button>
 
+              <button
+                type="button"
+                onClick={() => setIsCreateModalOpen(true)}
+                className="h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer"
+                title="Buat rencana jadwal produksi baru"
+              >
+                <Plus size={15} />
+                <span className="hidden sm:inline">Buat Rencana</span>
+              </button>
               <div className="relative flex-1 min-w-0" ref={searchDropdownRef}>
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
@@ -654,7 +665,12 @@ export default function RencanaProduksiClient() {
 
         </div>
       )}
-
+      {/* Modal Wizard Buat Rencana Produksi Baru */}
+      <BuatRencanaProduksiModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={() => fetchSchedule(search, statusFilter, bagianFilter, startDate, endDate)}
+      />
     </div>
   );
 }
