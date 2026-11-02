@@ -40,54 +40,226 @@ interface TahapTemplateItem {
   target_per_hari: number;
 }
 
-// Otomatisasi alur tahapan mesin berdasarkan spesifikasi Order Produksi dari Digit ERP
+// Otomatisasi alur tahapan mesin cerdas berdasarkan kategori produk & spesifikasi dari Digit ERP
 function deriveTahapanFromOrder(spekText: string, namaOrderText: string): TahapTemplateItem[] {
   const text = `${spekText} ${namaOrderText}`.toUpperCase();
   const list: TahapTemplateItem[] = [];
 
-  // 1. Setting & Imposisi (Wajib untuk semua pesanan)
+  // Deteksi Kategori Produk
+  const isLabelOrSticker = text.includes('LABEL') || text.includes('STICKER') || text.includes('STIKER');
+  const isNotaOrForm = text.includes('KARCIS') || text.includes('NOTA') || text.includes('KWITANSI') || text.includes('FORMULIR') || text.includes('BUKTI KAS') || text.includes('NCR');
+  const isKalenderOrPoster = text.includes('KALENDER') || text.includes('POSTER') || text.includes('ALMANAK') || text.includes('BROSUR') || text.includes('MAP') || text.includes('STOPMAP');
+  const isBuku = text.includes('BUKU') || text.includes("QUR'AN") || text.includes('KITAB') || text.includes('MAJALAH') || text.includes('MANASIK') || text.includes('YANBU') || text.includes('YASIN') || text.includes('JILID') || text.includes('HALAMAN') || text.includes('HAL ');
+
+  // KATEGORI 1: LABEL & STIKER (Cetak Print Digital, Tanpa Plat, Tanpa Potong Awal)
+  if (isLabelOrSticker) {
+    list.push({
+      bagian: 'SETTING',
+      mesin: 'Setting',
+      nama_tahap: 'Setting Mockup & Imposisi Label',
+      target_per_hari: 2000,
+    });
+    list.push({
+      bagian: 'CETAK',
+      mesin: 'Digital Print',
+      nama_tahap: 'Cetak / Print Label Digital',
+      target_per_hari: 10000,
+    });
+    if (text.includes('LAMINASI') || text.includes('GLOSSY') || text.includes('DOFF')) {
+      list.push({
+        bagian: 'FINISHING',
+        mesin: 'Laminasi',
+        nama_tahap: 'Laminasi Glossy / Doff Label',
+        target_per_hari: 10000,
+      });
+    }
+    list.push({
+      bagian: 'FINISHING',
+      mesin: 'Potong QZ 104',
+      nama_tahap: 'Rajang Label Satuan',
+      target_per_hari: 20000,
+    });
+    list.push({
+      bagian: 'QUALITY CONTROL',
+      mesin: 'QC',
+      nama_tahap: 'Pemeriksaan QC & Sortir Label',
+      target_per_hari: 10000,
+    });
+    list.push({
+      bagian: 'GUDANG',
+      mesin: 'Packing',
+      nama_tahap: 'Packing & Siap Kirim',
+      target_per_hari: 10000,
+    });
+    return list;
+  }
+
+  // KATEGORI 2: NOTA, FORMULIR, KARCIS, KWITANSI
+  if (isNotaOrForm) {
+    list.push({
+      bagian: 'SETTING',
+      mesin: 'Setting',
+      nama_tahap: 'Setting & Layout Form/Nota',
+      target_per_hari: 2000,
+    });
+    list.push({
+      bagian: 'QUALITY CONTROL',
+      mesin: 'Plate',
+      nama_tahap: 'Pembuatan & Cek Plat Cetak',
+      target_per_hari: 5000,
+    });
+    list.push({
+      bagian: 'FINISHING',
+      mesin: 'Potong QZ 104',
+      nama_tahap: 'Potong Bahan Baku Kertas',
+      target_per_hari: 20000,
+    });
+    list.push({
+      bagian: 'CETAK',
+      mesin: 'GTO 52',
+      nama_tahap: 'Cetak GTO 52',
+      target_per_hari: 15000,
+    });
+    if (text.includes('PORPORASI') || text.includes('PORFORASI')) {
+      list.push({
+        bagian: 'FINISHING',
+        mesin: 'Porporasi',
+        nama_tahap: 'Porporasi Lembaran',
+        target_per_hari: 8000,
+      });
+    }
+    if (text.includes('NOMORATOR') || text.includes('NOMOR')) {
+      list.push({
+        bagian: 'FINISHING',
+        mesin: 'Nomorator',
+        nama_tahap: 'Nomorator Form',
+        target_per_hari: 8000,
+      });
+    }
+    if (text.includes('STAPLES') || text.includes('SUSUN') || text.includes('LEM')) {
+      list.push({
+        bagian: 'FINISHING',
+        mesin: 'Stitching Kawat',
+        nama_tahap: 'Susun & Jilid Lem/Staples',
+        target_per_hari: 5000,
+      });
+    }
+    list.push({
+      bagian: 'FINISHING',
+      mesin: 'Potong QZ 104',
+      nama_tahap: 'Potong Sisir Bersih',
+      target_per_hari: 20000,
+    });
+    list.push({
+      bagian: 'QUALITY CONTROL',
+      mesin: 'QC',
+      nama_tahap: 'Pemeriksaan QC Akhir',
+      target_per_hari: 5000,
+    });
+    list.push({
+      bagian: 'GUDANG',
+      mesin: 'Packing',
+      nama_tahap: 'Packing Kardus & Gudang',
+      target_per_hari: 5000,
+    });
+    return list;
+  }
+
+  // KATEGORI 3: KALENDER, POSTER, BROSUR LEMBARAN
+  if (isKalenderOrPoster && !isBuku) {
+    list.push({
+      bagian: 'SETTING',
+      mesin: 'Setting',
+      nama_tahap: 'Setting & Imposisi Kalender/Poster',
+      target_per_hari: 2000,
+    });
+    list.push({
+      bagian: 'QUALITY CONTROL',
+      mesin: 'Plate',
+      nama_tahap: 'Pembuatan & Cek Plat Cetak',
+      target_per_hari: 5000,
+    });
+    list.push({
+      bagian: 'FINISHING',
+      mesin: 'Potong QZ 104',
+      nama_tahap: 'Potong Bahan Baku Kertas',
+      target_per_hari: 20000,
+    });
+    let mesinCetak = 'SM 102';
+    let namaCetak = 'Cetak Speedmaster 102';
+    if (text.includes('2 WARNA') || text.includes('2/0') || text.includes('OLIVER')) {
+      mesinCetak = 'Oliver 72E';
+      namaCetak = 'Cetak Oliver 72E';
+    }
+    list.push({
+      bagian: 'CETAK',
+      mesin: mesinCetak,
+      nama_tahap: namaCetak,
+      target_per_hari: 15000,
+    });
+    if (text.includes('LAMINASI') || text.includes('UV') || text.includes('VARNISH')) {
+      list.push({
+        bagian: 'FINISHING',
+        mesin: 'Laminasi',
+        nama_tahap: 'Laminasi Doff/Glossy',
+        target_per_hari: 10000,
+      });
+    }
+    if (text.includes('KLEM') || text.includes('SPIRAL') || text.includes('SENG')) {
+      list.push({
+        bagian: 'FINISHING',
+        mesin: 'Klem Seng',
+        nama_tahap: 'Jilid Klem Seng / Spiral',
+        target_per_hari: 5000,
+      });
+    }
+    list.push({
+      bagian: 'FINISHING',
+      mesin: 'Potong QZ 104',
+      nama_tahap: 'Potong Sisir / Rajang Bersih',
+      target_per_hari: 20000,
+    });
+    list.push({
+      bagian: 'QUALITY CONTROL',
+      mesin: 'QC',
+      nama_tahap: 'Pemeriksaan QC & Sortir',
+      target_per_hari: 5000,
+    });
+    list.push({
+      bagian: 'GUDANG',
+      mesin: 'Packing',
+      nama_tahap: 'Packing & Ikat Kardus',
+      target_per_hari: 5000,
+    });
+    return list;
+  }
+
+  // KATEGORI 4: BUKU, AL-QUR'AN, KITAB, MAJALAH (Alur Jilid Lengkap)
   list.push({
     bagian: 'SETTING',
     mesin: 'Setting',
-    nama_tahap: 'Setting & Imposisi File',
+    nama_tahap: 'Setting & Imposisi Isi / Cover',
     target_per_hari: 2000,
   });
-
-  // 2. Pembuatan Plat Cetak (Wajib untuk semua pesanan cetak)
   list.push({
     bagian: 'QUALITY CONTROL',
     mesin: 'Plate',
     nama_tahap: 'Pembuatan & Cek Plat Cetak',
     target_per_hari: 5000,
   });
-
-  // 3. Potong Bahan Baku Awal
   list.push({
     bagian: 'FINISHING',
     mesin: 'Potong QZ 104',
-    nama_tahap: 'Potong Bahan Baku Kertas',
+    nama_tahap: 'Potong Bahan Baku Isi & Cover',
     target_per_hari: 20000,
   });
-
-  // 4. Mesin Cetak (Deteksi jenis mesin & warna)
-  let mesinCetak = 'SM 102';
-  let namaTahapCetak = 'Cetak Speedmaster 102';
-  if (text.includes('GTO') || text.includes('1 WARNA') || text.includes('1/0') || text.includes('1/1') || text.includes('KOP')) {
-    mesinCetak = 'GTO 52';
-    namaTahapCetak = 'Cetak GTO 52';
-  } else if (text.includes('OLIVER') || text.includes('2/0') || text.includes('2/2')) {
-    mesinCetak = 'Oliver 72E';
-    namaTahapCetak = 'Cetak Oliver 72E';
-  }
   list.push({
     bagian: 'CETAK',
-    mesin: mesinCetak,
-    nama_tahap: namaTahapCetak,
+    mesin: 'SM 102',
+    nama_tahap: 'Cetak Speedmaster 102',
     target_per_hari: 15000,
   });
-
-  // 5. Laminasi (Jika ada finishing laminasi / UV / doff / glossy)
-  if (text.includes('LAMINASI') || text.includes('DOFF') || text.includes('GLOSSY') || text.includes('UV') || text.includes('VARNISH')) {
+  if (text.includes('LAMINASI') || text.includes('DOFF') || text.includes('GLOSSY')) {
     list.push({
       bagian: 'FINISHING',
       mesin: 'Laminasi',
@@ -95,33 +267,14 @@ function deriveTahapanFromOrder(spekText: string, namaOrderText: string): TahapT
       target_per_hari: 10000,
     });
   }
-
-  // 6. Porporasi (Jika nota / kwitansi / formulir perforasi)
-  if (text.includes('PORPORASI') || text.includes('PORFORASI')) {
-    list.push({
-      bagian: 'FINISHING',
-      mesin: 'Porporasi',
-      nama_tahap: 'Porporasi Lembaran',
-      target_per_hari: 8000,
-    });
-  }
-
-  // 7. Lipat (Jika buku, majalah, atau brosur lipat)
-  const isBuku = text.includes('BUKU') || text.includes("QUR'AN") || text.includes('KITAB') || text.includes('HALAMAN') || text.includes('HAL ') || text.includes('JILID');
-  const hasLipat = text.includes('LIPAT') || text.includes('SUSUN') || text.includes('MAJALAH') || (isBuku && !text.includes('LEMBAR'));
-  if (hasLipat) {
-    list.push({
-      bagian: 'FINISHING',
-      mesin: 'Lipat Stall K66',
-      nama_tahap: 'Lipat Lembaran Isi',
-      target_per_hari: 15000,
-    });
-  }
-
-  // 8. Jilid / Binding / HardCover / Stitching
-  const isHardCover = text.includes('HARDCOVER') || text.includes('HARD COVER') || text.includes('CASING IN') || text.includes('SKIBLAT') || text.includes('ROUNDING');
-  const isStitching = text.includes('STAPLES') || text.includes('STICHING') || text.includes('STITCHING') || text.includes('JAHIT KAWAT') || text.includes('MAJALAH');
-  const isSoftCoverOrBinding = text.includes('SOFTCOVER') || text.includes('SOFT COVER') || text.includes('BINDING') || text.includes('LEM') || isBuku;
+  list.push({
+    bagian: 'FINISHING',
+    mesin: 'Lipat Stall K66',
+    nama_tahap: 'Lipat Lembaran Isi',
+    target_per_hari: 15000,
+  });
+  const isHardCover = text.includes('HARDCOVER') || text.includes('HARD COVER') || text.includes('CASING IN') || text.includes('SKIBLAT');
+  const isStitching = text.includes('STAPLES') || text.includes('STICHING') || text.includes('STITCHING') || text.includes('JAHIT KAWAT');
 
   if (isHardCover) {
     list.push({
@@ -136,6 +289,12 @@ function deriveTahapanFromOrder(spekText: string, namaOrderText: string): TahapT
       nama_tahap: 'Pembuatan & Casing In Hardcover',
       target_per_hari: 2000,
     });
+    list.push({
+      bagian: 'FINISHING',
+      mesin: 'Potong 3 Sisi',
+      nama_tahap: 'Potong 3 Sisi Buku Jadi',
+      target_per_hari: 4000,
+    });
   } else if (isStitching) {
     list.push({
       bagian: 'FINISHING',
@@ -143,33 +302,26 @@ function deriveTahapanFromOrder(spekText: string, namaOrderText: string): TahapT
       nama_tahap: 'Jilid Jahit Kawat (Stitching)',
       target_per_hari: 8000,
     });
-  } else if (isSoftCoverOrBinding) {
+    list.push({
+      bagian: 'FINISHING',
+      mesin: 'Potong 3 Sisi',
+      nama_tahap: 'Potong 3 Sisi Buku Jadi',
+      target_per_hari: 5000,
+    });
+  } else {
     list.push({
       bagian: 'FINISHING',
       mesin: 'Binding Lem Panas',
       nama_tahap: 'Jilid Soft Cover Binding',
       target_per_hari: 5000,
     });
-  }
-
-  // 9. Potong Akhir (Sisir / Rajang / Potong 3 Sisi)
-  if (isHardCover || isSoftCoverOrBinding || isStitching) {
     list.push({
       bagian: 'FINISHING',
       mesin: 'Potong 3 Sisi',
       nama_tahap: 'Potong 3 Sisi Buku Jadi',
-      target_per_hari: 4000,
-    });
-  } else {
-    list.push({
-      bagian: 'FINISHING',
-      mesin: 'Potong QZ 104',
-      nama_tahap: 'Potong Sisir / Rajang Bersih',
-      target_per_hari: 20000,
+      target_per_hari: 5000,
     });
   }
-
-  // 10. QC Akhir & Packing Gudang (Wajib untuk semua pesanan)
   list.push({
     bagian: 'QUALITY CONTROL',
     mesin: 'QC',
@@ -182,7 +334,6 @@ function deriveTahapanFromOrder(spekText: string, namaOrderText: string): TahapT
     nama_tahap: 'Packing Kardus & Distribusi',
     target_per_hari: 5000,
   });
-
   return list;
 }
 
