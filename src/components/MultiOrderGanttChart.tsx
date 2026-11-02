@@ -2,8 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { 
-  Calendar, CheckCircle2, Clock, AlertTriangle, 
-  Layers, ChevronRight, Target, Flag, ArrowUpRight
+  Clock, AlertTriangle, ChevronRight, ArrowUpRight 
 } from 'lucide-react';
 
 export interface ProductionOrderStage {
@@ -72,7 +71,7 @@ function getDayOfWeek(iso: string): { name: string; isHoliday: boolean } {
   const names = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
   return {
     name: names[day] || '',
-    isHoliday: day === 0 || day === 5,
+    isHoliday: day === 5,
   };
 }
 
@@ -102,8 +101,21 @@ function getStageColor(bagian: string): string {
   return 'bg-indigo-500';
 }
 
+function formatStageName(bagian: string): string {
+  const b = (bagian || '').trim();
+  const upper = b.toUpperCase();
+  if (upper.includes('SETTING')) return 'Setting';
+  if (upper.includes('QUALITY CONTROL') || upper === 'QC') return 'Quality Control';
+  if (upper.includes('POTONG')) return 'Potong';
+  if (upper.includes('CETAK')) return 'Cetak';
+  if (upper.includes('FINISHING')) return 'Finishing';
+  if (upper.includes('GUDANG')) return 'Gudang';
+  if (upper.includes('TEKNISI')) return 'Teknisi';
+  return b.charAt(0).toUpperCase() + b.slice(1).toLowerCase();
+}
+
 export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrderGanttChartProps) {
-  const [hoveredOrder, setHoveredOrder] = useState<ProductionOrderSummary | null>(null);
+
 
   // Compute overall date bounds
   const { allDates, minDate, maxDate } = useMemo(() => {
@@ -172,8 +184,10 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
         <div className="overflow-auto relative flex-1 min-h-0 scroll-pb-8">
           <div className="min-w-fit flex flex-col pb-6">
             {/* Header Timeline Row */}
-            <div className="sticky top-0 z-20 flex bg-white border-b border-gray-200 shadow-xs">
-              <div className="sticky left-0 z-30 w-84 shrink-0 bg-gray-50 border-r border-gray-200 px-4 py-2.5 flex items-center justify-between">
+            {/* Header Timeline Row - z-40 to stay above all data rows */}
+            <div className="sticky top-0 z-40 flex bg-white border-b border-gray-200 shadow-xs">
+              {/* Top-Left Corner Box - z-50 to stay above day headers and data rows */}
+              <div className="sticky left-0 top-0 z-50 w-84 shrink-0 bg-gray-50 border-r border-gray-200 px-4 py-2.5 flex items-center justify-between">
                 <span className="text-xs font-semibold text-gray-700">Daftar Order Produksi &amp; SPK</span>
                 <span className="text-[11px] text-gray-400 font-medium">Status / Oplah</span>
               </div>
@@ -240,8 +254,7 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
                     key={ord.no_order}
                     className="flex hover:bg-emerald-50/20 transition-colors group relative cursor-pointer"
                     onClick={() => onSelectOrder(ord.no_order)}
-                    onMouseEnter={() => setHoveredOrder(ord)}
-                    onMouseLeave={() => setHoveredOrder(null)}
+
                   >
                     {/* Sticky Left Order Info Column */}
                     <div className="sticky left-0 z-20 w-84 shrink-0 bg-white group-hover:bg-gray-50 border-r border-gray-200 px-4 py-2.5 flex flex-col justify-center transition-colors shadow-[2px_0_5px_rgba(0,0,0,0.04)]">
@@ -297,21 +310,20 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
                         className="relative z-10 h-7 rounded-lg shadow-2xs overflow-hidden flex items-center border border-gray-300 bg-gray-100 hover:brightness-95 transition-all"
                         title={`${ord.nama_order} (${ord.start_date} s/d ${ord.end_date}) - Progres: ${ord.progress}%`}
                       >
-                        {/* Multi-stage Color Segments */}
+                        {/* Multi-stage Color Segments with Full Stage Names */}
                         {ord.stages.length > 0 ? (
                           <div className="h-full flex w-full">
                             {ord.stages.map((st, sIdx) => {
-                              // Proportion of this stage relative to total stages
                               const stageWeight = 100 / ord.stages.length;
                               return (
                                 <div
                                   key={sIdx}
                                   style={{ width: `${stageWeight}%` }}
-                                  className={`h-full border-r border-white/40 flex items-center justify-center transition-opacity hover:opacity-90 ${getStageColor(st.bagian)}`}
-                                  title={`${st.bagian}: ${st.realisasi.toLocaleString('id-ID')} / ${st.target.toLocaleString('id-ID')} (${st.progress}%)`}
+                                  className={`h-full border-r border-white/40 last:border-r-0 flex items-center justify-center transition-opacity hover:opacity-90 px-1.5 ${getStageColor(st.bagian)}`}
+                                  title={`${formatStageName(st.bagian)}: Realisasi ${st.realisasi.toLocaleString('id-ID')} / Target ${st.target.toLocaleString('id-ID')} (${st.progress}%)`}
                                 >
-                                  <span className="text-[9px] font-semibold text-white truncate px-1 drop-shadow-2xs">
-                                    {st.bagian.slice(0, 3)}
+                                  <span className="text-[10px] font-semibold text-white truncate drop-shadow-2xs whitespace-nowrap">
+                                    {formatStageName(st.bagian)}
                                   </span>
                                 </div>
                               );
@@ -320,16 +332,11 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
                         ) : (
                           <div 
                             style={{ width: `${ord.progress}%` }} 
-                            className="h-full bg-emerald-600 flex items-center justify-end pr-2"
-                          />
+                            className="h-full bg-emerald-600 flex items-center justify-end pr-2 text-[10px] font-semibold text-white"
+                          >
+                            {ord.progress}%
+                          </div>
                         )}
-
-                        {/* Bar Label */}
-                        <div className="absolute inset-0 flex items-center justify-between px-2 text-[10px] font-semibold text-white drop-shadow-xs pointer-events-none">
-                          <span className="truncate max-w-[180px]">
-                            {ord.progress}% &bull; {ord.no_order}
-                          </span>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -378,51 +385,6 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
         </div>
       </div>
 
-      {/* 3. Floating Detail Card when Hovered */}
-      {hoveredOrder && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-md text-xs flex flex-col md:flex-row gap-4 items-start md:items-center justify-between animate-in fade-in duration-150">
-          <div className="flex flex-col gap-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-gray-900 text-sm">{hoveredOrder.no_order}</span>
-              <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${getStatusBadge(hoveredOrder.status)}`}>
-                {hoveredOrder.status}
-              </span>
-              <span className="text-gray-700 font-medium truncate max-w-sm">{hoveredOrder.nama_order}</span>
-            </div>
-            <div className="text-gray-500 flex items-center gap-3">
-              <Calendar size={13} className="text-gray-400" />
-              <span>Rentang: {formatFullDate(hoveredOrder.start_date)} &mdash; {formatFullDate(hoveredOrder.end_date)}</span>
-              {hoveredOrder.deadline_date && (
-                <span className="text-rose-600 font-medium flex items-center gap-1">
-                  <Flag size={12} /> Deadline: {hoveredOrder.deadline_date}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-6 shrink-0">
-            <div>
-              <span className="text-gray-400 block text-[10px]">TOTAL TARGET</span>
-              <span className="font-medium text-gray-800">{hoveredOrder.total_target.toLocaleString('id-ID')}</span>
-            </div>
-            <div>
-              <span className="text-gray-400 block text-[10px]">REALISASI</span>
-              <span className="font-semibold text-gray-900">{hoveredOrder.total_realisasi.toLocaleString('id-ID')}</span>
-            </div>
-            <div>
-              <span className="text-gray-400 block text-[10px]">PROGRESS</span>
-              <span className="font-bold text-emerald-600 text-sm">{hoveredOrder.progress}%</span>
-            </div>
-            <button
-              onClick={() => onSelectOrder(hoveredOrder.no_order)}
-              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl text-xs transition-colors shadow-2xs flex items-center gap-1"
-            >
-              <span>Lihat Detail Mesin</span>
-              <ChevronRight size={13} />
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

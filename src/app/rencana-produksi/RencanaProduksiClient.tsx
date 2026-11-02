@@ -4,11 +4,12 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { 
   Search, X, Loader2, Package, Hash, Users, Target, CheckCircle2, 
   Layers, RefreshCw, BarChart3, AlertTriangle, Flag, CalendarRange, 
-  ArrowLeft, Clock, Factory, ChevronRight, TableProperties
+  ArrowLeft, Clock, Factory, ChevronRight, TableProperties, Calendar
 } from 'lucide-react';
 import MultiOrderGanttChart, { type ProductionOrderSummary } from '@/components/MultiOrderGanttChart';
 import OrderGanttChart, { type JhpEntryForGantt, type OrderInfoForGantt } from '@/components/OrderGanttChart';
 import DatePicker from '@/components/DatePicker';
+import SquareDropdown from '@/components/SquareDropdown';
 
 interface SummaryData {
   totalActiveOrders: number;
@@ -19,6 +20,12 @@ interface SummaryData {
   overallProgress: number;
   busiestStation: string;
 }
+const formatDateDisplay = (d: Date | null): string => {
+  if (!d) return '';
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+  return `${d.getDate()}-${months[d.getMonth()]}-${String(d.getFullYear()).slice(-2)}`;
+};
+
 
 interface MachineStationLoad {
   bagian: string;
@@ -44,6 +51,16 @@ export default function RencanaProduksiClient() {
   const [endDate, setEndDate] = useState<Date | null>(null);
   // Detail Drilldown
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
+  const bagianDropdownOptions = useMemo(() => [
+    { value: 'ALL', label: 'Semua Bagian' },
+    { value: 'SETTING', label: 'Prepress / Setting' },
+    { value: 'QUALITY CONTROL', label: 'Quality Control (QC)' },
+    { value: 'POTONG', label: 'Potong Bahan' },
+    { value: 'CETAK', label: 'Cetak Offset' },
+    { value: 'FINISHING', label: 'Finishing & Jilid' },
+    { value: 'GUDANG', label: 'Gudang / Ekspedisi' },
+  ], []);
+
   const [selectedOrderEntries, setSelectedOrderEntries] = useState<JhpEntryForGantt[]>([]);
   const [selectedOrderInfo, setSelectedOrderInfo] = useState<OrderInfoForGantt | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -517,43 +534,69 @@ export default function RencanaProduksiClient() {
                 </button>
               </div>
 
-              {/* Date Range Filter */}
-              <div className="flex items-center gap-1.5 bg-gray-100 p-0.5 px-2 rounded-xl border border-gray-200 text-xs">
-                <CalendarRange size={13} className="text-gray-400 shrink-0" />
-                <div className="w-28 sm:w-32">
-                  <DatePicker name="startDate" value={startDate} onChange={(d) => setStartDate(d)} />
+              {/* Date Range Filter (Style Laporan Pekerjaan) */}
+              <div className="flex items-center justify-between gap-1 bg-slate-50 p-0.5 rounded-lg border border-slate-200 min-w-0">
+                <div className="w-24 sm:w-28">
+                  <DatePicker
+                    name="startDate"
+                    value={startDate}
+                    onChange={(d) => setStartDate(d)}
+                    popupAlign="left"
+                    customTrigger={() => (
+                      <div
+                        className="h-7 px-1.5 sm:px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-2xs cursor-pointer w-full"
+                        title={startDate ? `Dari Tgl: ${formatDateDisplay(startDate)}` : "Dari Tanggal"}
+                      >
+                        <Calendar size={11} className="text-slate-400 shrink-0" />
+                        <span className={`truncate ${!startDate ? "text-slate-400 font-normal" : ""}`}>
+                          {startDate ? formatDateDisplay(startDate) : "Dari Tgl"}
+                        </span>
+                      </div>
+                    )}
+                  />
                 </div>
-                <span className="text-gray-400 font-bold text-xs">—</span>
-                <div className="w-28 sm:w-32">
-                  <DatePicker name="endDate" value={endDate} onChange={(d) => setEndDate(d)} />
+                <span className="text-[10px] text-slate-400 font-bold px-0.5 shrink-0">-</span>
+                <div className="w-24 sm:w-28">
+                  <DatePicker
+                    name="endDate"
+                    value={endDate}
+                    onChange={(d) => setEndDate(d)}
+                    popupAlign="left"
+                    customTrigger={() => (
+                      <div
+                        className="h-7 px-1.5 sm:px-2 bg-white border border-slate-200 rounded-md text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:border-emerald-500 transition-all flex items-center gap-1 shadow-2xs cursor-pointer w-full"
+                        title={endDate ? `Sampai Tgl: ${formatDateDisplay(endDate)}` : "Sampai Tanggal"}
+                      >
+                        <Calendar size={11} className="text-slate-400 shrink-0" />
+                        <span className={`truncate ${!endDate ? "text-slate-400 font-normal" : ""}`}>
+                          {endDate ? formatDateDisplay(endDate) : "Sampai Tgl"}
+                        </span>
+                      </div>
+                    )}
+                  />
                 </div>
                 {(startDate || endDate) && (
                   <button
                     type="button"
                     onClick={() => { setStartDate(null); setEndDate(null); }}
-                    className="p-1 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
-                    title="Reset Rentang Tanggal"
+                    className="p-1 text-slate-400 hover:text-rose-600 transition-colors shrink-0"
+                    title="Reset Tanggal"
                   >
-                    <X size={13} />
+                    <X size={12} />
                   </button>
                 )}
               </div>
 
-              {/* Bagian Filter Dropdown */}
-              <select
-                value={bagianFilter}
-                onChange={(e) => setBagianFilter(e.target.value)}
-                className="px-3 py-1.5 bg-white border border-gray-200 rounded-xl text-xs font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              >
-                <option value="ALL">Semua Bagian</option>
-                <option value="SETTING">Prepress / Setting</option>
-                <option value="QUALITY CONTROL">Quality Control (QC)</option>
-                <option value="POTONG">Potong Bahan</option>
-                <option value="CETAK">Cetak Offset</option>
-                <option value="FINISHING">Finishing &amp; Jilid</option>
-                <option value="GUDANG">Gudang / Ekspedisi</option>
-              </select>
-
+              {/* Bagian Filter (SquareDropdown) */}
+              <div className="w-full sm:w-auto">
+                <SquareDropdown
+                  options={bagianDropdownOptions}
+                  value={bagianFilter}
+                  onChange={setBagianFilter}
+                  searchPlaceholder="Cari Bagian..."
+                  widthClass="w-full sm:w-36 md:w-40 lg:w-44"
+                />
+              </div>
               <button
                 onClick={() => fetchSchedule(search, statusFilter, bagianFilter, startDate, endDate)}
                 className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors border border-gray-200"
