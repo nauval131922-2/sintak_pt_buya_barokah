@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     
     let sopdSql = `SELECT DISTINCT s.no_sopd, s.nama_order, s.tgl, s.qty_sopd, s.unit, o.nama_pelanggan, sh.deadline_date, json_extract(o.raw_data, '$.spesifikasi') as spesifikasi
       FROM sopd s 
-      LEFT JOIN orders o ON (o.faktur = s.no_sopd OR o.nama_prd LIKE '%' || s.no_sopd || '%')
+      LEFT JOIN orders o ON o.faktur = s.no_sopd
       LEFT JOIN sopd_harga sh ON sh.no_sopd = s.no_sopd 
       WHERE s.no_sopd IS NOT NULL AND s.no_sopd != ''`;
     let ordersSql = `SELECT DISTINCT o.faktur as no_sopd, o.nama_prd as nama_order, o.tgl, o.qty as qty_sopd, o.satuan as unit, o.nama_pelanggan, sh.deadline_date, json_extract(o.raw_data, '$.spesifikasi') as spesifikasi

@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     const statusFilter = searchParams.get('status')?.trim() || 'ALL';
     const startDate = searchParams.get('startDate')?.trim() || '';
     const endDate = searchParams.get('endDate')?.trim() || '';
-    const limit = Math.min(100, Math.max(10, Number(searchParams.get('limit')) || 40));
+    const limit = Math.min(100, Math.max(10, Number(searchParams.get('limit')) || 50));
     let whereClause = `WHERE deleted_at IS NULL AND no_order IS NOT NULL AND no_order != '' AND no_order != '-'`;
     const queryArgs: unknown[] = [];
 
@@ -67,12 +67,16 @@ export async function GET(request: NextRequest) {
     if (startDate) {
       whereClause += ` AND tgl >= ?`;
       queryArgs.push(startDate);
+    } else if (!search) {
+      // Default jendela waktu 180 hari ke belakang agar memanfaatkan index idx_jurnal_del_tgl_order
+      const defaultCutoff = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      whereClause += ` AND tgl >= ?`;
+      queryArgs.push(defaultCutoff);
     }
     if (endDate) {
       whereClause += ` AND tgl <= ?`;
       queryArgs.push(endDate);
     }
-
 
     // Kueri agregasi per nomor order dari JHP tanpa batas buatan
     const baseOrdersSql = `
@@ -124,7 +128,7 @@ export async function GET(request: NextRequest) {
           ELSE jhp.start_date
         END DESC,
         jhp.no_order DESC
-      LIMIT 350
+      LIMIT ${limit}
     `;
     const ordersResult = await db.execute({
       sql: baseOrdersSql,
@@ -227,7 +231,7 @@ export async function GET(request: NextRequest) {
             SUM(target) as target,
             SUM(realisasi) as realisasi,
             MAX(CASE WHEN kendala IS NOT NULL AND kendala != '' AND kendala != '-' THEN 1 ELSE 0 END) as stage_kendala
-          FROM jurnal_harian_produksi
+          FROM jurnal_harian_produksi INDEXED BY idx_jurnal_order_del_bag
           WHERE deleted_at IS NULL AND no_order IN (${placeholders})
           GROUP BY no_order, bagian
           ORDER BY no_order, MIN(tgl) ASC

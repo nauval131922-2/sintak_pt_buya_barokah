@@ -135,18 +135,19 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
       if (e && (!latest || e > latest)) latest = e;
       if (dl && (!latest || dl > latest)) latest = dl;
     });
-    // Otomatis rentang kalender mencakup sampai 1 tahun ke depan dari hari ini
+    // Rentang kalender mencakup order aktif + buffer 14 hari ke depan (tidak dipaksa 1 tahun penuh agar scrolling ringan)
     const today = new Date();
-    const futureDate = new Date(today);
-    futureDate.setFullYear(futureDate.getFullYear() + 1);
-    const futureISO = `${futureDate.getFullYear()}-${String(futureDate.getMonth() + 1).padStart(2, '0')}-${String(futureDate.getDate()).padStart(2, '0')}`;
-
-    if (earliest) {
-      if (!latest || futureISO > (latest as string)) {
-        latest = futureISO;
-      }
+    if (earliest && typeof latest === 'string') {
+      const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const lastStr: string = latest;
+      if (todayISO > lastStr) latest = todayISO;
+      const endObj = new Date(latest + 'T00:00:00');
+      endObj.setDate(endObj.getDate() + 14);
+      const y = endObj.getFullYear();
+      const m = String(endObj.getMonth() + 1).padStart(2, '0');
+      const d = String(endObj.getDate()).padStart(2, '0');
+      latest = `${y}-${m}-${d}`;
     }
-
     const dates: string[] = [];
     if (earliest && latest) {
       const cur = new Date(earliest + 'T00:00:00');
