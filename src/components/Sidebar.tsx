@@ -702,12 +702,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                 label="Produksi"
                 icon={<Package size={18} />}
                 items={[
-                  ...((canAccess('produksi_rencana_produksi') || canAccess('produksi_jhp_analisa')) ? [{
-                    label: 'Rencana Produksi',
-                    href: '/rencana-produksi',
-                    icon: <CalendarRange size={16} />,
-                  }] : []),
-                  ...((canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_jhp_analisa')) ? [{
+                  ...((canAccess('produksi_jhp_sopd') || canAccess('produksi_jhp_master_pekerjaan') || canAccess('produksi_jhp_master_pekerjaan_jurnal_produksi') || canAccess('produksi_jhp') || canAccess('produksi_jhp_target') || canAccess('produksi_rencana_produksi') || canAccess('produksi_jhp_analisa')) ? [{
                     label: 'Jurnal Harian Produksi',
                     icon: <ClipboardList size={16} />,
                     items: [
@@ -722,6 +717,7 @@ export default function Sidebar({ user, permissions = {} }: SidebarProps) {
                       }] : []),
                       ...(canAccess('produksi_jhp') ? [{ label: 'Jurnal Harian Produksi', href: '/jurnal-harian-produksi', icon: <ClipboardList size={14} />, exact: true }] : []),
                       ...(canAccess('produksi_jhp_target') ? [{ label: 'Target Harian', href: '/jurnal-harian-produksi/target', icon: <TrendingUp size={14} /> }] : []),
+                      ...((canAccess('produksi_rencana_produksi') || canAccess('produksi_jhp_analisa')) ? [{ label: 'Rencana Produksi', href: '/rencana-produksi', icon: <CalendarRange size={14} /> }] : []),
                     ]
                   }] : []),
                   ...(canAccess('produksi_hasil') ? [{ label: 'Hasil Produksi', href: '/hasil-produksi', icon: <BarChart3 size={16} /> }] : []),
