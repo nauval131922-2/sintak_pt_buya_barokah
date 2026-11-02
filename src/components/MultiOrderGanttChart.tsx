@@ -190,10 +190,10 @@ export default function MultiOrderGanttChart({ orders, onSelectOrder }: MultiOrd
   }
 
   return (
-    <div className="w-full flex-1 min-h-0 flex flex-col gap-3">
+    <div className="w-full flex flex-col gap-3">
       {/* 1. Main Timeline Container */}
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col">
-        <div className="overflow-auto relative flex-1 min-h-0">
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+        <div className="overflow-x-auto relative min-h-[500px] max-h-[650px] xl:max-h-[750px] overflow-y-auto">
           <div className="min-w-fit flex flex-col">
             {/* Header Timeline Row */}
             {/* Header Timeline Row - z-40 to stay above all data rows */}

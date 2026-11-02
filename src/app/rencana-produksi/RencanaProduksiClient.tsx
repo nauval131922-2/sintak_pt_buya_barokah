@@ -209,7 +209,7 @@ export default function RencanaProduksiClient() {
   };
 
   return (
-    <div className="w-full flex-1 min-h-0 flex flex-col gap-3.5">
+    <div className="w-full flex flex-col gap-3.5 pb-8">
       
       {/* 1. Header Metrics Cards (PPIC Command Bar) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 shrink-0">
@@ -280,7 +280,7 @@ export default function RencanaProduksiClient() {
 
       {/* 2. Mode Drilldown Single Order vs Master Timeline */}
       {selectedOrder ? (
-        <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-y-auto">
+        <div className="flex flex-col gap-4">
           {/* Back Button & Single Order Header */}
           <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -431,7 +431,7 @@ export default function RencanaProduksiClient() {
         </div>
       ) : (
         /* Master Multi-Order View */
-        <div className="flex-1 min-h-0 flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
           
           {/* Toolbar Search & Filters (Format Laporan Pekerjaan) */}
           <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm flex flex-col gap-2.5 shrink-0">
