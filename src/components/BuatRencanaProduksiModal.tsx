@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { 
   CalendarRange, Plus, Trash2, CheckCircle2, AlertTriangle, 
-  Calculator, Sparkles, Loader2, RefreshCw, X, Search, Flag, Clock, Layers
+  Calculator, Sparkles, Loader2, RefreshCw, X, Search, Flag, Clock, Layers,
+  ChevronDown, User, Hash
 } from 'lucide-react';
 import BaseModal from '@/components/ui/BaseModal';
 import DatePicker from '@/components/DatePicker';
@@ -23,8 +24,12 @@ interface OrderOption {
   no_sopd: string;
   nama_order: string;
   tgl?: string;
+  qty?: number;
   qty_sopd?: number;
   unit?: string;
+  nama_pelanggan?: string;
+  pelanggan?: string;
+  deadline_date?: string;
 }
 
 // Preset template alur tahapan mesin percetakan PT Buya Barokah
@@ -93,13 +98,14 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
   const [tahapan, setTahapan] = useState<Array<Omit<RencanaProduksiTahapanItem, 'id' | 'rencana_id'>>>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('hardcover');
 
-  // Search Autocomplete SPK
-  const [searchSpk, setSearchSpk] = useState('');
-  const [spkResults, setSpkResults] = useState<OrderOption[]>([]);
-  const [searchingSpk, setSearchingSpk] = useState(false);
+  // Searchable Dropdown SOPD Options
+  const [sopdOptions, setSopdOptions] = useState<OrderOption[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Format Helper
   const formatISO = (d: Date | null): string => {
@@ -110,7 +116,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
     return `${y}-${m}-${day}`;
   };
 
-  // Muat preset awal saat pertama kali buka
+  // Muat preset awal saat template dipilih
   const applyTemplate = useCallback((templateKey: string, currentVolume: number, startDateStr: string) => {
     setSelectedTemplate(templateKey);
     const preset = PRESET_TEMPLATES[templateKey];
@@ -148,7 +154,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
     }
   }, [noOrder]);
 
-  // Reset saat modal dibuka
+  // Muat opsi awal SOPD saat modal dibuka
   useEffect(() => {
     if (isOpen) {
       setNoOrder('');
@@ -162,52 +168,99 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
       setTglMulaiRencana(now);
       setStatusPlan('DRAFT');
       setCatatan('');
-      setSearchSpk('');
-      setSpkResults([]);
+      setSearchQuery('');
+      setIsDropdownOpen(false);
       applyTemplate('hardcover', 1000, formatISO(now));
+
+      // Fetch daftar SOPD awal
+      async function loadInitialSopd() {
+        setLoadingOptions(true);
+        try {
+          const res = await fetch('/api/sopd/options?limit=80');
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data)) {
+            setSopdOptions(json.data);
+          }
+        } catch (e) {
+          console.error('Failed to load SOPD options:', e);
+        } finally {
+          setLoadingOptions(false);
+        }
+      }
+      loadInitialSopd();
     }
   }, [isOpen, applyTemplate]);
 
-  // Autocomplete search SPK / SOPD
-  const handleSearchSpk = (q: string) => {
-    setSearchSpk(q);
-    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
-    if (!q || q.length < 2) {
-      setSpkResults([]);
-      setIsDropdownOpen(false);
-      return;
-    }
+  // Klik di luar dropdown SOPD untuk menutup dropdown (tanpa menutup modal)
+  useEffect(() => {
+    if (!isDropdownOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isDropdownOpen]);
 
+  // Pencarian live di dalam dropdown SOPD
+  const handleSearchChange = (q: string) => {
+    setSearchQuery(q);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     searchTimerRef.current = setTimeout(async () => {
-      setSearchingSpk(true);
+      setLoadingOptions(true);
       try {
-        const res = await fetch(`/api/sopd/options?search=${encodeURIComponent(q)}&limit=15`);
+        const url = q.trim()
+          ? `/api/sopd/options?search=${encodeURIComponent(q.trim())}&limit=50`
+          : `/api/sopd/options?limit=80`;
+        const res = await fetch(url);
         const json = await res.json();
         if (json.success && Array.isArray(json.data)) {
-          setSpkResults(json.data);
-          setIsDropdownOpen(true);
+          setSopdOptions(json.data);
         }
       } catch (e) {
-        console.error('Failed to search SPK:', e);
+        console.error('Failed to search SOPD options:', e);
       } finally {
-        setSearchingSpk(false);
+        setLoadingOptions(false);
       }
     }, 250);
   };
 
+  // Pilih SOPD dari dropdown
   const handleSelectSpk = (item: OrderOption) => {
     setNoOrder(item.no_sopd);
     setNamaOrder(item.nama_order || '');
-    if (item.qty_sopd) setQtyOplah(item.qty_sopd);
+    
+    // Otomatis isi Oplah & Satuan dari SOPD
+    const qVal = Number(item.qty ?? item.qty_sopd) || 0;
+    if (qVal > 0) setQtyOplah(qVal);
     if (item.unit) setSatuan(item.unit);
+
+    // Otomatis isi Nama Pemesan dari data Digit
+    const cust = item.nama_pelanggan || item.pelanggan || '';
+    setNamaPelanggan(cust);
+
     if (item.tgl) setTglOrder(item.tgl);
-    setSearchSpk(item.no_sopd);
+
+    // Otomatis isi Deadline jika format tanggal valid
+    if (item.deadline_date) {
+      const dl = item.deadline_date.trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dl)) {
+        setTglDeadline(new Date(dl + 'T00:00:00'));
+      } else {
+        const parts = dl.split('-');
+        if (parts.length === 3 && parts[2].length === 4) {
+          setTglDeadline(new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`));
+        }
+      }
+    }
+
     setIsDropdownOpen(false);
 
-    // Otomatis hitung ulang volume tahapan sesuai oplah baru
-    if (item.qty_sopd && item.qty_sopd > 0) {
+    // Otomatis hitung ulang volume dan durasi seluruh tahapan mesin
+    if (qVal > 0) {
       const startDateStr = formatISO(tglMulaiRencana || new Date());
-      applyTemplate(selectedTemplate, item.qty_sopd, startDateStr);
+      applyTemplate(selectedTemplate, qVal, startDateStr);
     }
   };
 
@@ -260,7 +313,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
       {
         no_order: noOrder || '-',
         urutan: prev.length + 1,
-        bagian: 'Finishing',
+        bagian: 'FINISHING',
         mesin: 'Mesin Tambahan',
         nama_tahap: 'Tahap Baru',
         volume: qtyOplah,
@@ -281,7 +334,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
   // Submit Simpan Rencana ke API
   const handleSubmitPlan = async () => {
     if (!noOrder.trim()) {
-      toast.error('Nomor SPK / Order wajib diisi.');
+      toast.error('Silakan pilih No SOPD / SPK terlebih dahulu.');
       return;
     }
     if (!namaOrder.trim()) {
@@ -351,7 +404,8 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
       title="Buat Rencana Produksi Baru"
       subtitle="Rancang jadwal alur tahapan mesin, target waktu kerja, dan kapasitas PPIC per nomor SPK."
       icon={CalendarRange}
-      maxWidth="max-w-5xl"
+      maxWidth="max-w-7xl"
+      closeOnBackdrop={false}
     >
       <div className="space-y-5 text-xs text-gray-700">
         
@@ -360,7 +414,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
           <div className="flex items-center justify-between border-b border-slate-200 pb-2">
             <h4 className="font-bold text-slate-800 flex items-center gap-1.5 text-xs">
               <Sparkles size={14} className="text-emerald-600" />
-              1. Identitas Pesanan (SPK / Order)
+              1. Identitas Pesanan (Pilih SOPD dari Digit ERP)
             </h4>
             <div className="flex items-center gap-1.5">
               <span className="text-[11px] text-slate-500 font-medium">Template Alur:</span>
@@ -370,7 +424,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
                     key={key}
                     type="button"
                     onClick={() => applyTemplate(key, qtyOplah, formatISO(tglMulaiRencana || new Date()))}
-                    className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all ${
+                    className={`px-3 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
                       selectedTemplate === key
                         ? 'bg-emerald-600 text-white shadow-xs'
                         : 'text-slate-600 hover:text-slate-900'
@@ -383,64 +437,152 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-            {/* Input No SPK with Autocomplete */}
-            <div className="relative">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3.5">
+            {/* DROPDOWN NO SOPD */}
+            <div className="relative" ref={dropdownRef}>
               <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                No SPK / SOPD <span className="text-rose-500">*</span>
+                Pilih No SOPD / SPK <span className="text-rose-500">*</span>
               </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Ketik cari no SPK..."
-                  value={searchSpk}
-                  onChange={(e) => handleSearchSpk(e.target.value)}
-                  className="w-full pl-7 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-                <Search size={13} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
-                {searchingSpk && (
-                  <Loader2 size={13} className="absolute right-2 top-1/2 -translate-y-1/2 animate-spin text-emerald-600" />
-                )}
-              </div>
 
-              {/* Autocomplete Dropdown */}
-              {isDropdownOpen && spkResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-56 overflow-y-auto divide-y divide-slate-100">
-                  {spkResults.map((item) => (
+              {/* Trigger Button */}
+              {noOrder ? (
+                <div 
+                  onClick={() => setIsDropdownOpen(v => !v)}
+                  className="w-full h-9 px-3 bg-white border border-emerald-500 rounded-lg text-xs flex items-center justify-between cursor-pointer shadow-2xs hover:border-emerald-600 transition-colors"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                    <span className="font-mono font-bold text-slate-900 truncate">{noOrder}</span>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
-                      key={item.no_sopd}
                       type="button"
-                      onClick={() => handleSelectSpk(item)}
-                      className="w-full text-left px-3 py-2 hover:bg-emerald-50 transition-colors flex flex-col"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setNoOrder('');
+                        setNamaOrder('');
+                        setNamaPelanggan('');
+                        setIsDropdownOpen(true);
+                      }}
+                      className="p-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                      title="Ganti SOPD"
                     >
-                      <span className="font-bold text-slate-800 text-[11px]">{item.no_sopd}</span>
-                      <span className="text-[10px] text-slate-500 truncate">{item.nama_order}</span>
+                      <X size={13} />
                     </button>
-                  ))}
+                    <ChevronDown size={14} className="text-slate-400" />
+                  </div>
+                </div>
+              ) : (
+                <div 
+                  onClick={() => setIsDropdownOpen(v => !v)}
+                  className="w-full h-9 px-3 bg-white border border-slate-300 rounded-lg text-xs flex items-center justify-between cursor-pointer shadow-2xs hover:border-emerald-500 transition-colors text-slate-400"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Search size={14} className="text-slate-400 shrink-0" />
+                    <span className="font-medium truncate">Pilih / Cari No SOPD...</span>
+                  </div>
+                  <ChevronDown size={14} className="text-slate-400 shrink-0" />
+                </div>
+              )}
+
+              {/* Dropdown Popover */}
+              {isDropdownOpen && (
+                <div className="absolute top-full left-0 right-0 sm:w-[480px] mt-1.5 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-80 animate-in fade-in zoom-in-95 duration-150">
+                  {/* Search Input inside Dropdown */}
+                  <div className="p-2 border-b border-slate-100 bg-slate-50/90 sticky top-0 z-10">
+                    <div className="relative">
+                      <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="text"
+                        autoFocus
+                        placeholder="Ketik cari no SOPD, judul buku, atau pemesan..."
+                        value={searchQuery}
+                        onChange={(e) => handleSearchChange(e.target.value)}
+                        className="w-full pl-8 pr-7 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                      {loadingOptions && (
+                        <Loader2 size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 animate-spin text-emerald-600" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* List Items */}
+                  <div className="overflow-y-auto divide-y divide-slate-100 p-1">
+                    {sopdOptions.length === 0 ? (
+                      <div className="p-4 text-center text-slate-400 text-xs">
+                        {loadingOptions ? 'Memuat daftar SOPD...' : 'Tidak ditemukan data SOPD yang cocok.'}
+                      </div>
+                    ) : (
+                      sopdOptions.map((item) => (
+                        <button
+                          key={item.no_sopd}
+                          type="button"
+                          onClick={() => handleSelectSpk(item)}
+                          className={`w-full text-left px-3 py-2.5 hover:bg-emerald-50/70 rounded-lg transition-colors flex flex-col gap-0.5 group cursor-pointer ${
+                            noOrder === item.no_sopd ? 'bg-emerald-50 text-emerald-900' : ''
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-mono font-bold text-xs text-slate-900 group-hover:text-emerald-700">
+                              {item.no_sopd}
+                            </span>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {item.tgl && (
+                                <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium">
+                                  {item.tgl}
+                                </span>
+                              )}
+                              {(item.qty || item.qty_sopd) ? (
+                                <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">
+                                  {(item.qty || item.qty_sopd)?.toLocaleString('id-ID')} {item.unit || 'Eks'}
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+
+                          <div className="text-[11px] font-semibold text-slate-700 truncate group-hover:text-slate-900" title={item.nama_order}>
+                            {item.nama_order}
+                          </div>
+
+                          {(item.nama_pelanggan || item.pelanggan) && (
+                            <div className="text-[10px] text-slate-500 flex items-center gap-1">
+                              <span className="text-slate-400">Pemesan:</span>
+                              <span className="font-medium text-slate-700">{item.nama_pelanggan || item.pelanggan}</span>
+                            </div>
+                          )}
+                        </button>
+                      ))
+                    )}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Nama Order */}
+            {/* Nama Order / Judul Buku */}
             <div className="sm:col-span-2">
               <label className="block text-[11px] font-bold text-slate-600 mb-1">
                 Nama Order / Judul Buku <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
-                placeholder="Contoh: Al-Quddus A1 Kecil HVS..."
+                placeholder="Pilih SOPD di sebelah kiri untuk mengisi otomatis..."
                 value={namaOrder}
                 onChange={(e) => setNamaOrder(e.target.value)}
-                className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
 
-            {/* Oplah & Satuan */}
+            {/* Oplah & Satuan (Otomatis dari SOPD) */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                Oplah (Jumlah Cetak)
-              </label>
-              <div className="flex gap-1">
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-bold text-slate-600">
+                  Jumlah Cetak &amp; Satuan
+                </label>
+                <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                  Auto SOPD
+                </span>
+              </div>
+              <div className="flex gap-1.5">
                 <input
                   type="number"
                   min="1"
@@ -449,29 +591,44 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
                     const v = Number(e.target.value) || 0;
                     setQtyOplah(v);
                   }}
-                  className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full h-9 px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Oplah"
                 />
                 <input
                   type="text"
                   value={satuan}
                   onChange={(e) => setSatuan(e.target.value)}
-                  className="w-16 px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-center focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-20 h-9 px-2 bg-white border border-slate-200 rounded-lg text-xs text-center font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Satuan"
                 />
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
+            {/* Nama Pemesan (Otomatis dari Digit) */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-600 mb-1">Nama Pemesan</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-bold text-slate-600 flex items-center gap-1">
+                  <User size={12} className="text-slate-400" />
+                  Nama Pemesan
+                </label>
+                {namaPelanggan && (
+                  <span className="text-[10px] text-blue-600 font-semibold bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200">
+                    Dari Digit
+                  </span>
+                )}
+              </div>
               <input
                 type="text"
-                placeholder="Nama pemesan/klien..."
+                placeholder="Terisi otomatis saat memilih SOPD..."
                 value={namaPelanggan}
                 onChange={(e) => setNamaPelanggan(e.target.value)}
-                className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
+
+            {/* Tanggal Mulai Rencana */}
             <div>
               <label className="block text-[11px] font-bold text-slate-600 mb-1">Tanggal Mulai Rencana</label>
               <DatePicker
@@ -481,12 +638,14 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
                 popupAlign="left"
               />
             </div>
+
+            {/* Batas Deadline SPK */}
             <div>
               <label className="block text-[11px] font-bold text-slate-600 mb-1 flex items-center justify-between">
                 <span>Batas Deadline SPK</span>
                 {isOverdueDeadline && (
                   <span className="text-[10px] text-rose-600 font-bold flex items-center gap-0.5">
-                    <AlertTriangle size={11} /> Overdue!
+                    <AlertTriangle size={11} /> Overdue SPK!
                   </span>
                 )}
               </label>
@@ -500,7 +659,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
           </div>
         </div>
 
-        {/* SECTION 2: Rincian Alur Tahapan Mesin (Tabel Interaktif) */}
+        {/* SECTION 2: Rincian Alur Tahapan Mesin (Tabel Interaktif Lebih Luas) */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div>
@@ -509,81 +668,81 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
                 2. Rincian Alur Tahapan Mesin ({tahapan.length} tahapan)
               </h4>
               <p className="text-[11px] text-slate-400">
-                Jadwal otomatis melompati hari <b>Jumat</b> sebagai hari libur operasional PT Buya Barokah.
+                Jadwal otomatis menyambung antar-mesin dan melompati hari <b>Jumat</b> sebagai libur resmi PT Buya Barokah.
               </p>
             </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleRecalculateDates}
-                className="h-7 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold text-[11px] flex items-center gap-1 transition-colors cursor-pointer border border-slate-200 shadow-2xs"
+                className="h-8 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-200 shadow-2xs"
                 title="Hitung ulang tanggal selesai dan sambungan antar mesin"
               >
-                <Calculator size={12} className="text-emerald-600" />
+                <Calculator size={13} className="text-emerald-600" />
                 <span>Hitung Ulang Jadwal</span>
               </button>
               <button
                 type="button"
                 onClick={handleAddTahapRow}
-                className="h-7 px-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg font-bold text-[11px] flex items-center gap-1 transition-colors cursor-pointer"
+                className="h-8 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
               >
-                <Plus size={12} />
+                <Plus size={13} />
                 <span>Tambah Tahap</span>
               </button>
             </div>
           </div>
 
           <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
-            <div className="max-h-72 overflow-y-auto">
+            <div className="max-h-[380px] overflow-y-auto custom-scrollbar">
               <table className="w-full text-left text-xs">
-                <thead className="sticky top-0 bg-slate-100/90 backdrop-blur-xs text-[11px] font-bold text-slate-600 border-b border-slate-200">
+                <thead className="sticky top-0 bg-slate-100 text-[11px] font-bold text-slate-700 border-b border-slate-200 z-10 shadow-2xs">
                   <tr>
-                    <th className="py-2 px-2.5 w-10 text-center">#</th>
-                    <th className="py-2 px-2.5 w-32">Bagian</th>
-                    <th className="py-2 px-2.5 w-36">Mesin</th>
-                    <th className="py-2 px-2.5">Nama Tahap</th>
-                    <th className="py-2 px-2.5 w-24 text-right">Volume</th>
-                    <th className="py-2 px-2.5 w-28 text-right">Target/Hari</th>
-                    <th className="py-2 px-2.5 w-20 text-center">Durasi</th>
-                    <th className="py-2 px-2.5 w-48 text-center">Rentang Tanggal</th>
-                    <th className="py-2 px-2 w-10 text-center"></th>
+                    <th className="py-2.5 px-3 w-10 text-center">#</th>
+                    <th className="py-2.5 px-3 w-36">Bagian</th>
+                    <th className="py-2.5 px-3 w-40">Mesin</th>
+                    <th className="py-2.5 px-3">Nama Tahap</th>
+                    <th className="py-2.5 px-3 w-28 text-right">Volume</th>
+                    <th className="py-2.5 px-3 w-32 text-right">Target/Hari</th>
+                    <th className="py-2.5 px-3 w-24 text-center">Durasi</th>
+                    <th className="py-2.5 px-3 w-52 text-center">Rentang Tanggal</th>
+                    <th className="py-2.5 px-2 w-10 text-center"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
                   {tahapan.map((item, idx) => (
                     <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-1.5 px-2.5 text-center font-bold text-slate-400">
+                      <td className="py-2 px-3 text-center font-bold text-slate-400">
                         {idx + 1}
                       </td>
-                      <td className="py-1.5 px-2">
+                      <td className="py-2 px-2.5">
                         <select
                           value={item.bagian}
                           onChange={(e) => handleUpdateTahapRow(idx, 'bagian', e.target.value)}
-                          className="w-full py-1 px-1.5 bg-white border border-slate-200 rounded text-[11px] font-medium"
+                          className="w-full py-1.5 px-2 bg-white border border-slate-200 rounded text-xs font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                         >
                           {BAGIAN_OPTIONS.map(b => (
                             <option key={b} value={b}>{b}</option>
                           ))}
                         </select>
                       </td>
-                      <td className="py-1.5 px-2">
+                      <td className="py-2 px-2.5">
                         <input
                           type="text"
                           value={item.mesin || ''}
                           onChange={(e) => handleUpdateTahapRow(idx, 'mesin', e.target.value)}
                           placeholder="Nama mesin..."
-                          className="w-full py-1 px-2 bg-white border border-slate-200 rounded text-[11px]"
+                          className="w-full py-1.5 px-2.5 bg-white border border-slate-200 rounded text-xs font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500"
                         />
                       </td>
-                      <td className="py-1.5 px-2">
+                      <td className="py-2 px-2.5">
                         <input
                           type="text"
                           value={item.nama_tahap}
                           onChange={(e) => handleUpdateTahapRow(idx, 'nama_tahap', e.target.value)}
-                          className="w-full py-1 px-2 bg-white border border-slate-200 rounded text-[11px] font-semibold text-slate-800"
+                          className="w-full py-1.5 px-2.5 bg-white border border-slate-200 rounded text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                         />
                       </td>
-                      <td className="py-1.5 px-2 text-right">
+                      <td className="py-2 px-2.5 text-right">
                         <input
                           type="number"
                           value={item.volume}
@@ -591,10 +750,10 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
                             const v = Number(e.target.value) || 0;
                             handleUpdateTahapRow(idx, 'volume', v);
                           }}
-                          className="w-full py-1 px-1.5 bg-white border border-slate-200 rounded text-[11px] text-right font-medium"
+                          className="w-full py-1.5 px-2 bg-white border border-slate-200 rounded text-xs text-right font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                         />
                       </td>
-                      <td className="py-1.5 px-2 text-right">
+                      <td className="py-2 px-2.5 text-right">
                         <input
                           type="number"
                           value={item.target_per_hari}
@@ -602,27 +761,27 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
                             const v = Number(e.target.value) || 0;
                             handleUpdateTahapRow(idx, 'target_per_hari', v);
                           }}
-                          className="w-full py-1 px-1.5 bg-white border border-slate-200 rounded text-[11px] text-right"
+                          className="w-full py-1.5 px-2 bg-white border border-slate-200 rounded text-xs text-right text-slate-700 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                         />
                       </td>
-                      <td className="py-1.5 px-2 text-center">
-                        <span className="px-2 py-0.5 rounded bg-slate-100 font-bold text-slate-700 text-[11px]">
+                      <td className="py-2 px-2.5 text-center">
+                        <span className="px-2.5 py-1 rounded bg-slate-100 font-bold text-slate-700 text-xs">
                           {item.durasi_hari} hr
                         </span>
                       </td>
-                      <td className="py-1.5 px-2 text-center">
-                        <span className="font-mono text-[10px] text-slate-600 bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5">
+                      <td className="py-2 px-2.5 text-center">
+                        <span className="font-mono text-[11px] text-slate-700 bg-slate-50 border border-slate-200 rounded px-2 py-1 inline-block">
                           {item.tgl_mulai_plan} <span className="text-slate-400">&rarr;</span> {item.tgl_selesai_plan}
                         </span>
                       </td>
-                      <td className="py-1.5 px-2 text-center">
+                      <td className="py-2 px-2 text-center">
                         <button
                           type="button"
                           onClick={() => handleDeleteTahapRow(idx)}
-                          className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
                           title="Hapus baris tahapan"
                         >
-                          <Trash2 size={13} />
+                          <Trash2 size={14} />
                         </button>
                       </td>
                     </tr>
@@ -634,7 +793,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
         </div>
 
         {/* SECTION 3: Catatan & Status */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 items-end">
           <div className="sm:col-span-2">
             <label className="block text-[11px] font-bold text-slate-600 mb-1">Catatan Tambahan PPIC</label>
             <input
@@ -642,7 +801,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
               placeholder="Catatan prioritas, instruksi khusus, atau kendala bahan..."
               value={catatan}
               onChange={(e) => setCatatan(e.target.value)}
-              className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
           <div>
@@ -650,11 +809,10 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
             <select
               value={statusPlan}
               onChange={(e) => setStatusPlan(e.target.value as any)}
-              className="w-full py-1.5 px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full h-9 px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option value="DRAFT">DRAFT (Penyusunan)</option>
               <option value="DISETUJUI">DISETUJUI (Siap Jalan)</option>
-              <option value="BERJALAN">BERJALAN (Di Produksi)</option>
             </select>
           </div>
         </div>
@@ -662,11 +820,11 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
       </div>
 
       {/* FOOTER ACTIONS */}
-      <div className="flex items-center justify-between border-t border-slate-200 pt-3 mt-4">
-        <div className="text-[11px] text-slate-500">
-          Target Selesai: <b>{formatISO(tglSelesaiRencana) || '-'}</b>
+      <div className="flex items-center justify-between border-t border-slate-200 pt-3.5 mt-5">
+        <div className="text-xs text-slate-500">
+          Target Selesai Produksi: <b className="text-slate-900">{formatISO(tglSelesaiRencana) || '-'}</b>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             onClick={onClose}
@@ -679,7 +837,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
             type="button"
             onClick={handleSubmitPlan}
             disabled={submitting}
-            className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/20 disabled:opacity-50 cursor-pointer"
+            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md shadow-emerald-600/20 disabled:opacity-50 cursor-pointer"
           >
             {submitting ? (
               <>
