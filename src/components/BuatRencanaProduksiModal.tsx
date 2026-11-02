@@ -45,19 +45,19 @@ function deriveTahapanFromOrder(spekText: string, namaOrderText: string): TahapT
   const text = `${spekText} ${namaOrderText}`.toUpperCase();
   const list: TahapTemplateItem[] = [];
 
-  // 1. Setting & Desain Layout (Wajib untuk semua pesanan)
+  // 1. Setting & Imposisi (Wajib untuk semua pesanan)
   list.push({
     bagian: 'SETTING',
-    mesin: 'Prepress',
-    nama_tahap: 'Setting & Layout Desain',
+    mesin: 'Setting',
+    nama_tahap: 'Setting & Imposisi File',
     target_per_hari: 2000,
   });
 
-  // 2. QC Plat / CTP (Wajib untuk semua pesanan cetak)
+  // 2. Pembuatan Plat Cetak (Wajib untuk semua pesanan cetak)
   list.push({
     bagian: 'QUALITY CONTROL',
-    mesin: 'Plate CTP',
-    nama_tahap: 'Pemeriksaan & CTP Plat',
+    mesin: 'Plate',
+    nama_tahap: 'Pembuatan & Cek Plat Cetak',
     target_per_hari: 5000,
   });
 
@@ -172,7 +172,7 @@ function deriveTahapanFromOrder(spekText: string, namaOrderText: string): TahapT
   // 10. QC Akhir & Packing Gudang (Wajib untuk semua pesanan)
   list.push({
     bagian: 'QUALITY CONTROL',
-    mesin: 'Plate CTP',
+    mesin: 'QC',
     nama_tahap: 'Pemeriksaan QC Akhir & Sortir',
     target_per_hari: 5000,
   });
