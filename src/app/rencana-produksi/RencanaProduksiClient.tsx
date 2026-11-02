@@ -54,7 +54,7 @@ export default function RencanaProduksiClient() {
   // Detail Drilldown
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null);
   const bagianDropdownOptions = useMemo(() => [
-    { value: 'ALL', label: 'SEMUA BAGIAN' },
+    { value: 'ALL', label: 'Semua Bagian' },
     { value: 'SETTING', label: 'SETTING' },
     { value: 'QUALITY CONTROL', label: 'QUALITY CONTROL' },
     { value: 'CETAK', label: 'CETAK' },
