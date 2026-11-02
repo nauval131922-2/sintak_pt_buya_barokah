@@ -142,7 +142,7 @@ export default function JurnalClient({
   // Confirm dialog for empty realisasi warning
   const [dialogConfig, setDialogConfig] = useState<{
     isOpen: boolean; type: 'alert' | 'confirm' | 'success' | 'error' | 'danger';
-    title: string; message: string; confirmLabel?: string; onConfirm?: () => void;
+    title: string; message: React.ReactNode; confirmLabel?: string; onConfirm?: () => void;
     maxWidth?: string; textAlign?: 'left' | 'center';
   }>({ isOpen: false, type: 'confirm', title: '', message: '' });
   const pendingSaveRef = useRef<(() => Promise<void>) | null>(null);
@@ -1151,41 +1151,90 @@ export default function JurnalClient({
           const jobs: ExistingJobItem[] = Array.isArray(result.existingJobs) ? result.existingJobs : [];
           const warnings: TargetWarningItem[] = Array.isArray(result.targetWarnings) ? result.targetWarnings : [];
 
-          const jobLines = jobs.map((j, i) => {
-            const shiftPart = j.shift && j.shift !== '-' ? `[Shift ${j.shift}] ` : '';
-            const jobPart = j.pekerjaan && j.pekerjaan !== '-' ? j.pekerjaan : 'Pekerjaan belum ditentukan';
-            const orderPart = j.order && j.order !== '-' ? ` • ${j.order}` : '';
-            const targetNum = Number(j.target);
-            const targetPart = j.target !== undefined && j.target !== '' && !Number.isNaN(targetNum)
-              ? ` • Target: ${targetNum.toLocaleString('id-ID')}`
-              : (j.target ? ` • Target: ${j.target}` : '');
-            return `${i + 1}. ${shiftPart}${jobPart}${orderPart}${targetPart}`;
-          });
-
-          const warningLines = warnings.map(w => {
-            if (w.inputTarget > 0 && w.existingTarget > 0) {
-              return `⚠️ Target harian "${w.pekerjaan}" tercapai/terlampaui: total ${w.totalTarget.toLocaleString('id-ID')} dari target harian ${w.targetHarian.toLocaleString('id-ID')} (tersimpan: ${w.existingTarget.toLocaleString('id-ID')} + input baru: ${w.inputTarget.toLocaleString('id-ID')}).`;
-            }
-            if (w.inputTarget > 0) {
-              return `⚠️ Target harian "${w.pekerjaan}" tercapai/terlampaui: input ${w.inputTarget.toLocaleString('id-ID')} dari target harian ${w.targetHarian.toLocaleString('id-ID')}.`;
-            }
-            return `⚠️ Target harian "${w.pekerjaan}" sudah terpenuhi: tersimpan ${w.existingTarget.toLocaleString('id-ID')} dari target harian ${w.targetHarian.toLocaleString('id-ID')}.`;
-          });
-
           const tglFormatted = formData.tgl ? formatIndoDateStr(formData.tgl) : 'tanggal ini';
-          const listText = jobLines.length > 0
-            ? `Jadwal yang sudah ada:\n${jobLines.join('\n')}`
-            : '';
-          const warningText = warningLines.length > 0
-            ? warningLines.join('\n')
-            : '';
 
-          const message = [
-            `${formData.nama_karyawan || 'Karyawan ini'} sudah memiliki ${result.count || jobs.length || 1} data jadwal pada ${tglFormatted}.`,
-            listText,
-            warningText,
-            'Tetap simpan data jadwal ini? Baris baru akan ditandai warna kuning di tabel.',
-          ].filter(Boolean).join('\n\n');
+          const dialogMessage = (
+            <div className="space-y-3 text-left">
+              <p className="text-[13px] text-gray-600 leading-relaxed">
+                <span className="font-bold text-gray-900">{formData.nama_karyawan || 'Karyawan ini'}</span> sudah memiliki <span className="font-bold text-gray-900">{result.count || jobs.length || 1}</span> data jadwal pada <span className="font-bold text-gray-900">{tglFormatted}</span>:
+              </p>
+
+              {jobs.length > 0 && (
+                <div className="bg-gray-50/70 border border-gray-200/80 rounded-xl divide-y divide-gray-100 overflow-hidden max-h-60 overflow-y-auto">
+                  {jobs.map((j, idx) => {
+                    const targetNum = Number(j.target);
+                    const targetText = j.target !== undefined && j.target !== '' && !Number.isNaN(targetNum)
+                      ? targetNum.toLocaleString('id-ID')
+                      : (j.target || '-');
+                    const shiftText = j.shift && j.shift !== '-' ? `Shift ${j.shift}` : null;
+                    const orderText = j.order && j.order !== '-' ? j.order : null;
+
+                    return (
+                      <div key={idx} className="p-2.5 px-3 flex items-start justify-between gap-3 text-left">
+                        <div className="flex items-start gap-2 min-w-0 flex-1">
+                          <span className="text-[11px] font-bold text-gray-400 tabular-nums shrink-0 mt-0.5">
+                            {idx + 1}.
+                          </span>
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {shiftText && (
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white text-gray-600 border border-gray-200 shadow-2xs shrink-0">
+                                  {shiftText}
+                                </span>
+                              )}
+                              <span className="text-[12.5px] font-bold text-gray-800 leading-tight">
+                                {j.pekerjaan || 'Pekerjaan belum ditentukan'}
+                              </span>
+                            </div>
+                            {orderText && (
+                              <span className="text-[11px] font-medium text-gray-500 break-words mt-1 leading-snug">
+                                {orderText}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="shrink-0 text-right mt-0.5">
+                          <span className="text-[11px] font-bold text-gray-700 bg-white px-2 py-0.5 rounded border border-gray-200 shadow-2xs tabular-nums whitespace-nowrap">
+                            Target: {targetText}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {warnings.length > 0 && (
+                <div className="space-y-2">
+                  {warnings.map((w, idx) => (
+                    <div key={idx} className="p-3 bg-amber-50 border border-amber-200/90 rounded-xl text-[12px] text-amber-950 flex items-start gap-2.5 leading-relaxed">
+                      <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-amber-950 mb-0.5">Target Harian Terpenuhi / Terlampaui</div>
+                        {w.inputTarget > 0 && w.existingTarget > 0 ? (
+                          <span>
+                            Pekerjaan <b>&quot;{w.pekerjaan}&quot;</b> mencapai total target <b className="text-amber-900">{w.totalTarget.toLocaleString('id-ID')}</b> dari target harian <b>{w.targetHarian.toLocaleString('id-ID')}</b> (tersimpan: {w.existingTarget.toLocaleString('id-ID')} + input baru: {w.inputTarget.toLocaleString('id-ID')}).
+                          </span>
+                        ) : w.inputTarget > 0 ? (
+                          <span>
+                            Pekerjaan <b>&quot;{w.pekerjaan}&quot;</b> mencapai target <b className="text-amber-900">{w.inputTarget.toLocaleString('id-ID')}</b> dari target harian <b>{w.targetHarian.toLocaleString('id-ID')}</b>.
+                          </span>
+                        ) : (
+                          <span>
+                            Pekerjaan <b>&quot;{w.pekerjaan}&quot;</b> sudah memenuhi target harian <b>{w.targetHarian.toLocaleString('id-ID')}</b> (tersimpan: {w.existingTarget.toLocaleString('id-ID')}).
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p className="text-[12px] text-gray-500 font-medium leading-relaxed pt-0.5">
+                Tetap simpan data jadwal ini? Baris baru akan ditandai warna kuning di tabel.
+              </p>
+            </div>
+          );
 
           setDialogConfig({
             isOpen: true,
@@ -1193,7 +1242,7 @@ export default function JurnalClient({
             title: 'Jadwal Sudah Ada',
             maxWidth: 'max-w-xl',
             textAlign: 'left',
-            message,
+            message: dialogMessage,
             confirmLabel: 'Ya, Tetap Simpan',
             onConfirm: () => {
               closeDialog();

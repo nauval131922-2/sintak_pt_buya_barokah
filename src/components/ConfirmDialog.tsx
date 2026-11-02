@@ -10,7 +10,7 @@ interface ConfirmDialogProps {
   isOpen: boolean;
   type: DialogType;
   title: string;
-  message: string;
+  message: React.ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
   isLoading?: boolean;
@@ -90,7 +90,7 @@ export default function ConfirmDialog({
           </div>
 
           {/* Content */}
-          <div className={`px-8 pb-8 text-[14px] font-medium text-gray-500 leading-relaxed ${textAlign === 'left' ? 'text-left' : 'text-center'} whitespace-pre-line`}>
+          <div className={`px-8 pb-8 text-[14px] font-medium text-gray-500 leading-relaxed ${textAlign === 'left' ? 'text-left' : 'text-center'} ${typeof message === 'string' ? 'whitespace-pre-line' : ''}`}>
             {message}
           </div>
 
