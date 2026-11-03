@@ -288,17 +288,6 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
     }
   };
 
-  const bagianColor = (bagian: string) => {
-    const b = (bagian || '').toUpperCase();
-    if (b.includes('SETTING')) return 'bg-blue-100 text-blue-800 border-blue-200';
-    if (b.includes('QC') || b.includes('QUALITY CONTROL') || b.includes('PLATE')) return 'bg-purple-100 text-purple-800 border-purple-200';
-    if (b.includes('CETAK')) return 'bg-amber-100 text-amber-800 border-amber-200';
-    if (b.includes('FINISHING') || b.includes('POTONG')) return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-    if (b.includes('GUDANG')) return 'bg-slate-100 text-slate-800 border-slate-200';
-    if (b.includes('TEKNISI')) return 'bg-rose-100 text-rose-800 border-rose-200';
-    return 'bg-gray-100 text-gray-800 border-gray-200';
-  };
-
   const columns = useMemo(() => {
     return [
       {
@@ -306,7 +295,7 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
         header: 'No.',
         size: 70,
         cell: ({ row }: { row: { index: number; getIsSelected: () => boolean } }) => (
-          <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-emerald-700 font-bold' : 'text-gray-400'}`}>
+          <span className={`font-medium tabular-nums ${row.getIsSelected() ? 'text-emerald-700' : 'text-gray-400'}`}>
             {(page - 1) * PAGE_SIZE + (row.index + 1)}
           </span>
         )
@@ -323,7 +312,7 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
                 type="button"
                 title="Edit Pekerjaan"
                 onClick={(e) => { e.stopPropagation(); openEdit(record); }}
-                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
               >
                 <Edit2 size={14} />
               </button>
@@ -331,7 +320,7 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
                 type="button"
                 title="Hapus Pekerjaan"
                 onClick={(e) => { e.stopPropagation(); requestDelete([record.id], `"${record.name}" (${record.category})`); }}
-                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition-colors"
               >
                 <Trash2 size={14} />
               </button>
@@ -342,22 +331,19 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
       {
         accessorKey: 'category',
         header: 'Bagian',
-        size: 180,
-        cell: ({ getValue }: { getValue: () => unknown }) => {
-          const val = String(getValue() || '-');
-          return (
-            <span className={`inline-block px-2.5 py-0.5 rounded-lg text-xs font-semibold border ${bagianColor(val)}`}>
-              {val}
-            </span>
-          );
-        }
+        size: 200,
+        cell: ({ getValue, row }: { getValue: () => unknown; row: { getIsSelected: () => boolean } }) => (
+          <span className={`text-[12px] font-bold tracking-tight transition-colors ${row.getIsSelected() ? 'text-emerald-600' : 'text-gray-700'}`}>
+            {String(getValue())}
+          </span>
+        )
       },
       {
         accessorKey: 'name',
         header: 'Nama Pekerjaan / Mesin',
         size: 480,
         cell: ({ getValue, row }: { getValue: () => unknown; row: { getIsSelected: () => boolean } }) => (
-          <span className={`text-xs font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-900 font-bold' : 'text-gray-900'}`}>
+          <span className={`text-[12px] font-medium transition-colors ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>
             {String(getValue())}
           </span>
         )
@@ -369,7 +355,7 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
         cell: ({ getValue, row }: { getValue: () => unknown; row: { getIsSelected: () => boolean } }) => {
           const v = getValue();
           return (
-            <span className={`text-xs font-bold tabular-nums ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>
+            <span className={`text-[12px] font-semibold tabular-nums ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>
               {v === null || v === undefined || v === '' ? '-' : Number(v).toLocaleString('id-ID')}
             </span>
           );
@@ -495,19 +481,8 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
         </div>
       </div>
 
-      {/* 3. Results Table Card (Style Persis Tabel Transaksi Rencana Produksi) */}
-      <div className="flex-1 min-h-0 flex flex-col bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-        {/* Top Table Header Bar */}
-        <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50 shrink-0 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Wrench size={16} className="text-emerald-600" />
-            <h3 className="text-sm font-semibold text-gray-700">Daftar Master Pekerjaan & Mesin</h3>
-          </div>
-          <span className="text-xs text-gray-400 font-medium tabular-nums">
-            ({totalCount.toLocaleString('id-ID')} pekerjaan terdaftar)
-          </span>
-        </div>
-
+      {/* 3. Table Card (Style Persis Card Search & Filter: rounded-2xl, p-3, border-gray-200, shadow-sm) */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
         {/* Main Table Context */}
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
          {error ? (
@@ -572,20 +547,17 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
          )}
         </div>
 
-        {/* Footer Paginasi di Bawah Tabel */}
-        <div className="border-t border-gray-100 bg-gray-50/30">
-          <TableFooter
-            totalCount={totalCount}
-            currentCount={data?.length || 0}
-            label="Item Master Pekerjaan Jurnal Produksi"
-            selectedCount={selectedIds.size}
-            onClearSelection={clearSelection}
-            loadTime={loadTime}
-            page={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-          />
-        </div>
+        <TableFooter
+          totalCount={totalCount}
+          currentCount={data?.length || 0}
+          label="Item Master Pekerjaan Jurnal Produksi"
+          selectedCount={selectedIds.size}
+          onClearSelection={clearSelection}
+          loadTime={loadTime}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
       </div>
 
       <BaseModal
