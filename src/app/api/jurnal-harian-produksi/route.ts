@@ -35,23 +35,48 @@ export async function GET(request: NextRequest) {
     await ensureJadwalGandaColumn();
     const action = request.nextUrl.searchParams.get("action");
     if (action === 'detail_jadwal_ganda') {
-      const tgl = String(request.nextUrl.searchParams.get("tgl") || '').trim();
-      const namaKar = String(request.nextUrl.searchParams.get("nama_karyawan") || request.nextUrl.searchParams.get("namaKaryawan") || '').trim();
+      const rowId = Number(request.nextUrl.searchParams.get("id"));
+      let tgl = String(request.nextUrl.searchParams.get("tgl") || '').trim();
+      let namaKar = String(request.nextUrl.searchParams.get("nama_karyawan") || request.nextUrl.searchParams.get("namaKaryawan") || '').trim();
+      let incomingJob = '';
+      let incomingTarget = 0;
+
+      if (rowId && !Number.isNaN(rowId)) {
+        const curRes = await db.execute({
+          sql: `SELECT id, tgl, nama_karyawan, jenis_pekerjaan, target FROM jurnal_harian_produksi WHERE id = ? LIMIT 1`,
+          args: [rowId]
+        });
+        if (curRes.rows.length > 0) {
+          const cur = curRes.rows[0] as unknown as { tgl?: string; nama_karyawan?: string; jenis_pekerjaan?: string; target?: number | string };
+          if (cur.tgl) tgl = String(cur.tgl).trim();
+          if (cur.nama_karyawan) namaKar = String(cur.nama_karyawan).trim();
+          incomingJob = String(cur.jenis_pekerjaan || '').trim();
+          incomingTarget = Number(cur.target) || 0;
+        }
+      }
+
       if (!tgl || !namaKar) {
         return NextResponse.json({ error: "Parameter tgl dan nama_karyawan wajib diisi" }, { status: 400 });
       }
+
       const tglDay = tgl.slice(0, 10);
+      const idFilterClause = (rowId && !Number.isNaN(rowId)) ? 'AND j.id < ?' : '';
+      const queryArgs = (rowId && !Number.isNaN(rowId))
+        ? [namaKar, tglDay, tglDay, rowId]
+        : [namaKar, tglDay, tglDay];
+
       const dup = await db.execute({
-        sql: `SELECT j.shift, j.jenis_pekerjaan, j.no_order, j.nama_order, j.target, j.keterangan, m.target_harian
+        sql: `SELECT j.id, j.shift, j.jenis_pekerjaan, j.no_order, j.nama_order, j.target, j.keterangan, m.target_harian
               FROM jurnal_harian_produksi j
               LEFT JOIN master_pekerjaan_jurnal_produksi m
                 ON LOWER(TRIM(m.name)) = LOWER(TRIM(j.jenis_pekerjaan))
-              WHERE j.deleted_at IS NULL AND j.nama_karyawan = ? AND j.tgl >= ? AND j.tgl < ? || '~'
+              WHERE j.deleted_at IS NULL AND j.nama_karyawan = ? AND j.tgl >= ? AND j.tgl < ? || '~' ${idFilterClause}
               ORDER BY j.id ASC LIMIT 50`,
-        args: [namaKar, tglDay, tglDay]
+        args: queryArgs
       });
 
       type ExistingJadwalRow = {
+        id?: number;
         shift?: string | null;
         jenis_pekerjaan?: string | null;
         no_order?: string | null;
@@ -66,6 +91,7 @@ export async function GET(request: NextRequest) {
       type JobSummary = {
         jobName: string;
         existingTarget: number;
+        inputTarget: number;
         totalTarget: number;
         targetHarian: number | null;
       };
@@ -80,12 +106,35 @@ export async function GET(request: NextRequest) {
         const entry = jobTotals.get(jobKey) || {
           jobName,
           existingTarget: 0,
+          inputTarget: 0,
           totalTarget: 0,
           targetHarian: (rTargetHarian !== null && !Number.isNaN(rTargetHarian) && rTargetHarian > 0) ? rTargetHarian : null,
         };
         entry.existingTarget += rTarget;
-        entry.totalTarget += rTarget;
         jobTotals.set(jobKey, entry);
+      }
+
+      const incomingKey = incomingJob.toLowerCase();
+      if (incomingKey) {
+        let entry = jobTotals.get(incomingKey);
+        if (!entry) {
+          const mRes = await db.execute({
+            sql: `SELECT target_harian FROM master_pekerjaan_jurnal_produksi WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) LIMIT 1`,
+            args: [incomingJob]
+          });
+          const mRow = mRes.rows[0] as unknown as { target_harian?: number | null } | undefined;
+          const mTH = mRow?.target_harian !== null && mRow?.target_harian !== undefined ? Number(mRow.target_harian) : null;
+          entry = {
+            jobName: incomingJob,
+            existingTarget: 0,
+            inputTarget: incomingTarget,
+            totalTarget: incomingTarget,
+            targetHarian: (mTH !== null && !Number.isNaN(mTH) && mTH > 0) ? mTH : null,
+          };
+          jobTotals.set(incomingKey, entry);
+        } else {
+          entry.inputTarget = incomingTarget;
+        }
       }
 
       const targetWarnings: Array<{
@@ -97,12 +146,13 @@ export async function GET(request: NextRequest) {
       }> = [];
 
       for (const entry of jobTotals.values()) {
+        entry.totalTarget = entry.existingTarget + entry.inputTarget;
         if (entry.targetHarian && entry.totalTarget >= entry.targetHarian) {
           targetWarnings.push({
             pekerjaan: entry.jobName,
             targetHarian: entry.targetHarian,
             existingTarget: entry.existingTarget,
-            inputTarget: 0,
+            inputTarget: entry.inputTarget,
             totalTarget: entry.totalTarget,
           });
         }

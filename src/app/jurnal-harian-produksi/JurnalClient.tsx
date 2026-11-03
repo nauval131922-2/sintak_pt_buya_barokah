@@ -1480,7 +1480,7 @@ export default function JurnalClient({
       }
     });
   };
-  const handleOpenJadwalGandaModal = useCallback(async (tgl: string, namaKaryawan: string) => {
+  const handleOpenJadwalGandaModal = useCallback(async (rowId: number | string | undefined, tgl: string, namaKaryawan: string) => {
     if (!tgl || !namaKaryawan) return;
     const tglFormatted = formatIndoDateStr(tgl);
 
@@ -1501,7 +1501,8 @@ export default function JurnalClient({
     });
 
     try {
-      const res = await fetch(`/api/jurnal-harian-produksi?action=detail_jadwal_ganda&tgl=${encodeURIComponent(tgl)}&nama_karyawan=${encodeURIComponent(namaKaryawan)}`);
+      const idParam = (rowId !== undefined && rowId !== null && rowId !== '') ? `&id=${encodeURIComponent(rowId)}` : '';
+      const res = await fetch(`/api/jurnal-harian-produksi?action=detail_jadwal_ganda&tgl=${encodeURIComponent(tgl)}&nama_karyawan=${encodeURIComponent(namaKaryawan)}${idParam}`);
       const result = await res.json();
       if (!result.success) {
         setDialogConfig({
@@ -1689,7 +1690,7 @@ export default function JurnalClient({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleOpenJadwalGandaModal(row.original.tgl, row.original.nama_karyawan);
+                  handleOpenJadwalGandaModal(row.original.id, row.original.tgl, row.original.nama_karyawan);
                 }}
                 title="Klik untuk melihat rincian jadwal ganda"
                 className="inline-flex items-center justify-center p-0.5 rounded bg-amber-200/90 text-amber-800 border border-amber-300 hover:bg-amber-300 hover:scale-105 transition-all shrink-0 cursor-pointer shadow-2xs"
@@ -2553,7 +2554,7 @@ export default function JurnalClient({
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleOpenJadwalGandaModal(row.tgl, row.nama_karyawan);
+                                    handleOpenJadwalGandaModal(row.id, row.tgl, row.nama_karyawan);
                                   }}
                                   title="Klik untuk melihat rincian jadwal ganda"
                                   className="text-[10px] font-bold bg-amber-200/90 hover:bg-amber-300 text-amber-900 px-1.5 py-0.5 rounded border border-amber-300 flex items-center gap-1 transition-colors cursor-pointer"
