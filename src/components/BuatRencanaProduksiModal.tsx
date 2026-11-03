@@ -14,10 +14,14 @@ import {
   type RencanaProduksiTahapanItem, type CreateRencanaProduksiPayload 
 } from '@/lib/rencana-produksi-utils';
 
+import type { OrderInfoForGantt } from '@/components/OrderGanttChart';
+
 interface BuatRencanaProduksiModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  initialNoOrder?: string | null;
+  initialOrderInfo?: OrderInfoForGantt | null;
 }
 
 interface OrderOption {
@@ -339,8 +343,14 @@ function deriveTahapanFromOrder(spekText: string, namaOrderText: string): TahapT
 
 const BAGIAN_OPTIONS = ['SETTING', 'QUALITY CONTROL', 'CETAK', 'FINISHING', 'GUDANG'];
 
-export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }: BuatRencanaProduksiModalProps) {
-  // 1. Data Identitas Pesanan
+export default function BuatRencanaProduksiModal({ 
+  isOpen, 
+  onClose, 
+  onSuccess,
+  initialNoOrder,
+  initialOrderInfo,
+}: BuatRencanaProduksiModalProps) {
+  const [isExistingPlan, setIsExistingPlan] = useState(false);
   const [noOrder, setNoOrder] = useState('');
   const [namaOrder, setNamaOrder] = useState('');
   const [qtyOplah, setQtyOplah] = useState<number>(0);
@@ -376,6 +386,20 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
+  };
+  // Helper: Parse string tanggal aman (ISO atau format DD-MM-YYYY)
+  const safeParseDate = (str?: string | null): Date | null => {
+    if (!str) return null;
+    const s = str.trim();
+    if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+      return new Date(s.slice(0, 10) + 'T00:00:00');
+    }
+    const parts = s.split('-');
+    if (parts.length === 3 && parts[2].length === 4) {
+      return new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`);
+    }
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? null : d;
   };
 
   // Helper Format Tanggal Indonesia (dd mmm yyyy: 28 Okt 2026)
@@ -440,45 +464,129 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
     }
   }, []);
 
-  // Muat opsi awal SOPD saat modal HANYA ketika modal baru pertama kali dibuka (prevent reset on state change)
+  // Muat opsi awal SOPD saat modal dibuka atau disinkronkan dengan order yang dipilih
   useEffect(() => {
     if (isOpen && !prevOpenRef.current) {
-      setNoOrder('');
-      setNamaOrder('');
-      setQtyOplah(0);
-      setSatuan('');
-      setNamaPelanggan('');
-      setTglOrder('');
-      setTglDeadline(null);
       const now = new Date();
       setTglMulaiRencana(now);
       setStatusPlan('DRAFT');
       setCatatan('');
-      setSearchQuery('');
       setIsDropdownOpen(false);
 
-      // Kosongkan tahapan di awal sampai pengguna memilih SOPD
-      setTahapan([]);
-      setTglSelesaiRencana(null);
-      // Fetch daftar SOPD awal
-      async function loadInitialSopd() {
-        setLoadingOptions(true);
-        try {
-          const res = await fetch('/api/sopd/options?limit=80');
-          const json = await res.json();
-          if (json.success && Array.isArray(json.data)) {
-            setSopdOptions(json.data);
-          }
-        } catch (e) {
-          console.error('Failed to load SOPD options:', e);
-        } finally {
-          setLoadingOptions(false);
+      if (initialNoOrder) {
+        setNoOrder(initialNoOrder);
+        setSearchQuery(initialNoOrder);
+
+        // Pre-fill instan dari data order info jika tersedia
+        if (initialOrderInfo) {
+          setNamaOrder(initialOrderInfo.nama_prd || '');
+          setQtyOplah(Number(initialOrderInfo.qty) || 0);
+          setSatuan(initialOrderInfo.satuan || '');
+          setNamaPelanggan(initialOrderInfo.nama_pelanggan || '');
+          if (initialOrderInfo.tgl_order) setTglOrder(initialOrderInfo.tgl_order);
+          if (initialOrderInfo.deadline_date) setTglDeadline(safeParseDate(initialOrderInfo.deadline_date));
+
+          const derived = deriveTahapanFromOrder('', initialOrderInfo.nama_prd || '');
+          applyDerivedTahapan(derived, Number(initialOrderInfo.qty) || 1000, formatISO(now), initialNoOrder);
+        } else {
+          setNamaOrder('');
+          setQtyOplah(0);
+          setSatuan('');
+          setNamaPelanggan('');
+          setTglOrder('');
+          setTglDeadline(null);
+          setTahapan([]);
+          setTglSelesaiRencana(null);
         }
+
+        // Muat data spesifik order dari database (periksa rencana_produksi eksisting dulu, lalu data SOPD Digit)
+        async function loadOrderSpecificData() {
+          setLoadingOptions(true);
+          try {
+            // 1. Cek apakah order ini sudah memiliki rencana produksi yang pernah disimpan
+            const planRes = await fetch(`/api/rencana-produksi?order=${encodeURIComponent(initialNoOrder!)}`);
+            const planJson = await planRes.json();
+            if (planJson.success && planJson.plan) {
+              const p = planJson.plan;
+              setNoOrder(p.no_order);
+              setNamaOrder(p.nama_order || '');
+              setQtyOplah(Number(p.qty_oplah) || 0);
+              setSatuan(p.satuan || '');
+              setNamaPelanggan(p.nama_pelanggan || '');
+              if (p.tgl_order) setTglOrder(p.tgl_order);
+              if (p.tgl_deadline) setTglDeadline(safeParseDate(p.tgl_deadline));
+              if (p.tgl_mulai_rencana) setTglMulaiRencana(safeParseDate(p.tgl_mulai_rencana) || now);
+              if (p.tgl_selesai_rencana) setTglSelesaiRencana(safeParseDate(p.tgl_selesai_rencana));
+              setStatusPlan(p.status || 'DRAFT');
+              if (p.catatan) setCatatan(p.catatan);
+              if (Array.isArray(planJson.tahapan) && planJson.tahapan.length > 0) {
+                setTahapan(planJson.tahapan);
+              }
+              setIsExistingPlan(true);
+            } else {
+              setIsExistingPlan(false);
+              // 2. Jika belum ada rencana tersimpan, cari data SOPD lengkap dari Digit ERP
+              const sopdRes = await fetch(`/api/sopd/options?search=${encodeURIComponent(initialNoOrder!)}&limit=10`);
+              const sopdJson = await sopdRes.json();
+              if (sopdJson.success && Array.isArray(sopdJson.data) && sopdJson.data.length > 0) {
+                const matched = sopdJson.data.find((item: OrderOption) => item.no_sopd === initialNoOrder) || sopdJson.data[0];
+                if (matched) {
+                  handleSelectSpk(matched);
+                  setSopdOptions(sopdJson.data);
+                }
+              }
+            }
+
+            // Muat opsi umum SOPD sebagai cadangan dropdown
+            const resAll = await fetch('/api/sopd/options?limit=80');
+            const jsonAll = await resAll.json();
+            if (jsonAll.success && Array.isArray(jsonAll.data)) {
+              setSopdOptions(prev => {
+                const existingNos = new Set(prev.map(p => p.no_sopd));
+                const added = jsonAll.data.filter((d: OrderOption) => !existingNos.has(d.no_sopd));
+                return [...prev, ...added];
+              });
+            }
+          } catch (e) {
+            console.error('Failed to load order plan / SOPD options:', e);
+          } finally {
+            setLoadingOptions(false);
+          }
+        }
+        loadOrderSpecificData();
+      } else {
+        // Alur pembukaan baru tanpa nomor order awal (dari Master Timeline)
+        setIsExistingPlan(false);
+        setNoOrder('');
+        setNamaOrder('');
+        setQtyOplah(0);
+        setSatuan('');
+        setNamaPelanggan('');
+        setTglOrder('');
+        setTglDeadline(null);
+        setSearchQuery('');
+        setTahapan([]);
+        setTglSelesaiRencana(null);
+
+        async function loadInitialSopd() {
+          setLoadingOptions(true);
+          try {
+            const res = await fetch('/api/sopd/options?limit=80');
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data)) {
+              setSopdOptions(json.data);
+            }
+          } catch (e) {
+            console.error('Failed to load SOPD options:', e);
+          } finally {
+            setLoadingOptions(false);
+          }
+        }
+        loadInitialSopd();
       }
-      loadInitialSopd();
     }
     prevOpenRef.current = isOpen;
-  }, [isOpen]);
+  }, [isOpen, initialNoOrder, initialOrderInfo]);
 
   // Klik di luar dropdown SOPD untuk menutup dropdown (tanpa menutup modal)
   useEffect(() => {
@@ -690,7 +798,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Buat Rencana Produksi Baru"
+      title={isExistingPlan ? `Atur Rencana Produksi (${noOrder})` : (noOrder ? `Buat Rencana Produksi (${noOrder})` : "Buat Rencana Produksi Baru")}
       subtitle="Rancang jadwal alur tahapan mesin, target waktu kerja, dan kapasitas PPIC per nomor order."
       icon={CalendarRange}
       maxWidth="w-[97vw] max-w-[1550px]"
@@ -1145,7 +1253,7 @@ export default function BuatRencanaProduksiModal({ isOpen, onClose, onSuccess }:
             ) : (
               <>
                 <CheckCircle2 size={14} />
-                <span>Simpan Rencana Produksi</span>
+                <span>{isExistingPlan ? 'Perbarui Rencana Produksi' : 'Simpan Rencana Produksi'}</span>
               </>
             )}
           </button>

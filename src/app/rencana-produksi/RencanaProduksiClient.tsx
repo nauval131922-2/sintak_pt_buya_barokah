@@ -384,41 +384,53 @@ export default function RencanaProduksiClient() {
               </div>
             </div>
 
-            {selectedOrderInfo && (
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs text-gray-600">
-                <span className="font-semibold text-gray-900">{selectedOrderInfo.nama_prd}</span>
-                <span>Oplah: <b>{selectedOrderInfo.qty.toLocaleString('id-ID')} {selectedOrderInfo.satuan}</b></span>
-                {selectedOrderInfo.deadline_date && (
-                  <span className="text-rose-600 font-semibold flex items-center gap-1">
-                    <Flag size={12} /> Deadline: {selectedOrderInfo.deadline_date}
-                  </span>
-                )}
-                <div className="flex items-center bg-gray-100 p-0.5 rounded-xl border border-gray-200 text-xs ml-auto sm:ml-0">
-                  <button
-                    onClick={() => setViewMode('gantt')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
-                      viewMode === 'gantt'
-                        ? 'bg-white text-emerald-700 shadow-2xs font-semibold'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    <BarChart3 size={14} />
-                    <span>Gantt Timeline</span>
-                  </button>
-                  <button
-                    onClick={() => setViewMode('table')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
-                      viewMode === 'table'
-                        ? 'bg-white text-emerald-700 shadow-2xs font-semibold'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    <TableProperties size={14} />
-                    <span>Tabel Riwayat</span>
-                  </button>
-                </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-600 ml-auto">
+              {selectedOrderInfo && (
+                <>
+                  <span className="font-semibold text-gray-900">{selectedOrderInfo.nama_prd}</span>
+                  <span>Oplah: <b>{(selectedOrderInfo.qty || 0).toLocaleString('id-ID')} {selectedOrderInfo.satuan || ''}</b></span>
+                  {selectedOrderInfo.deadline_date && (
+                    <span className="text-rose-600 font-semibold flex items-center gap-1">
+                      <Flag size={12} /> Deadline: {selectedOrderInfo.deadline_date}
+                    </span>
+                  )}
+                </>
+              )}
+              <div className="flex items-center bg-gray-100 p-0.5 rounded-xl border border-gray-200 text-xs">
+                <button
+                  onClick={() => setViewMode('gantt')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
+                    viewMode === 'gantt'
+                      ? 'bg-white text-emerald-700 shadow-2xs font-semibold'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <BarChart3 size={14} />
+                  <span>Gantt Timeline</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
+                    viewMode === 'table'
+                      ? 'bg-white text-emerald-700 shadow-2xs font-semibold'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <TableProperties size={14} />
+                  <span>Tabel Riwayat</span>
+                </button>
               </div>
-            )}
+
+              <button
+                type="button"
+                onClick={() => setIsCreateModalOpen(true)}
+                className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
+                title="Buat atau sesuaikan rencana produksi untuk order ini"
+              >
+                <Plus size={14} />
+                <span>Buat Planning Order Ini</span>
+              </button>
+            </div>
           </div>
 
           {detailLoading ? (
@@ -753,7 +765,14 @@ export default function RencanaProduksiClient() {
       <BuatRencanaProduksiModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onSuccess={() => fetchSchedule(search, statusFilter, bagianFilter, startDate, endDate)}
+        onSuccess={() => {
+          fetchSchedule(search, statusFilter, bagianFilter, startDate, endDate);
+          if (selectedOrder) {
+            handleSelectOrder(selectedOrder);
+          }
+        }}
+        initialNoOrder={selectedOrder}
+        initialOrderInfo={selectedOrderInfo}
       />
 
       {/* Modal Keterangan Sumber Data Kartu */}
