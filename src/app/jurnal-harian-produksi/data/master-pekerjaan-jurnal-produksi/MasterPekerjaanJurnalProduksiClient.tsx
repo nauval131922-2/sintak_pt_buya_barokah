@@ -481,8 +481,8 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
         </div>
       </div>
 
-      {/* 3. Table Card (Style Persis Card Search & Filter: rounded-2xl, p-3, border-gray-200, shadow-sm) */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
+      {/* 3. Results View */}
+      <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         {/* Main Table Context */}
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
          {error ? (
