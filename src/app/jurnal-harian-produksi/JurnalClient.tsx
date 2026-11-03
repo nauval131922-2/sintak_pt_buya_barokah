@@ -1485,10 +1485,18 @@ export default function JurnalClient({
     {
       id: 'actions',
       header: 'Aksi',
-      size: 140,
+      size: 155,
       meta: { align: 'center', headerBg: '#f8fafc', sticky: true },
       cell: ({ row }: any) => (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-1.5">
+           {Boolean(row.original.is_jadwal_ganda) && (
+             <span
+               title="Baris berwarna kuning karena Jadwal Ganda: Karyawan ini memiliki lebih dari satu jadwal pada tanggal yang sama"
+               className="p-1 text-amber-800 bg-amber-200/90 border border-amber-300 rounded cursor-help shrink-0"
+             >
+               <AlertTriangle size={13} className="text-amber-800 stroke-[2.5]" />
+             </span>
+           )}
            {canInputTarget && (
              <button type="button" title="Duplikat Jadwal" onClick={(e) => { e.stopPropagation(); startCopy(row.original); }} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"><Copy size={14} /></button>
            )}
@@ -1533,7 +1541,24 @@ export default function JurnalClient({
       header: 'Nama Karyawan',
       size: columnWidths.nama_karyawan,
       meta: { headerBg: '#79f2c0' },
-      cell: ({ getValue, row }: any) => <span className={`font-semibold tracking-tight ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>{String(getValue() || '-')}</span>
+      cell: ({ getValue, row }: any) => {
+        const isGanda = Boolean(row.original.is_jadwal_ganda);
+        return (
+          <div className="flex items-center gap-1.5 min-w-0">
+            {isGanda && (
+              <span
+                title="Baris berwarna kuning karena Jadwal Ganda: Karyawan ini memiliki lebih dari satu jadwal pada tanggal yang sama"
+                className="inline-flex items-center justify-center p-0.5 rounded bg-amber-200/90 text-amber-800 border border-amber-300 shrink-0 cursor-help"
+              >
+                <AlertTriangle size={12} className="stroke-[2.5]" />
+              </span>
+            )}
+            <span className={`font-semibold tracking-tight truncate ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>
+              {String(getValue() || '-')}
+            </span>
+          </div>
+        );
+      }
     },
     { 
       accessorKey: 'no_order', 
@@ -1886,7 +1911,7 @@ export default function JurnalClient({
       {activeTab === 'list' && (
       <div className="flex-1 min-h-0 flex flex-col gap-4 overflow-hidden flex">
         {/* Top Filter Bar */}
-        <div className="shrink-0 bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl px-2.5 sm:px-4 py-2 sm:py-3 shadow-sm shadow-emerald-900/5 relative z-50 overflow-visible text-[11px] xl:text-xs">
+        <div className="shrink-0 bg-white border border-gray-200 rounded-2xl px-2.5 sm:px-4 py-2.5 sm:py-3 shadow-sm relative z-50 overflow-visible text-[11px] xl:text-xs">
           {/* Header Mobile Toggle (< sm) */}
           <div className="flex sm:hidden items-center justify-between">
             <button
@@ -2329,7 +2354,7 @@ export default function JurnalClient({
 
         <div className="flex-1 min-h-0 flex flex-col gap-5 overflow-hidden relative">
            {error ? (
-             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-sm shadow-emerald-900/5">
+             <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white border border-gray-200 rounded-2xl shadow-sm">
                 <div className="w-20 h-20 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 shadow-sm shadow-rose-900/5">
                     <AlertCircle className="text-rose-500" size={40} />
                 </div>
@@ -2376,9 +2401,18 @@ export default function JurnalClient({
                              <div className="flex items-center gap-1.5 flex-wrap text-[11px] min-w-0 flex-1">
                                <span className="font-bold text-gray-400">#{((page - 1) * PAGE_SIZE) + idx + 1}</span>
                                <span className={`font-bold text-gray-800 text-[13px] ${isExp ? 'break-words' : 'truncate'}`}>{row.nama_karyawan || '-'}</span>
-                               <span className="text-[10px] font-semibold bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-100">
-                                 {row.bagian || '-'}
-                               </span>
+                              <span className="text-[10px] font-semibold bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-100">
+                                {row.bagian || '-'}
+                              </span>
+                              {Boolean(row.is_jadwal_ganda) && (
+                                <span 
+                                  title="Baris berwarna kuning karena Jadwal Ganda: Karyawan ini memiliki lebih dari 1 jadwal pada tanggal yang sama"
+                                  className="text-[10px] font-bold bg-amber-200/90 text-amber-900 px-1.5 py-0.5 rounded border border-amber-300 flex items-center gap-1"
+                                >
+                                  <AlertTriangle size={11} className="stroke-[2.5]" />
+                                  Jadwal Ganda
+                                </span>
+                              )}
                              </div>
                              <div className="flex items-center gap-1 shrink-0">
                                {canInputTarget && (
@@ -2495,7 +2529,7 @@ export default function JurnalClient({
                </div>
 
                {/* Desktop Table View (>= md) */}
-               <div className="hidden md:block flex-1 min-h-0 relative overflow-hidden">
+               <div className="hidden md:flex flex-col flex-1 min-h-0 bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden relative">
                   <DataTable
                     data={data || []}
                     columns={columns}
