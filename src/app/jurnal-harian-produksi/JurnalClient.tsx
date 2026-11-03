@@ -1480,23 +1480,162 @@ export default function JurnalClient({
       }
     });
   };
+  const handleOpenJadwalGandaModal = useCallback(async (tgl: string, namaKaryawan: string) => {
+    if (!tgl || !namaKaryawan) return;
+    const tglFormatted = formatIndoDateStr(tgl);
+
+    setDialogConfig({
+      isOpen: true,
+      type: 'alert',
+      title: 'Jadwal Sudah Ada',
+      maxWidth: 'max-w-xl',
+      textAlign: 'left',
+      message: (
+        <div className="py-6 flex flex-col items-center justify-center gap-2 text-gray-500">
+          <Loader2 className="animate-spin text-amber-600" size={24} />
+          <span className="text-xs font-semibold">Memuat rincian jadwal ganda...</span>
+        </div>
+      ),
+      confirmLabel: 'Tutup',
+      onConfirm: () => closeDialog()
+    });
+
+    try {
+      const res = await fetch(`/api/jurnal-harian-produksi?action=detail_jadwal_ganda&tgl=${encodeURIComponent(tgl)}&nama_karyawan=${encodeURIComponent(namaKaryawan)}`);
+      const result = await res.json();
+      if (!result.success) {
+        setDialogConfig({
+          isOpen: true,
+          type: 'alert',
+          title: 'Jadwal Sudah Ada',
+          maxWidth: 'max-w-md',
+          textAlign: 'left',
+          message: <p className="text-xs text-gray-600">{result.error || 'Gagal memuat rincian jadwal ganda'}</p>,
+          confirmLabel: 'Tutup',
+          onConfirm: () => closeDialog()
+        });
+        return;
+      }
+
+      type ExistingJobItem = {
+        shift?: string;
+        pekerjaan?: string;
+        order?: string;
+        target?: string;
+        targetHarian?: number | null;
+        totalTargetKumulatif?: number;
+        isTargetTerpenuhi?: boolean;
+      };
+      type TargetWarningItem = {
+        pekerjaan: string;
+        targetHarian: number;
+        existingTarget: number;
+        inputTarget: number;
+        totalTarget: number;
+      };
+
+      const jobs: ExistingJobItem[] = Array.isArray(result.existingJobs) ? result.existingJobs : [];
+      const warnings: TargetWarningItem[] = Array.isArray(result.targetWarnings) ? result.targetWarnings : [];
+
+      const dialogMessage = (
+        <div className="space-y-3 text-left">
+          <p className="text-[13px] text-gray-600 leading-relaxed">
+            <span className="font-bold text-gray-900">{namaKaryawan}</span> sudah memiliki <span className="font-bold text-gray-900">{result.count || jobs.length || 1}</span> data jadwal pada <span className="font-bold text-gray-900">{tglFormatted}</span>:
+          </p>
+
+          {jobs.length > 0 && (
+            <div className="bg-gray-50/70 border border-gray-200/80 rounded-xl divide-y divide-gray-100 overflow-hidden max-h-60 overflow-y-auto">
+              {jobs.map((j, idx) => {
+                const targetNum = Number(j.target);
+                const targetText = j.target !== undefined && j.target !== '' && !Number.isNaN(targetNum)
+                  ? targetNum.toLocaleString('id-ID')
+                  : (j.target || '-');
+                const shiftText = j.shift && j.shift !== '-' ? `Shift ${j.shift}` : null;
+                const orderText = j.order && j.order !== '-' ? j.order : null;
+
+                return (
+                  <div key={idx} className="p-2.5 px-3 flex items-start justify-between gap-3 text-left">
+                    <div className="flex items-start gap-2 min-w-0 flex-1">
+                      <span className="text-[11px] font-bold text-gray-400 tabular-nums shrink-0 mt-0.5">
+                        {idx + 1}.
+                      </span>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {shiftText && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white text-gray-600 border border-gray-200 shadow-2xs shrink-0">
+                              {shiftText}
+                            </span>
+                          )}
+                          <span className="text-[12.5px] font-bold text-gray-800 leading-tight">
+                            {j.pekerjaan || 'Pekerjaan belum ditentukan'}
+                          </span>
+                        </div>
+                        {orderText && (
+                          <span className="text-[11px] font-medium text-gray-500 break-words mt-1 leading-snug">
+                            {orderText}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right mt-0.5">
+                      <span className="text-[11px] font-bold text-gray-700 bg-white px-2 py-0.5 rounded border border-gray-200 shadow-2xs tabular-nums whitespace-nowrap">
+                        Target: {targetText}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {warnings.length > 0 && (
+            <div className="space-y-2">
+              {warnings.map((w, idx) => (
+                <div key={idx} className="p-3 bg-amber-50 border border-amber-200/90 rounded-xl text-[12px] text-amber-950 flex items-start gap-2.5 leading-relaxed">
+                  <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-amber-950 mb-0.5">Target Harian Terpenuhi / Terlampaui</div>
+                    {w.inputTarget > 0 && w.existingTarget > 0 ? (
+                      <span>
+                        Pekerjaan <b>&quot;{w.pekerjaan}&quot;</b> mencapai total target <b className="text-amber-900">{w.totalTarget.toLocaleString('id-ID')}</b> dari target harian <b>{w.targetHarian.toLocaleString('id-ID')}</b> (tersimpan: {w.existingTarget.toLocaleString('id-ID')} + input baru: {w.inputTarget.toLocaleString('id-ID')}).
+                      </span>
+                    ) : (
+                      <span>
+                        Pekerjaan <b>&quot;{w.pekerjaan}&quot;</b> sudah memenuhi target harian <b>{w.targetHarian.toLocaleString('id-ID')}</b> (tersimpan: {w.existingTarget.toLocaleString('id-ID')}).
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+
+      setDialogConfig({
+        isOpen: true,
+        type: 'alert',
+        title: 'Jadwal Sudah Ada',
+        maxWidth: 'max-w-xl',
+        textAlign: 'left',
+        message: dialogMessage,
+        confirmLabel: 'Tutup',
+        onConfirm: () => closeDialog()
+      });
+    } catch {
+      closeDialog();
+    }
+  }, []);
+
 
   const columns = useMemo(() => [
     {
       id: 'actions',
       header: 'Aksi',
-      size: 155,
+      size: 140,
       meta: { align: 'center', headerBg: '#f8fafc', sticky: true },
       cell: ({ row }: any) => (
-        <div className="flex items-center justify-center gap-1.5">
-           {Boolean(row.original.is_jadwal_ganda) && (
-             <span
-               title="Baris berwarna kuning karena Jadwal Ganda: Karyawan ini memiliki lebih dari satu jadwal pada tanggal yang sama"
-               className="p-1 text-amber-800 bg-amber-200/90 border border-amber-300 rounded cursor-help shrink-0"
-             >
-               <AlertTriangle size={13} className="text-amber-800 stroke-[2.5]" />
-             </span>
-           )}
+        <div className="flex items-center justify-center gap-2">
            {canInputTarget && (
              <button type="button" title="Duplikat Jadwal" onClick={(e) => { e.stopPropagation(); startCopy(row.original); }} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"><Copy size={14} /></button>
            )}
@@ -1546,12 +1685,17 @@ export default function JurnalClient({
         return (
           <div className="flex items-center gap-1.5 min-w-0">
             {isGanda && (
-              <span
-                title="Baris berwarna kuning karena Jadwal Ganda: Karyawan ini memiliki lebih dari satu jadwal pada tanggal yang sama"
-                className="inline-flex items-center justify-center p-0.5 rounded bg-amber-200/90 text-amber-800 border border-amber-300 shrink-0 cursor-help"
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenJadwalGandaModal(row.original.tgl, row.original.nama_karyawan);
+                }}
+                title="Klik untuk melihat rincian jadwal ganda"
+                className="inline-flex items-center justify-center p-0.5 rounded bg-amber-200/90 text-amber-800 border border-amber-300 hover:bg-amber-300 hover:scale-105 transition-all shrink-0 cursor-pointer shadow-2xs"
               >
                 <AlertTriangle size={12} className="stroke-[2.5]" />
-              </span>
+              </button>
             )}
             <span className={`font-semibold tracking-tight truncate ${row.getIsSelected() ? 'text-emerald-900' : 'text-gray-800'}`}>
               {String(getValue() || '-')}
@@ -1757,7 +1901,7 @@ export default function JurnalClient({
       meta: { headerBg: '#79f2c0' },
       cell: ({ getValue, row }: any) => <span className={`font-medium truncate block tracking-tight ${row.getIsSelected() ? 'text-emerald-800' : 'text-gray-600'}`}>{String(getValue() || '-')}</span>
     }
-  ], [columnWidths, page, handleSaveKeterangan, canInputTarget, canInputRealisasi, keteranganPasteActive, keteranganCopiedValue, handleKeteranganCopy, handleKeteranganPasteDone, data]);
+  ], [columnWidths, page, handleSaveKeterangan, canInputTarget, canInputRealisasi, keteranganPasteActive, keteranganCopiedValue, handleKeteranganCopy, handleKeteranganPasteDone, handleOpenJadwalGandaModal, data]);
 
   const handleResize = useCallback((widths: any) => {
     setColumnWidths(widths);
@@ -2405,13 +2549,18 @@ export default function JurnalClient({
                                 {row.bagian || '-'}
                               </span>
                               {Boolean(row.is_jadwal_ganda) && (
-                                <span 
-                                  title="Baris berwarna kuning karena Jadwal Ganda: Karyawan ini memiliki lebih dari 1 jadwal pada tanggal yang sama"
-                                  className="text-[10px] font-bold bg-amber-200/90 text-amber-900 px-1.5 py-0.5 rounded border border-amber-300 flex items-center gap-1"
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenJadwalGandaModal(row.tgl, row.nama_karyawan);
+                                  }}
+                                  title="Klik untuk melihat rincian jadwal ganda"
+                                  className="text-[10px] font-bold bg-amber-200/90 hover:bg-amber-300 text-amber-900 px-1.5 py-0.5 rounded border border-amber-300 flex items-center gap-1 transition-colors cursor-pointer"
                                 >
                                   <AlertTriangle size={11} className="stroke-[2.5]" />
                                   Jadwal Ganda
-                                </span>
+                                </button>
                               )}
                              </div>
                              <div className="flex items-center gap-1 shrink-0">

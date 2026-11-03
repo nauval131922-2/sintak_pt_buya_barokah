@@ -33,6 +33,105 @@ export async function GET(request: NextRequest) {
   if (gate.error) return gate.error;
   try {
     await ensureJadwalGandaColumn();
+    const action = request.nextUrl.searchParams.get("action");
+    if (action === 'detail_jadwal_ganda') {
+      const tgl = String(request.nextUrl.searchParams.get("tgl") || '').trim();
+      const namaKar = String(request.nextUrl.searchParams.get("nama_karyawan") || request.nextUrl.searchParams.get("namaKaryawan") || '').trim();
+      if (!tgl || !namaKar) {
+        return NextResponse.json({ error: "Parameter tgl dan nama_karyawan wajib diisi" }, { status: 400 });
+      }
+      const tglDay = tgl.slice(0, 10);
+      const dup = await db.execute({
+        sql: `SELECT j.shift, j.jenis_pekerjaan, j.no_order, j.nama_order, j.target, j.keterangan, m.target_harian
+              FROM jurnal_harian_produksi j
+              LEFT JOIN master_pekerjaan_jurnal_produksi m
+                ON LOWER(TRIM(m.name)) = LOWER(TRIM(j.jenis_pekerjaan))
+              WHERE j.deleted_at IS NULL AND j.nama_karyawan = ? AND j.tgl >= ? AND j.tgl < ? || '~'
+              ORDER BY j.id ASC LIMIT 50`,
+        args: [namaKar, tglDay, tglDay]
+      });
+
+      type ExistingJadwalRow = {
+        shift?: string | null;
+        jenis_pekerjaan?: string | null;
+        no_order?: string | null;
+        nama_order?: string | null;
+        target?: string | number | null;
+        keterangan?: string | null;
+        target_harian?: number | null;
+      };
+
+      const rows = dup.rows as unknown as ExistingJadwalRow[];
+
+      type JobSummary = {
+        jobName: string;
+        existingTarget: number;
+        totalTarget: number;
+        targetHarian: number | null;
+      };
+      const jobTotals = new Map<string, JobSummary>();
+
+      for (const r of rows) {
+        const jobName = String(r.jenis_pekerjaan || '').trim();
+        const jobKey = jobName.toLowerCase();
+        if (!jobKey) continue;
+        const rTarget = Number(r.target) || 0;
+        const rTargetHarian = r.target_harian !== null && r.target_harian !== undefined ? Number(r.target_harian) : null;
+        const entry = jobTotals.get(jobKey) || {
+          jobName,
+          existingTarget: 0,
+          totalTarget: 0,
+          targetHarian: (rTargetHarian !== null && !Number.isNaN(rTargetHarian) && rTargetHarian > 0) ? rTargetHarian : null,
+        };
+        entry.existingTarget += rTarget;
+        entry.totalTarget += rTarget;
+        jobTotals.set(jobKey, entry);
+      }
+
+      const targetWarnings: Array<{
+        pekerjaan: string;
+        targetHarian: number;
+        existingTarget: number;
+        inputTarget: number;
+        totalTarget: number;
+      }> = [];
+
+      for (const entry of jobTotals.values()) {
+        if (entry.targetHarian && entry.totalTarget >= entry.targetHarian) {
+          targetWarnings.push({
+            pekerjaan: entry.jobName,
+            targetHarian: entry.targetHarian,
+            existingTarget: entry.existingTarget,
+            inputTarget: 0,
+            totalTarget: entry.totalTarget,
+          });
+        }
+      }
+
+      const existingJobs = rows.map((r) => {
+        const rawOrder = (r.nama_order ? String(r.nama_order).trim() : '') || (r.no_order ? String(r.no_order).trim() : '');
+        const orderClean = rawOrder && rawOrder !== '-' ? rawOrder : '';
+        const rJobKey = String(r.jenis_pekerjaan || '').trim().toLowerCase();
+        const summary = jobTotals.get(rJobKey);
+
+        return {
+          shift: r.shift ? String(r.shift) : '',
+          pekerjaan: r.jenis_pekerjaan ? String(r.jenis_pekerjaan).trim() : '-',
+          order: orderClean,
+          target: r.target !== null && r.target !== undefined && r.target !== '' ? String(r.target) : '',
+          targetHarian: summary?.targetHarian || null,
+          totalTargetKumulatif: summary?.totalTarget || 0,
+          isTargetTerpenuhi: !!(summary && summary.targetHarian && summary.totalTarget >= summary.targetHarian),
+        };
+      });
+
+      return NextResponse.json({
+        success: true,
+        count: rows.length,
+        existingJobs,
+        targetWarnings,
+      });
+    }
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get("search");
     const page = parseInt(searchParams.get("page") || "1");
