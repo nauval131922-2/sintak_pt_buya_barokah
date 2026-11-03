@@ -41,6 +41,14 @@ interface OrderGanttChartProps {
   orderInfo: OrderInfoForGantt | null;
 }
 
+export interface GanttTaskSegment {
+  startDate: string;
+  endDate: string;
+  target: number;
+  realisasi: number;
+  progress: number;
+}
+
 interface GanttTask {
   id: string;
   bagian: string;
@@ -55,6 +63,8 @@ interface GanttTask {
   kendalaList: string[];
   keteranganList: string[];
   activeDates: Set<string>;
+  dateStats: Map<string, { target: number; realisasi: number }>;
+  segments: GanttTaskSegment[];
   entryCount: number;
 }
 
@@ -204,6 +214,8 @@ export default function OrderGanttChart({ entries, orderInfo }: OrderGanttChartP
           kendalaList: [],
           keteranganList: [],
           activeDates: new Set<string>(),
+          dateStats: new Map<string, { target: number; realisasi: number }>(),
+          segments: [],
           entryCount: 0,
         });
       }
@@ -220,6 +232,10 @@ export default function OrderGanttChart({ entries, orderInfo }: OrderGanttChartP
       item.totalTarget += tVal;
       item.totalRealisasi += rVal;
 
+      const curStat = item.dateStats.get(isoDate) || { target: 0, realisasi: 0 };
+      curStat.target += tVal;
+      curStat.realisasi += rVal;
+      item.dateStats.set(isoDate, curStat);
       if (entry.nama_karyawan && !item.operators.includes(entry.nama_karyawan.trim())) {
         item.operators.push(entry.nama_karyawan.trim());
       }
@@ -234,7 +250,7 @@ export default function OrderGanttChart({ entries, orderInfo }: OrderGanttChartP
       }
     });
 
-    // Calculate progress for each task
+    // Calculate progress and contiguous active segments for each task
     const taskList = Array.from(taskMap.values()).map((t) => {
       let prog = 0;
       if (t.totalTarget > 0) {
@@ -242,7 +258,85 @@ export default function OrderGanttChart({ entries, orderInfo }: OrderGanttChartP
       } else if (t.totalRealisasi > 0) {
         prog = 100;
       }
-      return { ...t, progress: prog };
+
+      // Kelompokkan tanggal kerja berurutan menjadi segmen bar (hari libur/tanpa kerja otomatis bolong)
+      const sortedDates = Array.from(t.activeDates).sort();
+      const segments: GanttTaskSegment[] = [];
+
+      if (sortedDates.length > 0) {
+        let curStart = sortedDates[0];
+        let curEnd = sortedDates[0];
+        let curDates = [sortedDates[0]];
+
+        for (let i = 1; i < sortedDates.length; i++) {
+          const prev = new Date(curEnd + 'T00:00:00');
+          const curr = new Date(sortedDates[i] + 'T00:00:00');
+          const diffDays = Math.round((curr.getTime() - prev.getTime()) / (24 * 60 * 60 * 1000));
+
+          if (diffDays === 1) {
+            curEnd = sortedDates[i];
+            curDates.push(sortedDates[i]);
+          } else {
+            let sTarget = 0;
+            let sRealisasi = 0;
+            for (const d of curDates) {
+              const stat = t.dateStats.get(d);
+              if (stat) {
+                sTarget += stat.target;
+                sRealisasi += stat.realisasi;
+              }
+            }
+            let sProg = 0;
+            if (sTarget > 0) {
+              sProg = Math.min(100, Math.round((sRealisasi / sTarget) * 100));
+            } else if (sRealisasi > 0) {
+              sProg = 100;
+            } else {
+              sProg = prog;
+            }
+
+            segments.push({
+              startDate: curStart,
+              endDate: curEnd,
+              target: sTarget,
+              realisasi: sRealisasi,
+              progress: sProg,
+            });
+
+            curStart = sortedDates[i];
+            curEnd = sortedDates[i];
+            curDates = [sortedDates[i]];
+          }
+        }
+
+        let sTarget = 0;
+        let sRealisasi = 0;
+        for (const d of curDates) {
+          const stat = t.dateStats.get(d);
+          if (stat) {
+            sTarget += stat.target;
+            sRealisasi += stat.realisasi;
+          }
+        }
+        let sProg = 0;
+        if (sTarget > 0) {
+          sProg = Math.min(100, Math.round((sRealisasi / sTarget) * 100));
+        } else if (sRealisasi > 0) {
+          sProg = 100;
+        } else {
+          sProg = prog;
+        }
+
+        segments.push({
+          startDate: curStart,
+          endDate: curEnd,
+          target: sTarget,
+          realisasi: sRealisasi,
+          progress: sProg,
+        });
+      }
+
+      return { ...t, progress: prog, segments };
     });
 
     // Sort tasks logically by workflow (Setting -> QC -> Cetak -> Finishing -> Gudang) then startDate
@@ -485,14 +579,6 @@ export default function OrderGanttChart({ entries, orderInfo }: OrderGanttChartP
 
               {filteredTasks.map((task) => {
                 const theme = getBagianTheme(task.bagian);
-                const startIndex = dateIndexMap[task.startDate] ?? 0;
-                const endIndex = dateIndexMap[task.endDate] ?? startIndex;
-                
-                // Calculate position & width in pixels
-                const leftPx = startIndex * dayColWidth;
-                const spanDays = Math.max(1, endIndex - startIndex + 1);
-                const widthPx = spanDays * dayColWidth - 8; // slight margin
-
                 return (
                   <div
                     key={task.id}
@@ -530,33 +616,43 @@ export default function OrderGanttChart({ entries, orderInfo }: OrderGanttChartP
                       </div>
                     </div>
 
-                    {/* Right Timeline Grid for this task (Bars only, no duplicate background grids) */}
+                    {/* Right Timeline Grid for this task (Bars only on active dates) */}
                     <div 
-                      className="relative flex items-center py-3" 
+                      className="relative flex items-center py-3 min-h-[58px]" 
                       style={{ width: totalTimelineWidth }}
                     >
-                      {/* Gantt Bar */}
-                      <div
-                        style={{
-                          left: `${leftPx + 4}px`,
-                          width: `${widthPx}px`,
-                        }}
-                        className={`relative z-10 h-8 rounded-lg shadow-xs overflow-hidden flex items-center border border-black/5 cursor-pointer transition-transform hover:scale-[1.01] ${theme.barTrack}`}
-                        title={`${task.pekerjaan} (${task.startDate} s/d ${task.endDate}) - ${task.progress}%`}
-                      >
-                        {/* Progress Fill */}
-                        <div
-                          style={{ width: `${task.progress}%` }}
-                          className={`h-full transition-all duration-300 ${theme.barFill} flex items-center justify-end pr-2`}
-                        />
+                      {task.segments.map((seg, sIdx) => {
+                        const sStartIdx = dateIndexMap[seg.startDate] ?? 0;
+                        const sEndIdx = dateIndexMap[seg.endDate] ?? sStartIdx;
+                        const sLeftPx = sStartIdx * dayColWidth;
+                        const sSpanDays = Math.max(1, sEndIdx - sStartIdx + 1);
+                        const sWidthPx = sSpanDays * dayColWidth - 8;
 
-                        {/* Bar Content / Text Label */}
-                        <div className="absolute inset-0 flex items-center px-2.5 text-xs font-semibold text-gray-800 drop-shadow-xs pointer-events-none">
-                          <span className={`truncate text-[11px] ${task.progress > 45 ? 'text-white' : 'text-gray-900'}`}>
-                            {task.progress}% &bull; {task.pekerjaan}
-                          </span>
-                        </div>
-                      </div>
+                        return (
+                          <div
+                            key={`${task.id}-seg-${sIdx}`}
+                            style={{
+                              left: `${sLeftPx + 4}px`,
+                              width: `${sWidthPx}px`,
+                            }}
+                            className={`absolute top-1/2 -translate-y-1/2 z-10 h-8 rounded-lg shadow-xs overflow-hidden flex items-center border border-black/5 cursor-pointer transition-transform hover:scale-[1.01] ${theme.barTrack}`}
+                            title={`${task.pekerjaan} (${formatDateDisplay(seg.startDate)}${seg.startDate !== seg.endDate ? ` s/d ${formatDateDisplay(seg.endDate)}` : ''}) - Realisasi: ${seg.realisasi.toLocaleString('id-ID')} / ${seg.target.toLocaleString('id-ID')} (${seg.progress}%)`}
+                          >
+                            {/* Progress Fill */}
+                            <div
+                              style={{ width: `${seg.progress}%` }}
+                              className={`h-full transition-all duration-300 ${theme.barFill} flex items-center justify-end pr-2`}
+                            />
+
+                            {/* Bar Content / Text Label */}
+                            <div className="absolute inset-0 flex items-center px-2 text-xs font-semibold drop-shadow-xs pointer-events-none">
+                              <span className={`truncate text-[11px] ${seg.progress > 45 ? 'text-white' : 'text-gray-900'}`}>
+                                {sWidthPx >= 90 ? `${seg.progress}% • ${task.pekerjaan}` : `${seg.progress}%`}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 );
