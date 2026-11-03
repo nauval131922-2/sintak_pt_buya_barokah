@@ -43,7 +43,7 @@ self.addEventListener('message', async (e) => {
     for (let c = 0; c < categoryRow.length; c++) {
       const catVal = categoryRow[c];
       if (catVal && typeof catVal === 'string' && catVal.trim()) {
-        categoryMap[c] = catVal.trim();
+        categoryMap[c] = catVal.trim().toUpperCase();
       }
     }
 

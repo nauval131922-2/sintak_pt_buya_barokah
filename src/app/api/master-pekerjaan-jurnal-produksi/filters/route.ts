@@ -8,17 +8,17 @@ export async function GET() {
   if (gate.error) return gate.error;
   try {
     const result = await db.execute(
-      `SELECT DISTINCT category FROM master_pekerjaan_jurnal_produksi 
+      `SELECT DISTINCT UPPER(TRIM(category)) as category FROM master_pekerjaan_jurnal_produksi 
        WHERE category IS NOT NULL AND category != '' 
        ORDER BY 
-         CASE category
-           WHEN 'Setting' THEN 1
-           WHEN 'Quality Control' THEN 2
-           WHEN 'Cetak' THEN 3
-           WHEN 'Finishing' THEN 4
-           WHEN 'Gudang' THEN 5
-           WHEN 'Teknisi' THEN 6
-           WHEN 'Mesin' THEN 7
+         CASE UPPER(category)
+           WHEN 'SETTING' THEN 1
+           WHEN 'QUALITY CONTROL' THEN 2
+           WHEN 'CETAK' THEN 3
+           WHEN 'FINISHING' THEN 4
+           WHEN 'GUDANG' THEN 5
+           WHEN 'TEKNISI' THEN 6
+           WHEN 'MESIN' THEN 7
            ELSE 99
          END ASC`
     );

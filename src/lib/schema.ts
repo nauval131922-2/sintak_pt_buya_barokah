@@ -1049,6 +1049,7 @@ export async function initSchema(db: any) {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );`,
     "ALTER TABLE master_pekerjaan_jurnal_produksi ADD COLUMN target_harian REAL;",
+    "UPDATE master_pekerjaan_jurnal_produksi SET category = UPPER(TRIM(category)) WHERE category != UPPER(TRIM(category));",
     "UPDATE produksi_selesai SET nama_prd = TRIM(nama_prd);",
     // ponytail: denorm tracking keys — equality index instead of json_extract/raw_data LIKE
     "ALTER TABLE orders ADD COLUMN faktur_bom TEXT;",

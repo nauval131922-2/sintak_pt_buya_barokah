@@ -20,13 +20,13 @@ import KeteranganEditableCell from './KeteranganEditableCell';
 
 // Mapping Bagian -> Category master_pekerjaan_jurnal_produksi
 const BAGIAN_CATEGORY_MAP: Record<string, string> = {
-  'SETTING':          'Setting',
-  'QUALITY CONTROL':  'Quality Control',
-  'CETAK':            'Cetak',
-  'FINISHING':        'Finishing',
-  'GUDANG':           'Gudang',
-  'TEKNISI':          'Teknisi',
-  'MESIN':            'Mesin',
+  'SETTING':          'SETTING',
+  'QUALITY CONTROL':  'QUALITY CONTROL',
+  'CETAK':            'CETAK',
+  'FINISHING':        'FINISHING',
+  'GUDANG':           'GUDANG',
+  'TEKNISI':          'TEKNISI',
+  'MESIN':            'MESIN',
 };
 
 const BAGIAN_LIST = ['SETTING', 'QUALITY CONTROL', 'CETAK', 'FINISHING', 'GUDANG', 'TEKNISI', 'MESIN'];

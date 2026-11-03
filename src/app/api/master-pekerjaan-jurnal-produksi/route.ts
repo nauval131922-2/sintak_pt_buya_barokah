@@ -25,6 +25,8 @@ async function ensureTargetHarianColumn() {
     if (!cols.includes('target_harian')) {
       await db.execute("ALTER TABLE master_pekerjaan_jurnal_produksi ADD COLUMN target_harian REAL");
     }
+    // Self-healing: pastikan category selalu huruf kapital (berjalan otomatis di VPS maupun lokal)
+    await db.execute("UPDATE master_pekerjaan_jurnal_produksi SET category = UPPER(TRIM(category)) WHERE category != UPPER(TRIM(category))");
     ensuredTargetHarianColumn = true;
   } catch {}
 }
@@ -53,7 +55,7 @@ export async function GET(request: NextRequest) {
       args.push(`%${search}%`);
     }
     if (category) {
-      where += ' AND category = ?';
+      where += ' AND UPPER(category) = UPPER(?)';
       args.push(category.trim());
     }
 
@@ -71,14 +73,14 @@ export async function GET(request: NextRequest) {
     const result = await db.execute({
       sql: `SELECT * FROM master_pekerjaan_jurnal_produksi WHERE ${where} 
             ORDER BY 
-              CASE category
-                WHEN 'Setting' THEN 1
-                WHEN 'Quality Control' THEN 2
-                WHEN 'Cetak' THEN 3
-                WHEN 'Finishing' THEN 4
-                WHEN 'Gudang' THEN 5
-                WHEN 'Teknisi' THEN 6
-                WHEN 'Mesin' THEN 7
+              CASE UPPER(category)
+                WHEN 'SETTING' THEN 1
+                WHEN 'QUALITY CONTROL' THEN 2
+                WHEN 'CETAK' THEN 3
+                WHEN 'FINISHING' THEN 4
+                WHEN 'GUDANG' THEN 5
+                WHEN 'TEKNISI' THEN 6
+                WHEN 'MESIN' THEN 7
                 ELSE 99
               END ASC,
               name ASC
@@ -130,18 +132,20 @@ export async function POST(request: NextRequest) {
       }
       const body = JSON.parse(bodyText);
       if (Array.isArray(body?.items)) {
-        const items = body.items.filter(
-          (it: any) => it && typeof it.category === 'string' && typeof it.name === 'string' && it.category.trim() && it.name.trim()
-        );
+        const rawItems = body.items as Array<{ category?: unknown; name?: unknown }>;
+        const items = rawItems
+          .filter((it): it is { category: string; name: string } => 
+            typeof it?.category === 'string' && typeof it?.name === 'string' && !!it.category.trim() && !!it.name.trim()
+          );
         if (items.length === 0) {
           return NextResponse.json({ error: 'Tidak ada data valid pada chunk.' }, { status: 400 });
         }
         if (items.length > 20000) {
           return NextResponse.json({ error: 'Chunk melebihi 20.000 baris.' }, { status: 413 });
         }
-        const batchOps = items.map((it: any) => ({
+        const batchOps = items.map((it) => ({
           sql: `INSERT OR IGNORE INTO master_pekerjaan_jurnal_produksi (category, name) VALUES (?, ?)`,
-          args: [it.category.trim(), it.name.trim()],
+          args: [it.category.trim().toUpperCase(), it.name.trim()],
         }));
         await db.batch(batchOps, 'write');
         if (body?.chunkIndex === 0 || body?.totalChunks === 1) {
@@ -154,7 +158,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, imported: items.length });
       }
       const body2 = body;
-      const category = String(body2?.category ?? '').trim();
+      const category = String(body2?.category ?? '').trim().toUpperCase();
       const name = String(body2?.name ?? '').trim();
 
       if (!category || !name) {
@@ -343,7 +347,7 @@ export async function POST(request: NextRequest) {
       if (!item.category || !item.name) continue;
       batchOps.push({
         sql: `INSERT OR IGNORE INTO master_pekerjaan_jurnal_produksi (category, name) VALUES (?, ?)`,
-        args: [item.category.trim(), item.name.trim()],
+        args: [item.category.trim().toUpperCase(), item.name.trim()],
       });
       imported++;
     }
@@ -397,7 +401,7 @@ export async function PUT(request: NextRequest) {
 
     const body = await request.json();
     const id = Number(body?.id);
-    const category = String(body?.category ?? '').trim();
+    const category = String(body?.category ?? '').trim().toUpperCase();
     const name = String(body?.name ?? '').trim();
     const targetHarian = parseTargetHarian(body?.target_harian);
 

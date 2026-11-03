@@ -27,13 +27,13 @@ interface PekerjaanJurnalProduksiRecord {
 const PAGE_SIZE = 100;
 
 const CANONICAL_CATEGORIES = [
-  'Setting',
-  'Quality Control',
-  'Cetak',
-  'Finishing',
-  'Gudang',
-  'Teknisi',
-  'Mesin',
+  'SETTING',
+  'QUALITY CONTROL',
+  'CETAK',
+  'FINISHING',
+  'GUDANG',
+  'TEKNISI',
+  'MESIN',
 ];
 
 interface MasterPekerjaanJurnalProduksiClientProps {
@@ -484,7 +484,7 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
       {/* 3. Results View */}
       <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         {/* Main Table Context */}
-        <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
+        <div className="flex-1 min-h-0 flex flex-col bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden relative">
          {error ? (
            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl shadow-sm shadow-emerald-900/5">
               <div className="w-20 h-20 bg-rose-50 rounded-2xl border border-rose-100 shadow-sm flex items-center justify-center mb-6">
