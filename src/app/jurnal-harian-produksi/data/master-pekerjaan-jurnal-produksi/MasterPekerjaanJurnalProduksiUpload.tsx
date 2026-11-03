@@ -141,14 +141,14 @@ export default function MasterPekerjaanJurnalProduksiUpload() {
 
   return (
     <div className="shrink-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <div className="relative bg-white border border-gray-100 shadow-sm shadow-emerald-900/5 rounded-xl px-4 py-6 z-50">
+      <div className="relative bg-white border border-gray-200 rounded-2xl p-3 shadow-sm z-30">
         <div className="flex items-center justify-between gap-3 w-full">
-          <div className="flex items-center gap-2.5 flex-1 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-              <Upload className="text-emerald-600" size={16} />
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
+              <Upload size={18} />
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="text-[12px] font-bold text-gray-800 leading-none tracking-tight">Upload Master Pekerjaan Jurnal Produksi</h3>
+              <h3 className="text-xs font-bold text-gray-800 leading-tight">Upload Master Pekerjaan Jurnal Produksi</h3>
               <p className="text-[11px] text-gray-400 font-medium leading-tight truncate mt-0.5">
                 Unggah file Excel 2026 JADWAL PRODUKSI HARIAN (Sheet: MASTER PEKERJAAN)
               </p>
@@ -167,21 +167,22 @@ export default function MasterPekerjaanJurnalProduksiUpload() {
               onClick={() => fileRef.current?.click()}
               disabled={status === 'loading'}
               className={`
-                px-3.5 h-8 rounded-lg font-bold text-[11px] tracking-wide border transition-all flex items-center gap-1.5 shadow-sm
+                h-9 px-3.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer
                 ${status === 'loading' 
-                  ? 'bg-gray-50 text-gray-300 border-gray-100' 
-                  : 'bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-700 shadow-emerald-100'}
+                  ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed' 
+                  : 'bg-emerald-600 hover:bg-emerald-700 text-white'}
               `}
+              title="Unggah berkas Excel Master Pekerjaan"
             >
-              {status === 'loading' ? <Loader2 size={14} className="animate-spin" /> : <FileSpreadsheet size={14} />}
+              {status === 'loading' ? <Loader2 size={15} className="animate-spin" /> : <FileSpreadsheet size={15} />}
               <span>{status === 'loading' ? 'Mengunggah...' : 'Upload Excel'}</span>
             </button>
           </div>
         </div>
 
         {status === 'error' && (
-          <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg shadow-sm text-[11px] font-medium flex items-start gap-2.5 animate-in slide-in-from-top-2 z-20">
-            <XCircle className="w-4 h-4 shrink-0 mt-px" />
+          <div className="mt-2.5 p-3 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl text-xs font-medium flex items-start gap-2.5 animate-in slide-in-from-top-2">
+            <XCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <p>{message}</p>
           </div>
         )}
