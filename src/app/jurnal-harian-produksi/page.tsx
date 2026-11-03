@@ -66,21 +66,23 @@ export default async function JurnalHarianPage() {
 
   const today = todayStr();
   const batch = await db.batch([
-    { sql: 'SELECT COUNT(*) as total FROM jurnal_harian_produksi WHERE tgl = ? AND deleted_at IS NULL', args: [today] },
+    { sql: `SELECT COUNT(*) as total,
+      COALESCE(SUM(COALESCE(CAST(realisasi AS REAL), 0)), 0) as totalRealisasi,
+      COALESCE(SUM(COALESCE(CAST(rijek AS REAL), 0)), 0) as totalRijek
+      FROM jurnal_harian_produksi WHERE tgl = ? AND deleted_at IS NULL`, args: [today] },
     { sql: `SELECT id, posisi, absensi, tgl, shift, nama_karyawan, no_order, nama_order,
       jenis_pekerjaan, keterangan, target, realisasi, no_order_2, nama_order_2,
       jenis_pekerjaan_2, bahan_kertas, jml_plate, warna, inscheet, rijek, jam, kendala, bagian,
       is_manual_input, nama_order_manual, nama_order_manual_2, is_jadwal_ganda
       FROM jurnal_harian_produksi WHERE tgl = ? AND deleted_at IS NULL ${defaultSort} LIMIT 50`, args: [today] },
-    { sql: 'SELECT COALESCE(SUM(COALESCE(CAST(realisasi AS REAL), 0)), 0) as v FROM jurnal_harian_produksi WHERE tgl = ? AND deleted_at IS NULL', args: [today] },
-    { sql: 'SELECT COALESCE(SUM(COALESCE(CAST(rijek AS REAL), 0)), 0) as v FROM jurnal_harian_produksi WHERE tgl = ? AND deleted_at IS NULL', args: [today] },
   ], "read");
   // ponytail: JSON parse/stringify flattens BigInt → Number for client component
+  const summaryRow = batch[0].rows[0] as unknown as { total?: number; totalRealisasi?: number; totalRijek?: number } | undefined;
   const initialData = {
     data: JSON.parse(JSON.stringify(batch[1].rows)),
-    total: Number((batch[0].rows[0] as any).total),
-    totalRealisasi: Number((batch[2].rows[0] as any).v || 0),
-    totalRijek: Number((batch[3].rows[0] as any).v || 0),
+    total: Number(summaryRow?.total || 0),
+    totalRealisasi: Number(summaryRow?.totalRealisasi || 0),
+    totalRijek: Number(summaryRow?.totalRijek || 0),
   };
 
   return (

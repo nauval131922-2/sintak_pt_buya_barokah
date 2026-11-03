@@ -1050,6 +1050,7 @@ export async function initSchema(db: any) {
     );`,
     "ALTER TABLE master_pekerjaan_jurnal_produksi ADD COLUMN target_harian REAL;",
     "UPDATE master_pekerjaan_jurnal_produksi SET category = UPPER(TRIM(category)) WHERE category != UPPER(TRIM(category));",
+    "CREATE INDEX IF NOT EXISTS idx_mpjp_name ON master_pekerjaan_jurnal_produksi(name COLLATE NOCASE);",
     "UPDATE produksi_selesai SET nama_prd = TRIM(nama_prd);",
     // ponytail: denorm tracking keys — equality index instead of json_extract/raw_data LIKE
     "ALTER TABLE orders ADD COLUMN faktur_bom TEXT;",

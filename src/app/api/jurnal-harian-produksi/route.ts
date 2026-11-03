@@ -62,15 +62,13 @@ export async function GET(request: NextRequest) {
       const tglDay = tgl.slice(0, 10);
       const idFilterClause = (rowId && !Number.isNaN(rowId)) ? 'AND j.id < ?' : '';
       const queryArgs = (rowId && !Number.isNaN(rowId))
-        ? [namaKar, tglDay, tglDay, rowId]
-        : [namaKar, tglDay, tglDay];
+        ? [namaKar, tglDay, rowId]
+        : [namaKar, tglDay];
 
       const dup = await db.execute({
-        sql: `SELECT j.id, j.shift, j.jenis_pekerjaan, j.no_order, j.nama_order, j.target, j.keterangan, m.target_harian
+        sql: `SELECT j.id, j.shift, j.jenis_pekerjaan, j.no_order, j.nama_order, j.target, j.keterangan
               FROM jurnal_harian_produksi j
-              LEFT JOIN master_pekerjaan_jurnal_produksi m
-                ON LOWER(TRIM(m.name)) = LOWER(TRIM(j.jenis_pekerjaan))
-              WHERE j.deleted_at IS NULL AND j.nama_karyawan = ? AND j.tgl >= ? AND j.tgl < ? || '~' ${idFilterClause}
+              WHERE j.deleted_at IS NULL AND j.nama_karyawan = ? AND j.tgl = ? ${idFilterClause}
               ORDER BY j.id ASC LIMIT 50`,
         args: queryArgs
       });
@@ -83,10 +81,26 @@ export async function GET(request: NextRequest) {
         nama_order?: string | null;
         target?: string | number | null;
         keterangan?: string | null;
-        target_harian?: number | null;
       };
 
       const rows = dup.rows as unknown as ExistingJadwalRow[];
+
+      // Lookup target_harian secara batch untuk semua jenis pekerjaan yang relevan
+      const distinctJobs = Array.from(new Set([...rows.map(r => r.jenis_pekerjaan), incomingJob].filter(Boolean) as string[]));
+      const targetHarianMap = new Map<string, number | null>();
+      if (distinctJobs.length > 0) {
+        const placeholders = distinctJobs.map(() => '?').join(', ');
+        const mRes = await db.execute({
+          sql: `SELECT name, target_harian FROM master_pekerjaan_jurnal_produksi WHERE name IN (${placeholders}) COLLATE NOCASE`,
+          args: distinctJobs
+        });
+        for (const r of mRes.rows as unknown as Array<{ name?: string; target_harian?: number | null }>) {
+          if (r.name) {
+            const th = r.target_harian !== null && r.target_harian !== undefined ? Number(r.target_harian) : null;
+            targetHarianMap.set(r.name.trim().toLowerCase(), (th !== null && !Number.isNaN(th) && th > 0) ? th : null);
+          }
+        }
+      }
 
       type JobSummary = {
         jobName: string;
@@ -102,13 +116,13 @@ export async function GET(request: NextRequest) {
         const jobKey = jobName.toLowerCase();
         if (!jobKey) continue;
         const rTarget = Number(r.target) || 0;
-        const rTargetHarian = r.target_harian !== null && r.target_harian !== undefined ? Number(r.target_harian) : null;
+        const rTargetHarian = targetHarianMap.get(jobKey) || null;
         const entry = jobTotals.get(jobKey) || {
           jobName,
           existingTarget: 0,
           inputTarget: 0,
           totalTarget: 0,
-          targetHarian: (rTargetHarian !== null && !Number.isNaN(rTargetHarian) && rTargetHarian > 0) ? rTargetHarian : null,
+          targetHarian: rTargetHarian,
         };
         entry.existingTarget += rTarget;
         jobTotals.set(jobKey, entry);
@@ -118,18 +132,12 @@ export async function GET(request: NextRequest) {
       if (incomingKey) {
         let entry = jobTotals.get(incomingKey);
         if (!entry) {
-          const mRes = await db.execute({
-            sql: `SELECT target_harian FROM master_pekerjaan_jurnal_produksi WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) LIMIT 1`,
-            args: [incomingJob]
-          });
-          const mRow = mRes.rows[0] as unknown as { target_harian?: number | null } | undefined;
-          const mTH = mRow?.target_harian !== null && mRow?.target_harian !== undefined ? Number(mRow.target_harian) : null;
           entry = {
             jobName: incomingJob,
             existingTarget: 0,
             inputTarget: incomingTarget,
             totalTarget: incomingTarget,
-            targetHarian: (mTH !== null && !Number.isNaN(mTH) && mTH > 0) ? mTH : null,
+            targetHarian: targetHarianMap.get(incomingKey) || null,
           };
           jobTotals.set(incomingKey, entry);
         } else {
