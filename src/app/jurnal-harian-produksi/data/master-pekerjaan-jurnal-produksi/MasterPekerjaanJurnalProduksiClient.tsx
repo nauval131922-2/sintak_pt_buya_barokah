@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Loader2, AlertCircle, Database, RotateCcw, Filter, Wrench, Plus, Edit2, Trash2, Save } from 'lucide-react';
+import { 
+  Loader2, AlertCircle, Database, RotateCcw, Filter, Wrench, 
+  Plus, Edit2, Trash2, Save, Search, X, RefreshCw 
+} from 'lucide-react';
 import SearchableDropdown from '@/components/SearchableDropdown';
+import SquareDropdown from '@/components/SquareDropdown';
 import { DataTable } from '@/components/ui/DataTable';
 import MasterPekerjaanJurnalProduksiUpload from './MasterPekerjaanJurnalProduksiUpload';
 import ImportInfo from '@/components/ImportInfo';
-import SearchAndReload from '@/components/SearchAndReload';
 import TableFooter from '@/components/TableFooter';
 import BaseModal from '@/components/ui/BaseModal';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -139,6 +142,17 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
   const formCategoryItems = useMemo(() => {
     const set = new Set([...CANONICAL_CATEGORIES, ...availableCategories]);
     return Array.from(set);
+  }, [availableCategories]);
+
+  const bagianDropdownOptions = useMemo(() => {
+    const categories = availableCategories.length > 0 ? availableCategories : CANONICAL_CATEGORIES;
+    return [
+      { value: 'ALL', label: 'Semua Bagian' },
+      ...categories.map((c) => ({
+        value: c,
+        label: c.toUpperCase(),
+      })),
+    ];
   }, [availableCategories]);
 
   // Fetch data
@@ -356,107 +370,119 @@ export default function MasterPekerjaanJurnalProduksiClient({ importInfo }: Mast
   }, []);
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col gap-6 animate-in fade-in duration-700 overflow-hidden">
-      {/* Top Header Row: Upload & Controls */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 shrink-0">
-         {/* Upload Card */}
-         <MasterPekerjaanJurnalProduksiUpload />
-
-         {/* Filters Card */}
-         <div className="bg-white rounded-xl border border-gray-100 px-4 py-2.5 shadow-sm shadow-emerald-900/5 relative z-50">
-          <div className="flex items-center gap-2 w-full">
-               <SearchableDropdown
-                 id="mp-jhp-category"
-                 label="Bagian"
-                 value={categoryFilter}
-                 items={availableCategories}
-                 allLabel="Semua"
-                 searchPlaceholder="Cari bagian..."
-                 triggerWidth="flex-1"
-                 panelWidth="w-[280px]"
-                 compact
-                 icon={<Filter size={14} className={categoryFilter ? 'text-emerald-600' : 'text-gray-400'} />}
-                 onChange={(val) => {
-                   setCategoryFilter(val);
-                   setPage(1);
-                 }}
-               />
-
-               {/* Reset Filter Button */}
-               <div className="flex flex-col gap-1">
-                 <span className="text-[11px] font-semibold text-transparent ml-1 tracking-tight select-none">.</span>
-                 <button
-                   onClick={() => {
-                     setCategoryFilter('');
-                     setSearchQuery('');
-                     setPage(1);
-                   }}
-                   className="h-10 px-3 bg-white hover:bg-rose-50 text-gray-400 hover:text-rose-600 border border-gray-100 hover:border-rose-100 rounded-lg shadow-sm transition-all flex items-center gap-1.5 text-[11px] font-bold whitespace-nowrap"
-                 >
-                   <RotateCcw size={14} />
-                   Reset
-                 </button>
-               </div>
-            </div>
-         </div>
+    <div className="flex-1 min-h-0 flex flex-col gap-4 animate-in fade-in duration-700 overflow-hidden">
+      {/* 1. Upload Card (Memanjang 100% Full-Width) */}
+      <div className="w-full shrink-0">
+        <MasterPekerjaanJurnalProduksiUpload />
       </div>
 
-      {/* Results View */}
-      <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
-        {/* Search Bar Section */}
-        <div className="flex flex-col gap-4 shrink-0 px-1">
-          <div className="flex items-center justify-between gap-4 min-h-[32px]">
-            <div className="flex items-center gap-5">
-               <h3 className="text-[14px] font-bold text-gray-800 flex items-center gap-3 leading-none tracking-tight">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
-                    <Wrench size={16} />
-                  </div>
-                  <span>Daftar Master Pekerjaan</span>
-               </h3>
-               <ImportInfo info={importInfo} />
-            </div>
-            <div className="flex items-center gap-2">
-              {loading && (data?.length || 0) > 0 && (
-                  <div className="text-[11px] font-bold text-emerald-600 flex items-center gap-2 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100 shadow-sm animate-pulse leading-none">
-                    <Loader2 size={12} className="animate-spin" />
-                    <span>Loading Data...</span>
-                  </div>
-              )}
-              {selectedIds.size > 0 && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    requestDelete(
-                      Array.from(selectedIds).map(Number),
-                      `${selectedIds.size} data terpilih`
-                    )
-                  }
-                  className="flex items-center justify-center gap-1.5 px-3 h-9 bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold rounded-xl border border-rose-200 transition-colors shrink-0"
-                >
-                  <Trash2 size={13} />
-                  Hapus {selectedIds.size}
-                </button>
-              )}
+      {/* 2. Toolbar Search & Filters (Persis Style Halaman Rencana Produksi) */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-3 shadow-sm flex flex-col gap-2.5 shrink-0">
+        {/* Baris 1: Reload, Search Bar, Batch Delete & Tombol Tambah */}
+        <div className="flex items-center gap-2 w-full">
+          <button
+            type="button"
+            onClick={() => setRefreshKey((k) => k + 1)}
+            disabled={loading}
+            className="h-9 px-3 text-xs font-bold text-slate-700 hover:text-emerald-800 bg-slate-50 hover:bg-slate-100 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shrink-0 disabled:opacity-50 cursor-pointer shadow-xs"
+            title="Reload Data Master Pekerjaan"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-emerald-600' : ''}`} />
+            <span className="hidden sm:inline">Reload</span>
+          </button>
+
+          <div className="relative flex-1 min-w-0">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari berdasarkan nama pekerjaan atau nama mesin..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-8 h-9 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none transition-all"
+            />
+            {searchQuery && (
               <button
                 type="button"
-                onClick={openCreate}
-                className="flex items-center justify-center gap-2 px-4 h-9 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-xl transition-colors shadow-sm shrink-0"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
-                <Plus size={14} />
-                <span>Tambah</span>
+                <X size={14} />
               </button>
-            </div>
+            )}
           </div>
 
-          <SearchAndReload
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            onReload={() => setRefreshKey(k => k + 1)}
-            loading={loading}
-            placeholder="Cari berdasarkan nama pekerjaan atau nama mesin..."
-          />
+          {selectedIds.size > 0 && (
+            <button
+              type="button"
+              onClick={() =>
+                requestDelete(
+                  Array.from(selectedIds).map(Number),
+                  `${selectedIds.size} data terpilih`
+                )
+              }
+              className="h-9 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 border border-rose-200 shadow-xs cursor-pointer"
+            >
+              <Trash2 size={14} />
+              <span>Hapus {selectedIds.size}</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={openCreate}
+            className="h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer"
+            title="Tambah Pekerjaan Baru"
+          >
+            <Plus size={15} />
+            <span className="hidden sm:inline">Tambah Pekerjaan</span>
+          </button>
         </div>
 
+        {/* Baris 2: Controls Filter (Bagian & Reset Filter) */}
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 text-xs">
+          <div className="hidden sm:flex items-center text-xs text-slate-500 font-medium shrink-0">
+            <Filter className="w-3.5 h-3.5 mr-1 text-slate-400" /> Filter:
+          </div>
+
+          <div className="w-full sm:w-auto">
+            <SquareDropdown
+              options={bagianDropdownOptions}
+              value={categoryFilter || 'ALL'}
+              onChange={(val) => {
+                setCategoryFilter(val === 'ALL' ? '' : val);
+                setPage(1);
+              }}
+              searchPlaceholder="Cari Bagian..."
+              widthClass="w-full sm:w-40 md:w-48"
+            />
+          </div>
+
+          {(searchQuery || categoryFilter) && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery('');
+                setCategoryFilter('');
+                setPage(1);
+              }}
+              className="h-7 px-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+              title="Reset Semua Filter"
+            >
+              <RotateCcw size={12} />
+              <span>Reset Filter</span>
+            </button>
+          )}
+
+          {importInfo && (
+            <div className="ml-auto hidden sm:flex items-center">
+              <ImportInfo info={importInfo} />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 3. Results View */}
+      <div className="flex-1 flex flex-col gap-3 overflow-hidden min-h-0 relative">
         {/* Main Table Context */}
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden relative">
          {error ? (
