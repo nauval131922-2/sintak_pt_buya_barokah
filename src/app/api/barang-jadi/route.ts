@@ -160,7 +160,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       success: true,
-      data: stripRawData(records),
+      data: stripRawData(records, ['satuan']),
       total,
       lastUpdated,
       scrapedPeriod: parseScrapedPeriod((metadataResults[1].rows[0] as any)?.value),

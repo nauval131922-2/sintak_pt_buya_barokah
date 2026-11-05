@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { Loader2, Search, AlertCircle, Clock, RefreshCw, Copy, Check } from 'lucide-react';
+import { Loader2, Search, AlertCircle, Clock, RefreshCw, Copy, Check, Download } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ColumnDef } from '@tanstack/react-table';
 
@@ -62,6 +62,7 @@ export default function BarangJadiClient() {
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
+  const [isExporting, setIsExporting] = useState(false);
   const [isBatching, setIsBatching] = useState(false);
   const [batchProgress, setBatchProgress] = useState(0);
   const [batchStatus, setBatchStatus] = useState('');
@@ -224,6 +225,50 @@ export default function BarangJadiClient() {
       }
     } finally {
       setIsBatching(false); setLoading(false);
+    }
+  };
+
+  const handleExportExcel = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    try {
+      const queryParams = new URLSearchParams({
+        search: debouncedQuery,
+        from: formatDateToYYYYMMDD(startDate),
+        to: formatDateToYYYYMMDD(endDate),
+        warning_only: warningOnly.toString(),
+        so_only: soOnly.toString(),
+      });
+      const res = await fetch(`/api/export-barang-jadi?${queryParams.toString()}`);
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null);
+        throw new Error(errJson?.error || 'Gagal mengunduh file Excel');
+      }
+      const blob = await res.blob();
+      const contentDisposition = res.headers.get('content-disposition');
+      let filename = `PENERIMAAN BARANG JADI (${formatDateToYYYYMMDD(startDate)} sd ${formatDateToYYYYMMDD(endDate)}).xlsx`;
+      if (contentDisposition) {
+        const match = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (match && match[1]) filename = match[1];
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setDialog({
+        isOpen: true,
+        type: 'danger',
+        title: 'Gagal Export Excel',
+        message: msg || 'Terjadi kesalahan saat mengekspor data ke Excel.',
+      });
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -533,6 +578,16 @@ export default function BarangJadiClient() {
             >
               <span>📋</span>
               <span className="text-[13px] hidden sm:inline">Hanya Ada SO</span>
+            </button>
+
+            <button
+              onClick={handleExportExcel}
+              disabled={isExporting}
+              className="h-10 px-4 rounded-xl flex items-center gap-2 transition-all border shrink-0 shadow-sm bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 font-semibold disabled:opacity-50 text-[13px]"
+              title="Download Excel (Sesuai Filter & Format A4 Landscape)"
+            >
+              {isExporting ? <Loader2 size={16} className="animate-spin text-emerald-600" /> : <Download size={16} className="text-emerald-600" />}
+              <span className="text-[13px] hidden sm:inline">{isExporting ? 'Mengekspor...' : 'Download Excel'}</span>
             </button>
           </div>
         </div>
