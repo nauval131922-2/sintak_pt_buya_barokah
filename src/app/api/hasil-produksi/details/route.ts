@@ -140,8 +140,8 @@ export async function GET(request: NextRequest) {
     
     const availableBagian = (batchResults[0].rows as unknown as Record<string, unknown>[]).map(r => String(r.bagian || ''));
     const availablePekerjaan = (batchResults[1].rows as unknown as Record<string, unknown>[]).map(r => String(r.jenis_pekerjaan || ''));
-    const bjRows = batchResults[2].rows as unknown as Record<string, unknown>[];
-    const jurnalRows = batchResults[3].rows as unknown as Record<string, unknown>[];
+    const bjRows = (batchResults[2].rows as Record<string, any>[]) || [];
+    const jurnalRows = (batchResults[3].rows as Record<string, any>[]) || [];
 
     // Update cache if queried
     if (needsMasterQuery && masterIdx !== -1) {
@@ -243,15 +243,15 @@ export async function GET(request: NextRequest) {
     // Trend results: use separate query if filters were active, otherwise aggregate directly from jurnalRows
     const trendMap: Record<string, number> = {};
     if (needsTrendQuery && trendIdx !== -1) {
-      const trendRows = (batchResults[trendIdx]?.rows as unknown as Record<string, unknown>[]) || [];
+      const trendRows = (batchResults[trendIdx]?.rows as Record<string, any>[]) || [];
       trendRows.forEach(row => {
-        const tgl = row.tgl;
-        trendMap[tgl] = (trendMap[tgl] || 0) + (Number(row.realisasi) || 0);
+        const tgl = String(row.tgl || '');
+        if (tgl) trendMap[tgl] = (trendMap[tgl] || 0) + (Number(row.realisasi) || 0);
       });
     } else {
       jurnalRows.forEach(row => {
-        const tgl = row.tgl;
-        trendMap[tgl] = (trendMap[tgl] || 0) + (Number(row.realisasi) || 0);
+        const tgl = String(row.tgl || '');
+        if (tgl) trendMap[tgl] = (trendMap[tgl] || 0) + (Number(row.realisasi) || 0);
       });
     }
 

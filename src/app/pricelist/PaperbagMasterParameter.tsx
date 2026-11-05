@@ -13,6 +13,8 @@ import {
   Sparkles,
   Package,
   Wrench,
+  RotateCcw,
+  ShoppingBag,
 } from 'lucide-react';
 import {
   PaperbagMasterParams,

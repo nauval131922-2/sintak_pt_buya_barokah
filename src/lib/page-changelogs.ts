@@ -45,6 +45,199 @@ function entry(
 }
 
 export const PAGE_CHANGELOGS: Record<string, PageChangelog> = {
+  'pricelist-2026-11-05': entry({
+    pageKey: 'pricelist',
+    title: 'Kalkulasi Harga (Buku Tulis Mesin Cover SM 102 4W, Auto-Persist, & Parity Benchmark)',
+    permissionKeys: ['kalkulasi_pricelist'],
+    sortDate: '2026-11-05',
+    date: '5 Nov 2026',
+    version: '2026-11-05-1',
+    items: [
+      "Perbaikan kelengkapan impor ikon Sliders, RotateCcw, dan ShoppingBag pada simulator dan master parameter Packaging & Paperbag",
+    ],
+  }),
+
+  'barang-jadi-2026-11-05': entry({
+    pageKey: 'barang-jadi',
+    title: 'Penerimaan Barang Hasil Produksi',
+    permissionKeys: ['produksi_barang_jadi'],
+    sortDate: '2026-11-05',
+    date: '5 Nov 2026',
+    version: '2026-11-05-1',
+    items: [
+      "Optimasi lifecycle hydration, konkurensi scraping, helper badges, dan index faktur_so",
+      "Tambah fitur download excel sesuai filter dengan format A4 landscape",
+    ],
+  }),
+
+  'rencana-produksi-2026-11-03': entry({
+    pageKey: 'rencana-produksi',
+    title: 'Rencana Produksi',
+    permissionKeys: ['produksi_rencana_produksi'],
+    sortDate: '2026-11-03',
+    date: '3 Nov 2026',
+    version: '2026-11-03-1',
+    items: [
+      "Tambah tombol buat planning di detail timeline order dengan pre-fill otomatis",
+    ],
+  }),
+
+  'master-pekerjaan-jurnal-produksi-2026-11-03': entry({
+    pageKey: 'master-pekerjaan-jurnal-produksi',
+    title: 'Master Pekerjaan Jurnal Produksi',
+    permissionKeys: ["produksi_jhp_master_pekerjaan_jurnal_produksi"],
+    sortDate: '2026-11-03',
+    date: '3 Nov 2026',
+    version: '2026-11-03-1',
+    items: [
+      "Kapitalisasi kategori terintegrasi (self-healing migration, API case-insensitive, worker & JHP mapping) dan card tabel sesuai gambar",
+      "Kembalikan isi tabel asli dan samakan kontainer card tabel dengan card search & filter",
+      "Selaraskan card tabel, badge bagian, dan container dengan rencana produksi",
+      "Selaraskan toolbar search, reload, filter bagian, dan tombol tambah dengan rencana produksi serta card upload 100%",
+      "Selaraskan style card upload excel dengan card search and filter (rounded-2xl, p-3, border-gray-200)",
+      "Kembalikan kontainer tabel seperti semula",
+    ],
+  }),
+
+  'jurnal-harian-produksi-2026-11-03': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    permissionKeys: ['produksi_jhp'],
+    sortDate: '2026-11-03',
+    date: '3 Nov 2026',
+    version: '2026-11-03-1',
+    items: [
+      "Kapitalisasi kategori terintegrasi (self-healing migration, API case-insensitive, worker & JHP mapping) dan card tabel sesuai gambar",
+      "Rekonstruksi akurat modal jadwal ganda berdasarkan ID riwayat saat baris disimpan",
+      "Optimasi batch query SSR dan percepat endpoint detail_jadwal_ganda hingga 0.38ms via idx_mpjp_name",
+      "Tambah icon peringatan jadwal ganda pada baris kuning dan selaraskan style kontainer card filter & table",
+      "Hapus icon di kolom aksi, sediakan 1 icon di nama karyawan yang membuka modal rincian jadwal ganda",
+    ],
+  }),
+
+  'rencana-produksi-2026-11-02': entry({
+    pageKey: 'rencana-produksi',
+    title: 'Rencana Produksi',
+    permissionKeys: ['produksi_rencana_produksi'],
+    sortDate: '2026-11-02',
+    date: '2 Nov 2026',
+    version: '2026-11-02-1',
+    items: [
+      "Pulihkan join sopd_harga yang hilang dan pindahkan tombol reset filter setelah filter bagian",
+      "Eksekusi tahap 1 skema database dan api crud rencana produksi",
+      "Perbesar modal, perbaiki bug reset saat pilih sopd, disable field tarik data, dan bersihkan istilah spk",
+      "Perbaiki label Bagian Terpadat, tooltip lengkap, dan perluas agregasi ringkasan makro",
+      "Pindahkan tombol buat rencana ke samping kanan search bar dan integrasi visualisasi plan",
+      "Hapus klausa INDEXED BY agar kueri tidak crash 500 saat index belum ada",
+      "Alur mesin otomatis dari spesifikasi order produksi, bersihkan template manual, dan tambahkan tanda seru sumber data kartu",
+      "Hapus tombol navigasi floating up dan down",
+      "Jaga keutuhan kartu KPI summary dan akurasi status order kritis",
+      "Ganti kartu bagian terpadat dengan kartu order on-track (aman & lancar)",
+      "Pangkas latensi database 91% (3.3s ke 295ms), percepat pencarian sopd 26x, dan optimalkan rentang timeline gantt",
+      "Tambah filter rentang tanggal, nama hari & tanggal penuh di header kolom, dan cegah baris bawah terpotong",
+      "Perbesar view tabel master gantt dan lepas batasan fix 1 layar sama seperti detail timeline",
+      "Eksekusi tahap 2 tombol dan modal wizard buat rencana produksi baru",
+      "Hapus jargon asing, tampilkan semua order tanpa limit, toolbar & datepicker format Laporan Pekerjaan, tambah tombol Clear Filter, dan rapikan tanggal detail timeline",
+      "Optimasi kueri sql ramping, filter status database, dynamic import modal, dan memoize gantt chart",
+      "Style datepicker persis Laporan Pekerjaan, filter bagian SquareDropdown, nama tahapan bar penuh, dan hapus card hover",
+      "Atasi tabrakan z-index bar dengan kolom sticky dan pastikan scrollbar horizontal selalu terlihat di layar 1 halaman",
+      "Dukung integrasi pesanan berstatus planned yang belum memiliki transaksi JHP",
+      "Ubah opsi ALL kembali ke Semua Bagian",
+      "Urutkan order terbaru persis SOPD dan jadikan semua nama bagian kapital penuh",
+      "Satukan fitur analisa alur order dan rapikan sidebar",
+      "Bedakan ikon dan aksen kartu akumulasi realisasi menjadi BarChart3 teal",
+      "Satukan potong ke finishing, kalender 1 tahun ke depan, floating tombol top-bottom hasil produksi, dan optimasi query",
+    ],
+  }),
+
+  'master-pekerjaan-jurnal-produksi-2026-11-02': entry({
+    pageKey: 'master-pekerjaan-jurnal-produksi',
+    title: 'Master Pekerjaan Jurnal Produksi',
+    permissionKeys: ["produksi_jhp_master_pekerjaan_jurnal_produksi"],
+    sortDate: '2026-11-02',
+    date: '2 Nov 2026',
+    version: '2026-11-02-1',
+    items: [
+      "Kolom target harian di tabel, form tambah & edit",
+    ],
+  }),
+
+  'jurnal-harian-produksi-analisa-2026-11-02': entry({
+    pageKey: 'jurnal-harian-produksi-analisa',
+    title: 'Analisa Jurnal Harian Produksi',
+    permissionKeys: ['produksi_jhp_analisa'],
+    sortDate: '2026-11-02',
+    date: '2 Nov 2026',
+    version: '2026-11-02-1',
+    items: [
+      "Pindahkan menu Rencana Produksi ke bawah Jurnal Harian Produksi setelah Target Harian & bersihkan AnalisaClient",
+      "Satukan fitur analisa alur order dan rapikan sidebar",
+    ],
+  }),
+
+  'jurnal-harian-produksi-2026-11-02': entry({
+    pageKey: 'jurnal-harian-produksi',
+    title: 'Jurnal Harian Produksi',
+    permissionKeys: ['produksi_jhp'],
+    sortDate: '2026-11-02',
+    date: '2 Nov 2026',
+    version: '2026-11-02-1',
+    items: [
+      "Kalkulasi kumulatif target harian dan tampilkan peringatan di modal",
+      "Rapikan teks jadwal, deteksi target harian master, dan hilangkan animasi saat batal",
+      "Konfirmasi rincian jadwal ganda & sorot baris kuning di tabel",
+      "Format visual daftar jadwal ganda dan kartu peringatan target harian",
+      "Perlebar modal konfirmasi simpan dan rapikan perataan teks",
+      "Cek PRAGMA table_info sebelum ALTER TABLE untuk cegah log duplicate column",
+      "Sertakan is_jadwal_ganda pada SSR page.tsx dan self-heal migrasi kolom",
+    ],
+  }),
+
+  'hasil-produksi-2026-11-01': entry({
+    pageKey: 'hasil-produksi',
+    title: 'Hasil Produksi',
+    permissionKeys: ['produksi_hasil'],
+    sortDate: '2026-11-01',
+    date: '1 Nov 2026',
+    version: '2026-11-01-1',
+    items: [
+      "Prevent cell wrap overflow and subtotal row collision on long non-numeric values",
+      "Optimize database queries, cache master pekerjaan, dynamically import recharts, and progressive card rendering",
+    ],
+  }),
+
+  'pricelist-2026-10-31': entry({
+    pageKey: 'pricelist',
+    title: 'Kalkulasi Harga (Buku Tulis Mesin Cover SM 102 4W, Auto-Persist, & Parity Benchmark)',
+    permissionKeys: ['kalkulasi_pricelist'],
+    sortDate: '2026-10-31',
+    date: '31 Okt 2026',
+    version: '2026-10-31-1',
+    items: [
+      "Kembalikan kartu metrik Harga Nego (4 kartu) pada seluruh simulator berfitur nego",
+      "Seragamkan format rupiah harga nego per lembar dengan toLocaleString",
+      "Kembalikan kartu metrik Harga Nego (4 kartu) pada simulator Manasik",
+    ],
+  }),
+
+  'pricelist-2026-10-29': entry({
+    pageKey: 'pricelist',
+    title: 'Kalkulasi Harga (Buku Tulis Mesin Cover SM 102 4W, Auto-Persist, & Parity Benchmark)',
+    permissionKeys: ['kalkulasi_pricelist'],
+    sortDate: '2026-10-29',
+    date: '29 Okt 2026',
+    version: '2026-10-29-1',
+    items: [
+      "Jaga persistensi posisi tab aktif dan kategori produk pada localStorage saat reload",
+      "Tambahkan tombol dan modal Panduan & Rumus pada Master Parameter Buku Soft Cover dan Buku Hard Cover",
+      "Tuntaskan layout dual-scroll dan input ribuan pada KalenderKop, Packaging, dan Paperbag (26/26 modul 100% clear)",
+      "Ganti layout masonry (columns-2) ke CSS Grid (grid-cols-2) pada seluruh Master Parameter agar urutan kartu konsisten kiri-kanan",
+      "Pusatkan seluruh tarif kertas dasar ke Master Global dan hapus duplikasi input harga kertas pada 14 Master Parameter lokal",
+      "Terapkan arsitektur 2 kolom independen bebas gap pada seluruh Master Parameter",
+      "Tambahkan tombol Reset Semua dan search clear button pada Master Parameter Buku Soft Cover dan Buku Hard Cover",
+    ],
+  }),
+
   'laporan-pekerjaan-2026-10-29': entry({
     pageKey: 'laporan-pekerjaan',
     title: 'Laporan Pekerjaan',

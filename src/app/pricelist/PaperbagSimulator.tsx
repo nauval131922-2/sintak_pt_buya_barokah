@@ -22,6 +22,7 @@ import {
   TrendingUp,
   DollarSign,
   Percent,
+  Sliders,
 } from 'lucide-react';
 import {
   PaperbagUkuran,
