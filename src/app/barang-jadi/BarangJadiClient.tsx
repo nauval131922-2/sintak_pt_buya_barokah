@@ -36,6 +36,29 @@ function formatIndoDateStr(tglStr: string) {
   return tglStr;
 }
 
+function formatBadgeCurrency(val: number): string {
+  const absVal = Math.abs(val);
+  return (val < 0 ? '-' : '+') + 'Rp' + absVal.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+function renderAnalisaBadge(label: string, diff: number, baseVal: number) {
+  const isLoss = diff < 0;
+  let percentStr = '';
+  if (baseVal > 0) {
+    const pct = (Math.abs(diff) / baseVal) * 100;
+    percentStr = `(${pct.toFixed(1)}%)`;
+  }
+  return (
+    <div className={`px-2 py-0.5 rounded text-[11px] font-bold shadow-sm flex items-center justify-between border w-full ${isLoss ? 'bg-rose-50 text-rose-700 border-rose-200/60' : 'bg-emerald-50 text-emerald-700 border-emerald-200/60'}`}>
+      <div className="flex items-center gap-1 shrink-0">
+        <span className="text-[11px]">{isLoss ? '⚠️' : '✅'}</span>
+        <span>{label}</span>
+      </div>
+      <span className="font-mono tracking-tighter text-right">{formatBadgeCurrency(diff)} <span className="opacity-70 font-sans ml-0.5 text-[11px]">{percentStr}</span></span>
+    </div>
+  );
+}
+
 const PAGE_SIZE = 50;
 
 
@@ -44,13 +67,28 @@ export default function BarangJadiClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isMounted, setIsMounted] = useState(false);
-  const [startDate, setStartDate] = useState<Date>(() => getDefaultScraperDateRange(searchParams).startDate);
-  const [endDate, setEndDate] = useState<Date>(() => getDefaultScraperDateRange(searchParams).endDate);
+  const [startDate, setStartDate] = useState<Date>(() => {
+    if (typeof window !== 'undefined') {
+      return hydrateScraperPeriod({ stateKey: 'barangJadiState', periodKey: 'BarangJadiClient_scrapedPeriod' }, searchParams).startDate;
+    }
+    return getDefaultScraperDateRange(searchParams).startDate;
+  });
+  const [endDate, setEndDate] = useState<Date>(() => {
+    if (typeof window !== 'undefined') {
+      return hydrateScraperPeriod({ stateKey: 'barangJadiState', periodKey: 'BarangJadiClient_scrapedPeriod' }, searchParams).endDate;
+    }
+    return getDefaultScraperDateRange(searchParams).endDate;
+  });
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState('');
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const [scrapedPeriod, setScrapedPeriod] = useState<{start: string, end: string} | null>(null);
+  const [scrapedPeriod, setScrapedPeriod] = useState<{start: string, end: string} | null>(() => {
+    if (typeof window !== 'undefined') {
+      return hydrateScraperPeriod({ stateKey: 'barangJadiState', periodKey: 'BarangJadiClient_scrapedPeriod' }, searchParams).scrapedPeriod;
+    }
+    return null;
+  });
   const [loadTime, setLoadTime] = useState<number | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const mountedRef = useRef(true);
@@ -114,10 +152,6 @@ export default function BarangJadiClient() {
 
   useEffect(() => {
     setIsMounted(true);
-    const hydratedPeriod = hydrateScraperPeriod({ stateKey: 'barangJadiState', periodKey: 'BarangJadiClient_scrapedPeriod' }, searchParams);
-    setScrapedPeriod(hydratedPeriod.scrapedPeriod);
-    setStartDate(hydratedPeriod.startDate);
-    setEndDate(hydratedPeriod.endDate);
 
     const savedLastUpdate = localStorage.getItem('BarangJadiClient_lastUpdated');
     if (savedLastUpdate) setLastUpdated(formatLastUpdate(new Date(savedLastUpdate)));
@@ -154,14 +188,7 @@ export default function BarangJadiClient() {
         if (res.ok && active) {
           const json = await res.json();
           if (json.success) {
-            setData(prev => {
-              const processData = (items: any[]) => (items || []).map((d: any) => {
-                let parsed = {};
-                if (d.raw_data) { try { parsed = JSON.parse(d.raw_data); } catch(e){} }
-                return { ...d, ...parsed };
-              });
-              return processData(json.data);
-            });
+            setData(json.data || []);
             setTotalCount(json.total || 0);
             if (json.scrapedPeriod) setScrapedPeriod(json.scrapedPeriod);
             if (json.lastUpdated) {
@@ -206,7 +233,7 @@ export default function BarangJadiClient() {
       }
     };
     try {
-      const concurrency = 15; const queue = [...chunks];
+      const concurrency = 3; const queue = [...chunks];
       const workers = Array(Math.min(concurrency, queue.length)).fill(null).map(async () => {
         while (queue.length > 0) { const chunk = queue.shift(); if (chunk) await processChunk(chunk); }
       });
@@ -479,41 +506,18 @@ export default function BarangJadiClient() {
           );
         }
 
-        const formatCurrency = (val: number) => {
-          const absVal = Math.abs(val);
-          return (val < 0 ? '-' : '+') + 'Rp' + absVal.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-        };
-
-        const renderBadge = (label: string, diff: number, baseVal: number) => {
-          const isLoss = diff < 0;
-          let percentStr = "";
-          if (baseVal > 0) {
-            const pct = (Math.abs(diff) / baseVal) * 100;
-            percentStr = `(${pct.toFixed(1)}%)`;
-          }
-          return (
-            <div className={`px-2 py-0.5 rounded text-[11px] font-bold shadow-sm flex items-center justify-between border w-full ${isLoss ? 'bg-rose-50 text-rose-700 border-rose-200/60' : 'bg-emerald-50 text-emerald-700 border-emerald-200/60'}`}>
-              <div className="flex items-center gap-1 shrink-0">
-                <span className="text-[11px]">{isLoss ? '⚠️' : '✅'}</span>
-                <span>{label}</span>
-              </div>
-              <span className="font-mono tracking-tighter text-right">{formatCurrency(diff)} <span className="opacity-70 font-sans ml-0.5 text-[11px]">{percentStr}</span></span>
-            </div>
-          );
-        };
-
         return (
           <div className="flex flex-col gap-1 py-1 w-[280px]">
             {so_ord > 0 && (
               <>
-                {renderBadge("SO vs HP Barang Jadi", so_ord - hp, hp)}
-                {renderBadge("SO vs HP Rata-rata", so_ord - hp_avg, hp_avg)}
+                {renderAnalisaBadge("SO vs HP Barang Jadi", so_ord - hp, hp)}
+                {renderAnalisaBadge("SO vs HP Rata-rata", so_ord - hp_avg, hp_avg)}
               </>
             )}
             {so_penj > 0 && (
               <>
-                {renderBadge("Jual vs HP Barang Jadi", so_penj - hp, hp)}
-                {renderBadge("Jual vs HP Rata-rata", so_penj - hp_avg, hp_avg)}
+                {renderAnalisaBadge("Jual vs HP Barang Jadi", so_penj - hp, hp)}
+                {renderAnalisaBadge("Jual vs HP Rata-rata", so_penj - hp_avg, hp_avg)}
               </>
             )}
           </div>

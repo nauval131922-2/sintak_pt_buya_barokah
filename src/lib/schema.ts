@@ -1401,6 +1401,7 @@ export async function initSchema(db: any) {
     "DROP INDEX IF EXISTS idx_barang_jadi_tgl_id;",
     "CREATE INDEX IF NOT EXISTS idx_barang_jadi_expr_tgl ON barang_jadi(substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC);",
     "CREATE INDEX IF NOT EXISTS idx_barang_jadi_created_at ON barang_jadi(created_at);",
+    "CREATE INDEX IF NOT EXISTS idx_barang_jadi_faktur_so ON barang_jadi(faktur_so);",
     "DROP INDEX IF EXISTS idx_bahan_baku_tgl_id;",
     "CREATE INDEX IF NOT EXISTS idx_bahan_baku_expr_tgl ON bahan_baku(substr(tgl, 7, 4) DESC, substr(tgl, 4, 2) DESC, substr(tgl, 1, 2) DESC, id DESC);",
     "CREATE INDEX IF NOT EXISTS idx_bahan_baku_created_at ON bahan_baku(created_at);",
