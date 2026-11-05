@@ -78,9 +78,9 @@ Pada DFD Level 1, sistem SINTAK didekomposisi menjadi **Sub-Proses Bisnis**, **9
    - Menarik dan menyinkronkan dokumen komersial dari Digit ERP (SPH Keluar, Sales Order, Faktur Laporan Penjualan SI, Surat Jalan Pengiriman SJ, dan Bukti Pelunasan Piutang).
    - SINTAK bertindak sebagai viewer pemantauan realisasi faktur, analisis detail sales order di `/rekap-sales-order`, dan penelusuran status pesanan di Tracking Manufaktur.
    - Menyimpan ke Data Store **D3** (`sph_out`, `sales_orders`, `sales_reports`, `pengiriman`, `pelunasan_piutang`).
-3. **Proses 3.0: Operasional Manufaktur & Jurnal Produksi (JHP)**
-   - Jantung operasional percetakan: menghubungkan Order Produksi dari Digit (`orders`, `bill_of_materials`, `bahan_baku`, `barang_jadi`, `produksi_selesai`) dengan referensi **SOPd** (`/data/excel-sopd`), penetapan target rencana (**Input Target Penjadwalan** & **Target Harian**), pencatatan realisasi (**JHP** harian web & Bot Telegram), serta log divisi teknis (**Laporan Pekerjaan**).
-   - Menyimpan ke Data Store **D4** (`Data Produksi Digit`), **D5** (`Data Operasional SINTAK`), dan **D6** (`Data Laporan Pekerjaan`).
+3. **Proses 3.0: Operasional Manufaktur, Rencana Produksi & Jurnal Produksi (JHP)**
+   - Jantung operasional percetakan: menghubungkan Order Produksi dari Digit (`orders`, `bill_of_materials`, `bahan_baku`, `barang_jadi`, `produksi_selesai`) dengan referensi **SOPd** (`/data/excel-sopd`), perancangan alur tahapan mesin & visualisasi Gantt Chart di **Rencana Produksi** (`/rencana-produksi`), penetapan target rencana (**Input Target Penjadwalan** & **Target Harian**), pencatatan realisasi (**JHP** harian web & Bot Telegram), serta log divisi teknis (**Laporan Pekerjaan**).
+   - Menyimpan ke Data Store **D4** (`Data Produksi Digit`), **D5** (`Data Operasional SINTAK & Rencana Produksi`), dan **D6** (`Data Laporan Pekerjaan`).
 4. **Proses 4.0: Kalkulasi Biaya & Simulasi Pricelist**
    - Menangani simulasi harga cetak 20+ produk (`/pricelist`), pencatatan nilai HPP per order (`/hpp-kalkulasi`), sinkronisasi nama order dari Digit `orders`, serta referensi tarif bahan dari riwayat Rekap Pembelian Barang.
    - Menyimpan ke Data Store **D7** (`hpp_kalkulasi`, `saved_calculations`, `global_master_params`).
@@ -98,7 +98,7 @@ Pada DFD Level 1, sistem SINTAK didekomposisi menjadi **Sub-Proses Bisnis**, **9
 | **D2** | **Data Master Stok Barang** | `stok_master_barang` |
 | **D3** | **Data Penjualan Digit** | `sph_out`, `sales_orders`, `sales_reports`, `pengiriman`, `pelunasan_piutang` |
 | **D4** | **Data Produksi Digit** | `bill_of_materials`, `orders`, `bahan_baku`, `barang_jadi`, `produksi_selesai` |
-| **D5** | **Data Jurnal Harian Produksi (JHP)** | `jurnal_harian_produksi` *(Referensi: `orders/sopd`, `master_pekerjaan`, `master_pekerjaan_jurnal_produksi`)* |
+| **D5** | **Data Jurnal Harian & Rencana Produksi** | `jurnal_harian_produksi`, `rencana_produksi`, `rencana_produksi_tahapan` *(Referensi: `orders/sopd`, `master_pekerjaan`, `master_pekerjaan_jurnal_produksi`)* |
 | **D6** | **Data Laporan Pekerjaan** | `laporan_pekerjaan`, `role_laporan_pekerjaan_config` |
 | **D7** | **Data Kalkulasi Biaya & Simulasi** | `hpp_kalkulasi`, `pricelist_items`, `pricelist_saved_calculations` |
 | **D8** | **Data Jurnal Akuntansi** | `rek_akuntansi`, `jurnal_umum` |
@@ -141,6 +141,11 @@ Dekomposisi mendalam atas proses inti operasional percetakan:
    - Merujuk nama proyek dari referensi order (`orders` / `sopd`).
    - Menyimpan ke Data Store **D6** (`laporan_pekerjaan`, `role_laporan_pekerjaan_config`) dan menyajikan status pengerjaan (Belum Dikerjakan, In Progress, Selesai, Cancel) serta grafik beban kerja divisi.
 
+6. **3.6 Perencanaan Alur Mesin & Rencana Produksi (Gantt Chart)**
+   - Merancang tahapan alur mesin produksi otomatis berdasarkan spesifikasi pesanan (Setting, Plate, Cetak, Finishing, QC).
+   - Menghitung kapasitas volume, estimasi durasi hari, tanggal mulai-selesai rencana, dan menyajikan visualisasi timeline interaktif Gantt Chart di `/rencana-produksi`.
+   - Terintegrasi dua arah dengan SOPd, pesanan berstatus planned, serta pencatatan realisasi JHP.
+   - Menyimpan ke Data Store **D5** (`rencana_produksi`, `rencana_produksi_tahapan`).
 ---
 
 ## 5. DFD LEVEL 2: PROSES 1.0 PENCERMINAN PENGADAAN & STOK DIGIT (READ-ONLY)

@@ -48,8 +48,9 @@ graph LR
     subgraph RantaiProduksi ["2. RANTAI MANUFAKTUR & PRODUKSI"]
         ORDERS["Order Digit (orders)"] --> BOM["Bill of Materials (BOM)"]
         BOM --> SOPD["Surat Perintah Kerja (SOPd)"]
-        SOPD --> JHP["Jurnal Harian Produksi (JHP)"]
-        JHP --> PRD_SELESAI["Produksi Selesai"]
+        SOPD --> RENCANA["Rencana Produksi (Gantt Chart)"]
+        RENCANA --> JHP["Jurnal Harian Produksi (JHP)"]
+        JHP --> PRD_SELESAI["Produksi Selesai / Barang Jadi"]
     end
 
     subgraph RantaiJual ["3. RANTAI PENJUALAN & DISTRIBUSI"]

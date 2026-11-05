@@ -658,3 +658,913 @@ Untuk menjaga keselarasan data tanpa membebani server produksi di jam kerja sibu
 
 > **Dokumen Resmi Spesifikasi API SINTAK PT Buya Barokah**  
 > Terakhir Diperbarui: Oktober 2026 | Tim Pengembang SINTAK
+
+
+---
+
+## 8. ENDPOINT API OPERASIONAL TAMBAHAN (AUTO-SINKRONISASI)
+
+### Endpoint API Tambahan (Hasil Auto-Audit Kode Sumber)
+Berikut adalah endpoint yang belum terdaftar di Buku 03:
+
+| Metode HTTP | Path Endpoint | Lokasi Berkas Sumber | Status Dokumen |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/activity-log/export` | `src/app/api/activity-log/export/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/bahan-baku` | `src/app/api/bahan-baku/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/barang-jadi` | `src/app/api/barang-jadi/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/bom` | `src/app/api/bom/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `POST` | `/api/bom/scrape-period` | `src/app/api/bom/scrape-period/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/dashboard/akunting-jurnal-terbaru` | `src/app/api/dashboard/akunting-jurnal-terbaru/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/dashboard/jurnal-terbaru` | `src/app/api/dashboard/jurnal-terbaru/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/dashboard/users-count` | `src/app/api/dashboard/users-count/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/debug-raw-data` | `src/app/api/debug-raw-data/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `PATCH` | `/api/employees/[id]` | `src/app/api/employees/[id]/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/export-barang-jadi` | `src/app/api/export-barang-jadi/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/export-infractions` | `src/app/api/export-infractions/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/export-jurnal` | `src/app/api/export-jurnal/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET, POST` | `/api/export-penonaktifan-master-barang` | `src/app/api/export-penonaktifan-master-barang/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/hasil-produksi/details` | `src/app/api/hasil-produksi/details/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `PUT, DELETE` | `/api/infractions/[id]` | `src/app/api/infractions/[id]/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/items` | `src/app/api/items/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/jurnal-harian-produksi/auto-generate/draft` | `src/app/api/jurnal-harian-produksi/auto-generate/draft/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `POST` | `/api/jurnal-harian-produksi/auto-generate/save` | `src/app/api/jurnal-harian-produksi/auto-generate/save/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `POST` | `/api/jurnal-harian-produksi/auto-generate/scrape` | `src/app/api/jurnal-harian-produksi/auto-generate/scrape/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/jurnal-harian-produksi/cek-karyawan` | `src/app/api/jurnal-harian-produksi/cek-karyawan/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/jurnal-harian-produksi/pekerjaan-by-order` | `src/app/api/jurnal-harian-produksi/pekerjaan-by-order/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/jurnal-umum` | `src/app/api/jurnal-umum/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/jurnal-umum/analisis` | `src/app/api/jurnal-umum/analisis/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/maintenance` | `src/app/api/maintenance/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/master-barang` | `src/app/api/master-barang/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/master-pekerjaan-jurnal-produksi/filters` | `src/app/api/master-pekerjaan-jurnal-produksi/filters/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/master-pekerjaan/filters` | `src/app/api/master-pekerjaan/filters/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/orders` | `src/app/api/orders/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/pelunasan-hutang` | `src/app/api/pelunasan-hutang/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/pelunasan-piutang` | `src/app/api/pelunasan-piutang/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/penerimaan-pembelian` | `src/app/api/penerimaan-pembelian/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/pengiriman` | `src/app/api/pengiriman/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/penonaktifan-master-barang` | `src/app/api/penonaktifan-master-barang/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/penonaktifan-master-barang/generate-routine` | `src/app/api/penonaktifan-master-barang/generate-routine/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET, POST, PUT, PATCH` | `/api/penonaktifan-master-barang/review` | `src/app/api/penonaktifan-master-barang/review/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/penonaktifan-master-barang/review/search` | `src/app/api/penonaktifan-master-barang/review/search/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/penonaktifan-master-barang/search` | `src/app/api/penonaktifan-master-barang/search/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET, POST` | `/api/penonaktifan-master-barang/settings` | `src/app/api/penonaktifan-master-barang/settings/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/penonaktifan-master-barang/sync-range` | `src/app/api/penonaktifan-master-barang/sync-range/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/permissions/check-activity-log` | `src/app/api/permissions/check-activity-log/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET, POST, PUT, DELETE` | `/api/personal-tasks` | `src/app/api/personal-tasks/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/pr` | `src/app/api/pr/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/produksi-selesai` | `src/app/api/produksi-selesai/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/purchase-orders` | `src/app/api/purchase-orders/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/rek-akuntansi` | `src/app/api/rek-akuntansi/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/rekap-pembelian-barang` | `src/app/api/rekap-pembelian-barang/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/rekap-sales-order` | `src/app/api/rekap-sales-order/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET, POST, PUT, DELETE` | `/api/rencana-produksi` | `src/app/api/rencana-produksi/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/saldo-barang` | `src/app/api/saldo-barang/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/sales` | `src/app/api/sales/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/sales-orders` | `src/app/api/sales-orders/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/scrape-saldo-barang` | `src/app/api/scrape-saldo-barang/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/search` | `src/app/api/search/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `POST` | `/api/settings/konversi-data/laporan-pekerjaan` | `src/app/api/settings/konversi-data/laporan-pekerjaan/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/sopd/options` | `src/app/api/sopd/options/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/sph-in` | `src/app/api/sph-in/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/sph-out` | `src/app/api/sph-out/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/spph-out` | `src/app/api/spph-out/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/spreadsheet` | `src/app/api/spreadsheet/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/sync-status` | `src/app/api/sync-status/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `POST` | `/api/telegram/approve` | `src/app/api/telegram/approve/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/telegram/list-users` | `src/app/api/telegram/list-users/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/tracking/bom` | `src/app/api/tracking/bom/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/tracking/names` | `src/app/api/tracking/names/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/tracking/po-numbers` | `src/app/api/tracking/po-numbers/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/tracking/rekap-names` | `src/app/api/tracking/rekap-names/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/tracking/suppliers` | `src/app/api/tracking/suppliers/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+| `GET` | `/api/usr-log` | `src/app/api/usr-log/route.ts` | ⚠️ Baru / Belum Terdokumentasi |
+
+#### Spesifikasi Rinci Endpoint Baru:
+
+##### `GET /api/activity-log/export`
+- **Berkas**: `src/app/api/activity-log/export/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/bahan-baku`
+- **Berkas**: `src/app/api/bahan-baku/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/barang-jadi`
+- **Berkas**: `src/app/api/barang-jadi/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/bom`
+- **Berkas**: `src/app/api/bom/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `POST /api/bom/scrape-period`
+- **Berkas**: `src/app/api/bom/scrape-period/route.ts`
+- **Metode**: `POST`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/dashboard/akunting-jurnal-terbaru`
+- **Berkas**: `src/app/api/dashboard/akunting-jurnal-terbaru/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/dashboard/jurnal-terbaru`
+- **Berkas**: `src/app/api/dashboard/jurnal-terbaru/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/dashboard/users-count`
+- **Berkas**: `src/app/api/dashboard/users-count/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/debug-raw-data`
+- **Berkas**: `src/app/api/debug-raw-data/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `PATCH /api/employees/[id]`
+- **Berkas**: `src/app/api/employees/[id]/route.ts`
+- **Metode**: `PATCH`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/export-barang-jadi`
+- **Berkas**: `src/app/api/export-barang-jadi/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/export-infractions`
+- **Berkas**: `src/app/api/export-infractions/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/export-jurnal`
+- **Berkas**: `src/app/api/export-jurnal/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET, POST /api/export-penonaktifan-master-barang`
+- **Berkas**: `src/app/api/export-penonaktifan-master-barang/route.ts`
+- **Metode**: `GET, POST`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/hasil-produksi/details`
+- **Berkas**: `src/app/api/hasil-produksi/details/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `PUT, DELETE /api/infractions/[id]`
+- **Berkas**: `src/app/api/infractions/[id]/route.ts`
+- **Metode**: `PUT, DELETE`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/items`
+- **Berkas**: `src/app/api/items/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/jurnal-harian-produksi/auto-generate/draft`
+- **Berkas**: `src/app/api/jurnal-harian-produksi/auto-generate/draft/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `POST /api/jurnal-harian-produksi/auto-generate/save`
+- **Berkas**: `src/app/api/jurnal-harian-produksi/auto-generate/save/route.ts`
+- **Metode**: `POST`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `POST /api/jurnal-harian-produksi/auto-generate/scrape`
+- **Berkas**: `src/app/api/jurnal-harian-produksi/auto-generate/scrape/route.ts`
+- **Metode**: `POST`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/jurnal-harian-produksi/cek-karyawan`
+- **Berkas**: `src/app/api/jurnal-harian-produksi/cek-karyawan/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/jurnal-harian-produksi/pekerjaan-by-order`
+- **Berkas**: `src/app/api/jurnal-harian-produksi/pekerjaan-by-order/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/jurnal-umum`
+- **Berkas**: `src/app/api/jurnal-umum/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/jurnal-umum/analisis`
+- **Berkas**: `src/app/api/jurnal-umum/analisis/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/maintenance`
+- **Berkas**: `src/app/api/maintenance/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/master-barang`
+- **Berkas**: `src/app/api/master-barang/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/master-pekerjaan-jurnal-produksi/filters`
+- **Berkas**: `src/app/api/master-pekerjaan-jurnal-produksi/filters/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/master-pekerjaan/filters`
+- **Berkas**: `src/app/api/master-pekerjaan/filters/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/orders`
+- **Berkas**: `src/app/api/orders/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/pelunasan-hutang`
+- **Berkas**: `src/app/api/pelunasan-hutang/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/pelunasan-piutang`
+- **Berkas**: `src/app/api/pelunasan-piutang/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/penerimaan-pembelian`
+- **Berkas**: `src/app/api/penerimaan-pembelian/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/pengiriman`
+- **Berkas**: `src/app/api/pengiriman/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/penonaktifan-master-barang`
+- **Berkas**: `src/app/api/penonaktifan-master-barang/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/penonaktifan-master-barang/generate-routine`
+- **Berkas**: `src/app/api/penonaktifan-master-barang/generate-routine/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET, POST, PUT, PATCH /api/penonaktifan-master-barang/review`
+- **Berkas**: `src/app/api/penonaktifan-master-barang/review/route.ts`
+- **Metode**: `GET, POST, PUT, PATCH`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/penonaktifan-master-barang/review/search`
+- **Berkas**: `src/app/api/penonaktifan-master-barang/review/search/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/penonaktifan-master-barang/search`
+- **Berkas**: `src/app/api/penonaktifan-master-barang/search/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET, POST /api/penonaktifan-master-barang/settings`
+- **Berkas**: `src/app/api/penonaktifan-master-barang/settings/route.ts`
+- **Metode**: `GET, POST`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/penonaktifan-master-barang/sync-range`
+- **Berkas**: `src/app/api/penonaktifan-master-barang/sync-range/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/permissions/check-activity-log`
+- **Berkas**: `src/app/api/permissions/check-activity-log/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET, POST, PUT, DELETE /api/personal-tasks`
+- **Berkas**: `src/app/api/personal-tasks/route.ts`
+- **Metode**: `GET, POST, PUT, DELETE`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/pr`
+- **Berkas**: `src/app/api/pr/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/produksi-selesai`
+- **Berkas**: `src/app/api/produksi-selesai/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/purchase-orders`
+- **Berkas**: `src/app/api/purchase-orders/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/rek-akuntansi`
+- **Berkas**: `src/app/api/rek-akuntansi/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/rekap-pembelian-barang`
+- **Berkas**: `src/app/api/rekap-pembelian-barang/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/rekap-sales-order`
+- **Berkas**: `src/app/api/rekap-sales-order/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET, POST, PUT, DELETE /api/rencana-produksi`
+- **Berkas**: `src/app/api/rencana-produksi/route.ts`
+- **Metode**: `GET, POST, PUT, DELETE`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/saldo-barang`
+- **Berkas**: `src/app/api/saldo-barang/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/sales`
+- **Berkas**: `src/app/api/sales/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/sales-orders`
+- **Berkas**: `src/app/api/sales-orders/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/scrape-saldo-barang`
+- **Berkas**: `src/app/api/scrape-saldo-barang/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/search`
+- **Berkas**: `src/app/api/search/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `POST /api/settings/konversi-data/laporan-pekerjaan`
+- **Berkas**: `src/app/api/settings/konversi-data/laporan-pekerjaan/route.ts`
+- **Metode**: `POST`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/sopd/options`
+- **Berkas**: `src/app/api/sopd/options/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/sph-in`
+- **Berkas**: `src/app/api/sph-in/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/sph-out`
+- **Berkas**: `src/app/api/sph-out/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/spph-out`
+- **Berkas**: `src/app/api/spph-out/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/spreadsheet`
+- **Berkas**: `src/app/api/spreadsheet/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/sync-status`
+- **Berkas**: `src/app/api/sync-status/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `POST /api/telegram/approve`
+- **Berkas**: `src/app/api/telegram/approve/route.ts`
+- **Metode**: `POST`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/telegram/list-users`
+- **Berkas**: `src/app/api/telegram/list-users/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/tracking/bom`
+- **Berkas**: `src/app/api/tracking/bom/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/tracking/names`
+- **Berkas**: `src/app/api/tracking/names/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/tracking/po-numbers`
+- **Berkas**: `src/app/api/tracking/po-numbers/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/tracking/rekap-names`
+- **Berkas**: `src/app/api/tracking/rekap-names/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/tracking/suppliers`
+- **Berkas**: `src/app/api/tracking/suppliers/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```
+
+##### `GET /api/usr-log`
+- **Berkas**: `src/app/api/usr-log/route.ts`
+- **Metode**: `GET`
+- **Autentikasi**: Memerlukan sesi pengguna login (`getSession()`)
+- **Ringkasan Respons**:
+```json
+{
+  "success": true,
+  "data": []
+}
+```

@@ -1435,3 +1435,339 @@ Untuk menjamin waktu respons query berada di bawah 50 ms pada tabel-tabel bervol
 
 > **Dokumen Resmi SINTAK PT Buya Barokah**  
 > Terakhir Diperbarui: Oktober 2026 | Tim Pengembang SINTAK
+
+
+---
+
+## 5. TABEL DAN INDEKS TAMBAHAN (AUTO-SINKRONISASI)
+
+### Skema Tabel & Indeks Tambahan (Hasil Auto-Audit Database)
+
+#### Tabel Baru:
+
+##### Tabel `push_subscriptions`
+| Nama Kolom | Tipe Data | Keterangan & Batasan |
+| :--- | :--- | :--- |
+| `id` | `INTEGER` | **Primary Key** |
+| `user_id` | `INTEGER` | Wajib diisi |
+| `subscription` | `TEXT` | Wajib diisi |
+| `created_at` | `DATETIME` | Opsional |
+
+##### Tabel `activity_logs_archive`
+| Nama Kolom | Tipe Data | Keterangan & Batasan |
+| :--- | :--- | :--- |
+| `id` | `INTEGER` | **Primary Key** |
+| `action_type` | `TEXT` | Wajib diisi |
+| `table_name` | `TEXT` | Wajib diisi |
+| `record_id` | `INTEGER` | Wajib diisi |
+| `message` | `TEXT` | Wajib diisi |
+| `raw_data` | `TEXT` | Wajib diisi |
+| `recorded_by` | `TEXT` | Wajib diisi |
+| `created_at` | `DATETIME` | Wajib diisi |
+| `archived_at` | `DATETIME` | Opsional |
+
+##### Tabel `user_roles`
+| Nama Kolom | Tipe Data | Keterangan & Batasan |
+| :--- | :--- | :--- |
+| `id` | `INTEGER` | **Primary Key** |
+| `user_id` | `INTEGER` | Wajib diisi |
+| `role_name` | `TEXT` | Wajib diisi |
+| `created_at` | `DATETIME` | Opsional |
+
+##### Tabel `penonaktifan_reviews`
+| Nama Kolom | Tipe Data | Keterangan & Batasan |
+| :--- | :--- | :--- |
+| `id` | `INTEGER` | **Primary Key** |
+| `token` | `TEXT` | Wajib diisi |
+| `cutoff` | `TEXT` | Wajib diisi |
+| `created_by` | `TEXT` | Opsional |
+| `snapshot` | `TEXT` | Wajib diisi |
+| `status` | `TEXT` | Wajib diisi |
+| `created_at` | `DATETIME` | Opsional |
+
+##### Tabel `penonaktifan_review_items`
+| Nama Kolom | Tipe Data | Keterangan & Batasan |
+| :--- | :--- | :--- |
+| `id` | `INTEGER` | **Primary Key** |
+| `review_id` | `INTEGER` | Wajib diisi |
+| `kode` | `TEXT` | Wajib diisi |
+| `nama` | `TEXT` | Opsional |
+| `aksi` | `TEXT` | Wajib diisi |
+| `alasan` | `TEXT` | Opsional |
+| `reviewer` | `TEXT` | Opsional |
+| `keputusan` | `TEXT` | Wajib diisi |
+| `created_at` | `DATETIME` | Opsional |
+
+##### Tabel `personal_tasks`
+| Nama Kolom | Tipe Data | Keterangan & Batasan |
+| :--- | :--- | :--- |
+| `id` | `INTEGER` | **Primary Key** |
+| `task` | `TEXT` | Wajib diisi |
+| `status` | `TEXT` | Opsional |
+| `sender` | `TEXT` | Opsional |
+| `source` | `TEXT` | Opsional |
+| `created_at` | `DATETIME` | Opsional |
+| `completed_at` | `DATETIME` | Opsional |
+
+##### Tabel `session_context`
+| Nama Kolom | Tipe Data | Keterangan & Batasan |
+| :--- | :--- | :--- |
+| `id` | `INTEGER` | **Primary Key** |
+| `username` | `TEXT` | Opsional |
+| `last_menu` | `TEXT` | Opsional |
+| `updated_at` | `DATETIME` | Opsional |
+
+##### Tabel `generate_feedback`
+| Nama Kolom | Tipe Data | Keterangan & Batasan |
+| :--- | :--- | :--- |
+| `id` | `INTEGER` | **Primary Key** |
+| `sesi_generate` | `TEXT` | Wajib diisi |
+| `tgl_target` | `TEXT` | Wajib diisi |
+| `nama_karyawan` | `TEXT` | Wajib diisi |
+| `bagian` | `TEXT` | Wajib diisi |
+| `shift_generated` | `TEXT` | Opsional |
+| `shift_corrected` | `TEXT` | Opsional |
+| `bagian_generated` | `TEXT` | Opsional |
+| `bagian_corrected` | `TEXT` | Opsional |
+| `jenis_pekerjaan_generated` | `TEXT` | Opsional |
+| `jenis_pekerjaan_corrected` | `TEXT` | Opsional |
+| `no_order_generated` | `TEXT` | Opsional |
+| `no_order_corrected` | `TEXT` | Opsional |
+| `target_generated` | `REAL` | Opsional |
+| `target_corrected` | `REAL` | Opsional |
+| `keterangan_generated` | `TEXT` | Opsional |
+| `keterangan_corrected` | `TEXT` | Opsional |
+| `alasan_koreksi` | `TEXT` | Opsional |
+| `akurasi` | `INTEGER` | Opsional |
+| `dikoreksi_oleh` | `TEXT` | Opsional |
+| `dibuat_pada` | `DATETIME` | Opsional |
+
+##### Tabel `rencana_produksi`
+| Nama Kolom | Tipe Data | Keterangan & Batasan |
+| :--- | :--- | :--- |
+| `id` | `INTEGER` | **Primary Key** |
+| `no_order` | `TEXT` | Wajib diisi |
+| `nama_order` | `TEXT` | Wajib diisi |
+| `qty_oplah` | `INTEGER` | Opsional |
+| `satuan` | `TEXT` | Opsional |
+| `nama_pelanggan` | `TEXT` | Opsional |
+| `tgl_order` | `TEXT` | Opsional |
+| `tgl_deadline` | `TEXT` | Opsional |
+| `tgl_mulai_rencana` | `TEXT` | Opsional |
+| `tgl_selesai_rencana` | `TEXT` | Opsional |
+| `status` | `TEXT` | Opsional |
+| `catatan` | `TEXT` | Opsional |
+| `created_by` | `TEXT` | Opsional |
+| `updated_by` | `TEXT` | Opsional |
+| `created_at` | `DATETIME` | Opsional |
+| `updated_at` | `DATETIME` | Opsional |
+
+##### Tabel `rencana_produksi_tahapan`
+| Nama Kolom | Tipe Data | Keterangan & Batasan |
+| :--- | :--- | :--- |
+| `id` | `INTEGER` | **Primary Key** |
+| `rencana_id` | `INTEGER` | Opsional |
+| `no_order` | `TEXT` | Wajib diisi |
+| `urutan` | `INTEGER` | Opsional |
+| `bagian` | `TEXT` | Wajib diisi |
+| `mesin` | `TEXT` | Opsional |
+| `nama_tahap` | `TEXT` | Wajib diisi |
+| `volume` | `REAL` | Opsional |
+| `target_per_hari` | `REAL` | Opsional |
+| `durasi_hari` | `INTEGER` | Opsional |
+| `tgl_mulai_plan` | `TEXT` | Opsional |
+| `tgl_selesai_plan` | `TEXT` | Opsional |
+| `catatan` | `TEXT` | Opsional |
+| `created_at` | `DATETIME` | Opsional |
+| `updated_at` | `DATETIME` | Opsional |
+
+##### Tabel `saldo_barang`
+| Nama Kolom | Tipe Data | Keterangan & Batasan |
+| :--- | :--- | :--- |
+| `id` | `INTEGER` | **Primary Key** |
+| `kode` | `TEXT` | Wajib diisi |
+| `tgl` | `TEXT` | Wajib diisi |
+| `nama` | `TEXT` | Opsional |
+| `kd_satuan` | `TEXT` | Opsional |
+| `saldo` | `REAL` | Opsional |
+| `kd_golongan` | `TEXT` | Opsional |
+| `kd_kelompok` | `TEXT` | Opsional |
+| `status` | `TEXT` | Opsional |
+| `n_persd` | `REAL` | Opsional |
+| `n_hp` | `REAL` | Opsional |
+
+##### Tabel `sales_orders_new`
+| Nama Kolom | Tipe Data | Keterangan & Batasan |
+| :--- | :--- | :--- |
+| `id` | `INTEGER` | **Primary Key** |
+| `faktur` | `TEXT` | Wajib diisi |
+| `kd_pelanggan` | `TEXT` | Opsional |
+| `tgl` | `TEXT` | Opsional |
+| `kd_barang` | `TEXT` | Opsional |
+| `faktur_sph` | `TEXT` | Opsional |
+| `top_hari` | `TEXT` | Opsional |
+| `harga` | `REAL` | Opsional |
+| `qty` | `REAL` | Opsional |
+| `satuan` | `TEXT` | Opsional |
+| `jumlah` | `REAL` | Opsional |
+| `ppn` | `REAL` | Opsional |
+| `faktur_prd` | `TEXT` | Opsional |
+| `nama_prd` | `TEXT` | Opsional |
+| `nama_pelanggan` | `TEXT` | Opsional |
+| `dati_2` | `TEXT` | Opsional |
+| `gol_barang` | `TEXT` | Opsional |
+| `spesifikasi` | `TEXT` | Opsional |
+| `keterangan` | `TEXT` | Opsional |
+| `recid` | `TEXT` | Opsional |
+| `raw_data` | `TEXT` | Opsional |
+| `created_at` | `DATETIME` | Opsional |
+
+#### Indeks Kueri Baru:
+| Nama Indeks | Tabel Sasaran | Kolom |
+| :--- | :--- | :--- |
+| `idx_pricelist_saved_calc_cat` | `pricelist_saved_calculations` | `category` |
+| `idx_pricelist_saved_calc_updated` | `pricelist_saved_calculations` | `updated_at` |
+| `idx_usr_log_tgl` | `usr_log` | `tgl` |
+| `idx_rencana_produksi_no_order` | `rencana_produksi` | `no_order` |
+| `idx_rencana_produksi_status` | `rencana_produksi` | `status` |
+| `idx_rencana_tahapan_no_order` | `rencana_produksi_tahapan` | `no_order` |
+| `idx_rencana_tahapan_rencana_id` | `rencana_produksi_tahapan` | `rencana_id` |
+| `idx_employee_no` | `employees` | `employee_no` |
+| `idx_sales_recid` | `sales_reports` | `recid` |
+| `idx_barang_jadi_recid` | `barang_jadi` | `recid` |
+| `idx_bahan_baku_recid` | `bahan_baku` | `recid` |
+| `idx_bom_unique` | `bill_of_materials` | `faktur` |
+| `idx_pr_unique` | `purchase_requests` | `faktur` |
+| `idx_role_permissions_unique` | `role_permissions` | `role, module_key` |
+| `idx_role_laporan_pekerjaan_config_role` | `role_laporan_pekerjaan_config` | `role` |
+| `idx_sopd_no_sopd` | `sopd` | `no_sopd` |
+| `idx_sopd_nama_order` | `sopd` | `nama_order` |
+| `idx_laporan_pekerjaan_project` | `laporan_pekerjaan` | `project` |
+| `idx_laporan_pekerjaan_pic` | `laporan_pekerjaan` | `pic` |
+| `idx_laporan_pekerjaan_bagian` | `laporan_pekerjaan` | `bagian` |
+| `idx_laporan_pekerjaan_status` | `laporan_pekerjaan` | `status` |
+| `idx_laporan_pekerjaan_start_norm` | `laporan_pekerjaan` | `start_date_norm` |
+| `idx_mpjp_name` | `master_pekerjaan_jurnal_produksi` | `name COLLATE NOCASE` |
+| `idx_saldo_barang_kode` | `saldo_barang` | `kode` |
+| `idx_saldo_barang_tgl` | `saldo_barang` | `tgl` |
+| `idx_barang_jadi_kd_barang` | `barang_jadi` | `kd_barang` |
+| `idx_bom_kd_barang` | `bill_of_materials` | `kd_barang` |
+| `idx_usr_log_channel_tgl` | `usr_log` | `channel, tgl` |
+| `idx_rencana_produksi_no_order` | `rencana_produksi` | `no_order` |
+| `idx_rencana_produksi_status` | `rencana_produksi` | `status` |
+| `idx_rencana_tahapan_no_order` | `rencana_produksi_tahapan` | `no_order` |
+| `idx_rencana_tahapan_rencana_id` | `rencana_produksi_tahapan` | `rencana_id` |
+| `idx_sales_orders_recid` | `sales_orders` | `recid` |
+| `idx_sales_recid` | `sales_reports` | `recid` |
+| `idx_barang_jadi_recid` | `barang_jadi` | `recid` |
+| `idx_bahan_baku_recid` | `bahan_baku` | `recid` |
+| `idx_sales_orders_unique` | `sales_orders` | `faktur, kd_barang, tgl` |
+| `idx_sales_orders_recid` | `sales_orders` | `recid` |
+| `idx_infractions_date` | `infractions` | `date` |
+| `idx_infractions_faktur` | `infractions` | `faktur` |
+| `idx_infractions_emp_id` | `infractions` | `employee_id` |
+| `idx_infractions_rec_id` | `infractions` | `recorded_by_id` |
+| `idx_infractions_emp_no` | `infractions` | `employee_no` |
+| `idx_telegram_users_telegram_id` | `telegram_users` | `telegram_id` |
+| `idx_telegram_users_nama` | `telegram_users` | `nama_karyawan` |
+| `idx_telegram_users_active` | `telegram_users` | `is_active` |
+| `idx_activity_logs_created_at_action` | `activity_logs` | `created_at, action_type` |
+| `idx_activity_logs_created_at_table` | `activity_logs` | `created_at, table_name` |
+| `idx_activity_logs_created_at_user` | `activity_logs` | `created_at, recorded_by` |
+| `idx_activity_logs_archive_created_at_action` | `activity_logs_archive` | `created_at, action_type` |
+| `idx_activity_logs_archive_created_at_table` | `activity_logs_archive` | `created_at, table_name` |
+| `idx_activity_logs_archive_created_at_user` | `activity_logs_archive` | `created_at, recorded_by` |
+| `idx_activity_logs_archive_created_at_id_desc` | `activity_logs_archive` | `created_at DESC, id DESC` |
+| `idx_barang_jadi_expr_tgl` | `barang_jadi` | `substr(tgl, 7, 4` |
+| `idx_barang_jadi_created_at` | `barang_jadi` | `created_at` |
+| `idx_barang_jadi_faktur_so` | `barang_jadi` | `faktur_so` |
+| `idx_bahan_baku_expr_tgl` | `bahan_baku` | `substr(tgl, 7, 4` |
+| `idx_bahan_baku_created_at` | `bahan_baku` | `created_at` |
+| `idx_orders_expr_tgl` | `orders` | `substr(tgl, 7, 4` |
+| `idx_orders_created_at` | `orders` | `created_at` |
+| `idx_sales_orders_expr_tgl` | `sales_orders` | `substr(tgl, 7, 4` |
+| `idx_sales_orders_created_at` | `sales_orders` | `created_at` |
+| `idx_sales_reports_expr_tgl` | `sales_reports` | `substr(tgl, 7, 4` |
+| `idx_sales_reports_created_at` | `sales_reports` | `created_at` |
+| `idx_sales_reports_expr_tgl` | `sales_reports` | `substr(tgl, 7, 4` |
+| `idx_sales_reports_created_at` | `sales_reports` | `created_at` |
+| `idx_sales_orders_expr_tgl` | `sales_orders` | `substr(tgl, 7, 4` |
+| `idx_spph_out_expr_tgl` | `spph_out` | `substr(tgl, 7, 4` |
+| `idx_sph_in_expr_tgl` | `sph_in` | `substr(tgl, 7, 4` |
+| `idx_purchase_orders_expr_tgl` | `purchase_orders` | `substr(tgl, 7, 4` |
+| `idx_penerimaan_pembelian_expr_tgl` | `penerimaan_pembelian` | `substr(tgl, 7, 4` |
+| `idx_rekap_pembelian_barang_expr_tgl` | `rekap_pembelian_barang` | `substr(tgl, 7, 4` |
+| `idx_jurnal_del_tgl_order` | `jurnal_harian_produksi` | `deleted_at, tgl DESC, no_order` |
+| `idx_jurnal_order_del_bag` | `jurnal_harian_produksi` | `no_order, deleted_at, bagian` |
+| `idx_employees_active_id` | `employees` | `is_active, id` |
+| `idx_employees_name` | `employees` | `name` |
+| `idx_infractions_composite_query` | `infractions` | `employee_id, date DESC` |
+| `idx_infractions_severity_date` | `infractions` | `severity, date DESC` |
+| `idx_infractions_faktur_composite` | `infractions` | `faktur, date DESC` |
+| `idx_activity_logs_table_action_record` | `activity_logs` | `table_name, action_type, record_id, id` |
+| `idx_activity_logs_action_created` | `activity_logs` | `action_type, created_at` |
+| `idx_activity_logs_table_created` | `activity_logs` | `table_name, created_at DESC` |
+| `idx_actlogs_arch_table_action` | `activity_logs_archive` | `table_name, action_type` |
+| `idx_actlogs_arch_table_action_record` | `activity_logs_archive` | `table_name, action_type, record_id, id` |
+| `idx_actlogs_arch_action_created` | `activity_logs_archive` | `action_type, created_at` |
+| `idx_actlogs_arch_table_created` | `activity_logs_archive` | `table_name, created_at DESC` |
+| `idx_actlogs_arch_recorded_by_created` | `activity_logs_archive` | `recorded_by, created_at DESC` |
+| `idx_orders_tgl` | `orders` | `tgl` |
+| `idx_orders_tgl_iso` | `orders` | `substr(tgl,7,4` |
+| `idx_orders_nama_prd` | `orders` | `nama_prd` |
+| `idx_sopd_tgl_iso` | `sopd` | `substr(tgl,7,4` |
+| `idx_sopd_tgl` | `sopd` | `tgl` |
+| `idx_sopd_nama_order` | `sopd` | `nama_order` |
+| `idx_stok_master_barang_nama` | `stok_master_barang` | `nama` |
+| `idx_produksi_selesai_nama_prd` | `produksi_selesai` | `nama_prd` |
+| `idx_bahan_baku_faktur_prd` | `bahan_baku` | `faktur_prd` |
+| `idx_bahan_baku_tgl_iso` | `bahan_baku` | `substr(tgl,7,4` |
+| `idx_barang_jadi_tgl_iso` | `barang_jadi` | `substr(tgl,7,4` |
+| `idx_barang_jadi_faktur_prd` | `barang_jadi` | `faktur_prd` |
+| `idx_barang_jadi_nama_prd` | `barang_jadi` | `nama_prd` |
+| `idx_sales_reports_faktur` | `sales_reports` | `faktur` |
+| `idx_jurnal_tgl_deleted` | `jurnal_harian_produksi` | `tgl, deleted_at` |
+| `idx_jurnal_tgl_no_order` | `jurnal_harian_produksi` | `tgl, no_order` |
+| `idx_jurnal_tgl_no_order_2` | `jurnal_harian_produksi` | `tgl, no_order_2` |
+| `idx_jurnal_no_order` | `jurnal_harian_produksi` | `no_order` |
+| `idx_jurnal_no_order_2` | `jurnal_harian_produksi` | `no_order_2` |
+| `idx_jurnal_tgl_asc` | `jurnal_harian_produksi` | `tgl ASC` |
+| `idx_jurnal_tgl_bagian` | `jurnal_harian_produksi` | `tgl, bagian` |
+| `idx_jurnal_tgl_nama_karyawan` | `jurnal_harian_produksi` | `tgl, nama_karyawan` |
+| `idx_jurnal_filter_composite` | `jurnal_harian_produksi` | `bagian, jenis_pekerjaan` |
+| `idx_jurnal_bagian_pekerjaan_2` | `jurnal_harian_produksi` | `bagian, jenis_pekerjaan_2` |
+| `idx_jurnal_nama_karyawan` | `jurnal_harian_produksi` | `nama_karyawan` |
+| `idx_jurnal_karyawan_bagian` | `jurnal_harian_produksi` | `nama_karyawan, bagian` |
+| `idx_jurnal_bagian` | `jurnal_harian_produksi` | `bagian` |
+| `idx_jurnal_updated_at` | `jurnal_harian_produksi` | `updated_at DESC` |
+| `idx_jurnal_deleted_at` | `jurnal_harian_produksi` | `deleted_at DESC` |
+| `idx_jurnal_main` | `jurnal_harian_produksi` | `tgl ASC, (CASE UPPER(bagian` |
+| `idx_jurnal_tgl_karyawan_pekerjaan` | `jurnal_harian_produksi` | `tgl, nama_karyawan, jenis_pekerjaan` |
+| `idx_jurnal_bagian_deleted_tgl` | `jurnal_harian_produksi` | `bagian, deleted_at, tgl` |
+| `idx_jurnal_del_tgl_order` | `jurnal_harian_produksi` | `deleted_at, tgl DESC, no_order` |
+| `idx_jurnal_order_del_bag` | `jurnal_harian_produksi` | `no_order, deleted_at, bagian` |
+| `idx_rekap_pembelian_barang_tgl` | `rekap_pembelian_barang` | `tgl DESC` |
+| `idx_rekap_pembelian_barang_faktur` | `rekap_pembelian_barang` | `faktur` |
+| `idx_pelunasan_hutang_tgl` | `pelunasan_hutang` | `tgl DESC` |
+| `idx_pelunasan_hutang_faktur` | `pelunasan_hutang` | `faktur` |
+| `idx_pelunasan_piutang_tgl` | `pelunasan_piutang` | `tgl DESC` |
+| `idx_pelunasan_piutang_faktur` | `pelunasan_piutang` | `faktur` |
+| `idx_pengiriman_tgl` | `pengiriman` | `tgl DESC` |
+| `idx_pengiriman_recid` | `pengiriman` | `recid` |
+| `idx_bill_of_materials_faktur_prd` | `bill_of_materials` | `faktur_prd` |
+| `idx_sales_orders_faktur_sph` | `sales_orders` | `faktur_sph` |
+| `idx_purchase_requests_faktur_prd` | `purchase_requests` | `faktur_prd` |
+| `idx_spph_out_faktur_pr` | `spph_out` | `faktur_pr` |
+| `idx_sph_in_faktur_spph` | `sph_in` | `faktur_spph` |
+| `idx_purchase_orders_faktur_sph` | `purchase_orders` | `faktur_sph` |
+| `idx_penerimaan_pembelian_faktur_po` | `penerimaan_pembelian` | `faktur_po` |
+| `idx_rekap_pembelian_barang_faktur_po` | `rekap_pembelian_barang` | `faktur_po` |
+| `idx_pelunasan_hutang_faktur_pb` | `pelunasan_hutang` | `faktur_pb` |
+| `idx_sales_reports_faktur_so` | `sales_reports` | `faktur_so` |
+| `idx_sales_reports_kd_barang` | `sales_reports` | `kd_barang` |
+| `idx_pelunasan_piutang_fkt` | `pelunasan_piutang` | `fkt` |
+| `idx_orders_faktur_bom` | `orders` | `faktur_bom` |
+| `idx_orders_faktur_so` | `orders` | `faktur_so` |
+| `idx_sph_out_faktur_bom` | `sph_out` | `faktur_bom` |
+| `idx_bahan_baku_faktur_pb` | `bahan_baku` | `faktur_pb` |
+| `idx_bahan_baku_fkt_hasil` | `bahan_baku` | `fkt_hasil` |

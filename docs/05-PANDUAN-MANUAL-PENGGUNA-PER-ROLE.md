@@ -147,6 +147,11 @@ ightarrow$ **Jurnal Harian Produksi** (`/jurnal-harian-produksi`).
 ightarrow$ **Target Harian** (`/target`).
    - Pastikan beban lembar cetak terbagi adil antar-operator dan tidak ada mesin produktif yang menganggur (*idle*).
 
+5. **Perencanaan Alur Mesin & Timeline Gantt Chart (`/rencana-produksi`)**:
+   - Buka menu **Produksi** $\rightarrow$ **Jurnal Harian Produksi** $\rightarrow$ **Rencana Produksi** (`/rencana-produksi`).
+   - Buat rencana alur mesin per pesanan baru dengan tombol **`+ Buat Rencana`** atau tombol **`Buat Planning`** di timeline order.
+   - Pilih nomor SOPd: sistem otomatis mengisi oplah, satuan, nama pemesan, dan menyusun alur mesin (Setting, Plate, Cetak, Finishing, QC) sesuai kategori produk.
+   - Pantau visualisasi Gantt Chart interaktif untuk memastikan urutan tahapan lancar tanpa kendala tabrakan kapasitas mesin.
 ---
 
 ### 3.2 Admin Realisasi (7 Modul)

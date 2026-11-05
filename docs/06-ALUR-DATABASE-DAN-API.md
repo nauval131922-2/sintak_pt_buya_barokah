@@ -1,7 +1,7 @@
 # DOKUMEN SISTEM SINTAK: ALUR DATABASE & ARSITEKTUR API
 > **Sistem Informasi Cetak (SINTAK) — PT Buya Barokah**  
 > Status Dokumen: *Resmi, Terverifikasi Sumber Kode & Menggunakan Standar Visual Mermaid*  
-> Komponen: `Next.js 16 API Routes (132 Endpoints) | libSQL/SQLite 3 (WAL / MMAP) | Telegram Bot Daemon | Scraper Digit`
+> Komponen: `Next.js 16 API Routes (142 Endpoints) | libSQL/SQLite 3 (WAL / MMAP) | Telegram Bot Daemon | Scraper Digit`
 
 ---
 
@@ -278,4 +278,4 @@ Berdasarkan audit alur database dan API, berikut adalah identifikasi risiko dan 
 | **3** | Ingestion vs Bot<br>(`scrape-*/route.ts`) | **Database Lock (`SQLITE_BUSY`)** | SQLite hanya mengizinkan **1 thread penulisan** dalam satu waktu. Jika scraper sedang mengeksekusi batch besar $> 5$ detik, Telegram bot akan timeout dan melempar error *database locked*. | Jaga `chunkSize = 100` pada scraper, sisipkan jeda `await sleep(10)` antar-chunk jika antrean sedang padat. |
 
 ---
-> *Dokumen ini disinkronkan langsung dari basis kode aktif SINTAK pada 25 Oktober 2026.*
+> *Dokumen ini disinkronkan langsung dari basis kode aktif SINTAK pada 5 November 2026.*
