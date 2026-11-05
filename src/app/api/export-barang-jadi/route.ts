@@ -10,11 +10,6 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-function signerOf(session: { name?: string; username?: string } | null | undefined): string {
-  if (session?.name?.trim()) return `(${session.name.trim()})`;
-  if (session?.username) return `(${session.username})`;
-  return '(PPIC)';
-}
 
 export async function GET(request: NextRequest) {
   const gate = await requireApiPermission('produksi_barang_jadi');
@@ -47,7 +42,7 @@ export async function GET(request: NextRequest) {
       totalRows: rows.length,
     };
 
-    const buffer = await buildBarangJadiWorkbook(rows, meta, signerOf(gate.session));
+    const buffer = await buildBarangJadiWorkbook(rows, meta);
 
     const dateSuffix = from && to ? ` (${from} sd ${to})` : '';
     const filename = `PENERIMAAN BARANG JADI${dateSuffix}.xlsx`;

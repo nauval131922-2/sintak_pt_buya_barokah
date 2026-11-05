@@ -348,12 +348,11 @@ export async function fetchBarangJadiExportRows(params: BarangJadiFilterParams):
 
 export async function buildBarangJadiWorkbook(
   rows: BarangJadiExportRow[],
-  meta: BarangJadiExportMeta,
-  signer: string
+  meta: BarangJadiExportMeta
 ): Promise<Buffer> {
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('BARANG JADI', {
-    views: [{ showGridLines: true, state: 'frozen', xSplit: 0, ySplit: 4, topLeftCell: 'A5', activeCell: 'A5' }],
+    views: [{ showGridLines: false, state: 'frozen', xSplit: 0, ySplit: 4, topLeftCell: 'A5', activeCell: 'A5' }],
   });
 
   ws.columns = [
@@ -618,39 +617,6 @@ export async function buildBarangJadiWorkbook(
     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: TOTAL_BG } };
   }
 
-  // Footer signatures block
-  const footLabel = totalRow + 2;
-  const nameRow = footLabel + 4;
-  const titleRow = footLabel + 5;
-
-  const labels: Record<number, string> = { 3: 'Dibuat Oleh,', 14: 'Mengetahui,' };
-  const names: Record<number, string> = { 3: signer, 14: '(Triswadi)' };
-  const titles: Record<number, string> = { 3: 'PPIC', 14: 'Manager' };
-
-  const lr = ws.getRow(footLabel);
-  Object.entries(labels).forEach(([col, v]) => {
-    const c = lr.getCell(Number(col));
-    c.value = v;
-    c.font = { name: 'Calibri', size: 10.5, color: { argb: 'FF333333' } };
-    c.alignment = { horizontal: 'center', vertical: 'middle' };
-  });
-
-  const nr = ws.getRow(nameRow);
-  Object.entries(names).forEach(([col, v]) => {
-    const c = nr.getCell(Number(col));
-    c.value = v;
-    c.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FF1F1F1F' } };
-    c.alignment = { horizontal: 'center', vertical: 'middle' };
-  });
-
-  const tr = ws.getRow(titleRow);
-  Object.entries(titles).forEach(([col, v]) => {
-    const c = tr.getCell(Number(col));
-    c.value = v;
-    c.font = { name: 'Calibri', size: 10, italic: true, color: { argb: 'FF595959' } };
-    c.alignment = { horizontal: 'center', vertical: 'middle' };
-  });
-
   // Page setup: A4 landscape, fit to 1 page wide
   ws.pageSetup = {
     paperSize: 9, // A4
@@ -660,7 +626,7 @@ export async function buildBarangJadiWorkbook(
     fitToHeight: 0,
     horizontalCentered: true,
     printTitlesRow: '4:4',
-    printArea: `A1:Q${titleRow}`,
+    printArea: `A1:Q${totalRow}`,
     margins: { left: 0.3, right: 0.3, top: 0.4, bottom: 0.4, header: 0.2, footer: 0.2 },
   };
 
